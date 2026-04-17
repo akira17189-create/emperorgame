@@ -78,7 +78,7 @@ export function NewGamePage() {
                 
                 <div className="new-game-page__scenario-detail">
                   <span className="new-game-page__detail-label">起始年份：</span>
-                  <span className="new-game-page__detail-value">建兴元年</span>
+                  <span className="new-game-page__detail-value">永德元年</span>
                 </div>
               </div>
             </div>

@@ -276,8 +276,8 @@ export function createEmptyGameState(): GameState {
       visual: { image: null, image_prompt: null }
     },
     world: {
-      dynasty: '架空·某朝',
-      era: '建兴',
+      dynasty: '靖朝',
+      era: '永德',
       year: 1,
       tone: '猜忌',
       named_events: [],
@@ -287,9 +287,9 @@ export function createEmptyGameState(): GameState {
       conflict_ratio: 0.3
     },
     resources: {
-      food: 1000,
-      population: 10000,
-      fiscal: 5000,
+      food: 1200,
+      population: 12000,
+      fiscal: 6000,
       military: 2000,
       morale: 70,
       eunuch: 30,

@@ -31,9 +31,9 @@ export function ChronicleEntry({ entry, className = '' }: ChronicleEntryProps) {
   // 格式化年份范围
   const formatYearRange = (yearRange: [number, number]): string => {
     if (yearRange[0] === yearRange[1]) {
-      return `建兴${yearRange[0]}年`;
+      return `永德${yearRange[0]}年`;
     }
-    return `建兴${yearRange[0]}-${yearRange[1]}年`;
+    return `永德${yearRange[0]}-${yearRange[1]}年`;
   };
   
   return (

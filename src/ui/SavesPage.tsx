@@ -110,7 +110,7 @@ export function SavesPage() {
                 
                 <div className="saves-page__slot-detail">
                   <span className="saves-page__detail-label">年份：</span>
-                  <span className="saves-page__detail-value">建兴{save.game_year}年</span>
+                  <span className="saves-page__detail-value">永德{save.game_year}年</span>
                 </div>
                 
                 <div className="saves-page__slot-detail">

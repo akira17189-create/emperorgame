@@ -1,54 +1,60 @@
 :root {
-  /* 背景层次 */
-  --bg-base:        #FAF6EE;   /* 宣纸白，主背景 */
-  --bg-surface:     #F2ECD8;   /* 纸面，卡片背景 */
-  --bg-overlay:     #E8DFC0;   /* 悬浮层 */
-  --bg-sunken:      #EDE5CC;   /* 内嵌区域 */
+  /* ── 背景层次（Lovable cream 体系） ── */
+  --bg-base:        #f7f4ed;               /* 宣纸暖奶油，主背景 */
+  --bg-surface:     #f7f4ed;               /* 与背景同色，卡片无缝融合 */
+  --bg-sunken:      rgba(28, 28, 28, 0.04);/* 内嵌区域：opacity 4% */
+  --bg-overlay:     rgba(28, 28, 28, 0.03);/* 悬浮微色：opacity 3% */
 
-  /* 文字 */
-  --text-primary:   #1C1409;   /* 墨黑，主文字 */
-  --text-secondary: #5C4A2A;   /* 褪色墨，次级文字 */
-  --text-muted:     #9C8060;   /* 淡墨，提示文字 */
-  --text-inverse:   #FAF6EE;   /* 反色，深色背景上 */
+  /* ── 文字（opacity 驱动中性色） ── */
+  --text-primary:   #1c1c1c;              /* 炭黑，100% */
+  --text-secondary: rgba(28, 28, 28, 0.82);/* 次级，82% */
+  --text-muted:     #5f5f5d;              /* 淡灰，提示/标签 */
+  --text-inverse:   #fcfbf8;              /* 深色背景上的近白 */
 
-  /* 强调色 */
-  --accent-red:     #8B1A1A;   /* 朱砂红，主强调（按钮/链接/高亮） */
-  --accent-red-hover: #6B1212; /* 朱砂深，hover */
-  --accent-gold:    #B8860B;   /* 赭金，次级强调（标题装饰） */
-  --accent-ink:     #2C3E50;   /* 青墨，信息类强调 */
+  /* ── 强调色（保留中式调性） ── */
+  --accent-red:       #8B1A1A;            /* 朱砂红，高亮/链接 */
+  --accent-red-hover: #6B1212;
+  --accent-gold:      #B8860B;            /* 赭金，装饰性细节 */
+  --accent-ink:       #2C3E50;            /* 青墨，信息类 */
 
-  /* 边框 */
-  --border-default: #D4C5A9;   /* 淡墨线 */
-  --border-strong:  #A89070;   /* 深墨线 */
-  --border-subtle:  #E8DFC0;   /* 极淡线 */
+  /* ── 边框（Lovable 暖中性） ── */
+  --border-default:   #eceae4;            /* 淡暖线，卡片/分割 */
+  --border-strong:    rgba(28, 28, 28, 0.4);/* 交互边框 */
+  --border-subtle:    #f0ede6;            /* 极淡线 */
 
-  /* 状态色 */
+  /* ── 状态色 ── */
   --status-danger:  #8B1A1A;
   --status-warning: #B8860B;
   --status-success: #2D5A27;
   --status-info:    #2C3E50;
 
-  /* 间距（继承 Lovable 的间距节奏） */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
+  /* ── 间距（Lovable 8px 基准，上端宽松） ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
 
-  /* 圆角（历史感，偏方正） */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 8px;
+  /* ── 圆角（Lovable 层级） ── */
+  --radius-xs:   4px;     /* 小元素 */
+  --radius-sm:   6px;     /* 按钮、输入框、导航 */
+  --radius-md:   8px;     /* 紧凑卡片 */
+  --radius-lg:   12px;    /* 标准卡片、图片容器 */
+  --radius-xl:   16px;    /* 大容器 */
+  --radius-pill: 9999px;  /* 药丸形按钮/图标 */
 
-  /* 字体 */
+  /* ── 字体 ── */
   --font-serif:  "Source Han Serif SC", "Noto Serif SC", "FangSong", Georgia, serif;
-  --font-sans:   "Source Han Sans SC", "Noto Sans SC", "PingFang SC", system-ui, sans-serif;
+  --font-sans:   "Source Han Sans SC", "Noto Sans SC", "PingFang SC", ui-sans-serif, system-ui, sans-serif;
   --font-mono:   "JetBrains Mono", "Consolas", monospace;
 
-  /* 字号 */
+  /* ── 字号 ── */
   --text-xs:   12px;
   --text-sm:   14px;
   --text-base: 16px;
@@ -56,13 +62,21 @@
   --text-xl:   22px;
   --text-2xl:  28px;
   --text-3xl:  36px;
+  --text-4xl:  48px;
 
-  /* 阴影（水墨晕染感） */
-  --shadow-sm:  0 1px 3px rgba(28, 20, 9, 0.12);
-  --shadow-md:  0 4px 12px rgba(28, 20, 9, 0.15);
-  --shadow-lg:  0 8px 24px rgba(28, 20, 9, 0.20);
+  /* ── 阴影（Lovable 签名技法） ──
+     卡片：无阴影，靠边框划定边界
+     深色按钮：inset 多层光影
+     焦点：柔和大光晕                */
+  --shadow-inset-btn:
+    rgba(255, 255, 255, 0.20) 0px 0.5px 0px 0px inset,
+    rgba(0, 0, 0, 0.20)       0px 0px 0px 0.5px inset,
+    rgba(0, 0, 0, 0.05)       0px 1px 2px 0px;
+  --shadow-focus:  rgba(0, 0, 0, 0.10) 0px 4px 12px;
+  --shadow-sm:     0 1px 3px rgba(28, 20, 9, 0.08);
+  --shadow-md:     0 4px 12px rgba(28, 20, 9, 0.10);
 
-  /* 过渡 */
+  /* ── 过渡 ── */
   --transition-fast:   150ms ease;
   --transition-normal: 250ms ease;
 }

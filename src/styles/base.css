@@ -7,7 +7,6 @@
   padding: 0;
 }
 
-/* 基础排版 */
 html {
   font-size: 16px;
   line-height: 1.5;
@@ -22,18 +21,16 @@ body {
   min-height: 100vh;
 }
 
-/* 链接 */
 a {
   color: var(--accent-red);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: opacity var(--transition-fast);
 }
 
 a:hover {
-  color: var(--accent-red-hover);
+  opacity: 0.75;
 }
 
-/* 按钮重置 */
 button {
   font-family: inherit;
   font-size: inherit;
@@ -43,7 +40,6 @@ button {
   background: none;
 }
 
-/* 表单元素 */
 input,
 textarea,
 select {
@@ -52,40 +48,37 @@ select {
   line-height: inherit;
 }
 
-/* 图片 */
 img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-/* 列表 */
 ul,
 ol {
   list-style: none;
 }
 
-/* 表格 */
 table {
   border-collapse: collapse;
   width: 100%;
 }
 
-/* 滚动条样式 */
+/* 滚动条：暖奶油调性 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-sunken);
+  background: var(--bg-base);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: var(--radius-sm);
+  background: var(--border-default);
+  border-radius: var(--radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--border-strong);
 }

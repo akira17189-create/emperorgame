@@ -122,7 +122,7 @@ export const SEED_NPCS: NPC[] = [
     slug: 'zheng-jing',
     name: '郑经',
     role: '翰林院侍讲学士',
-    faction: '中立',
+    faction: '务实派',
     status: 'active',
     traits: {
       loyalty: 75,
@@ -175,4 +175,141 @@ export const SEED_NPCS: NPC[] = [
       image_prompt: 'Chinese ancient young scholar-official in Ming dynasty academic robe, thoughtful expression, holding a scroll map, in a study room filled with books, soft natural light, traditional ink painting style'
     }
   }
+];
+// 新增NPC
+
+export const EMpressDowagerXiao: NpcData = {
+  id: 'empress-dowager-xiao',
+  name: '萧氏',
+  role: '太后',
+  faction: 'imperial-court',
+  position: '太后',
+  reputation: 85,
+  loyalty: 90,
+  ambition: 75
+};
+
+export const WangFuquan: NpcData = {
+  id: 'wang-fuquan',
+  name: '王福全',
+  role: 'eunuch',
+  faction: 'eunuchs',
+  position: '司礼监掌印太监',
+  reputation: 75,
+  loyalty: 60,
+  ambition: 80
+};
+
+export const ZhouWenyuan: NpcData = {
+  id: 'zhou-wenyuan',
+  name: '周文渊',
+  role: 'official',
+  faction: 'imperial-court',
+  position: '礼部尚书',
+  reputation: 80,
+  loyalty: 85,
+  ambition: 40
+};
+
+export const LinWaner: NpcData = {
+  id: 'lin-waner',
+  name: '林婉儿',
+  role: 'official',
+  faction: 'imperial-court',
+  position: '翰林院编修',
+  reputation: 70,
+  loyalty: 80,
+  ambition: 55
+};
+
+export const ZhaoHuchen: NpcData = {
+  id: 'zhao-huchen',
+  name: '赵虎臣',
+  role: 'official',
+  faction: 'military',
+  position: '兵部尚书',
+  reputation: 75,
+  loyalty: 95,
+  ambition: 50
+};
+
+export const ChenSihai: NpcData = {
+  id: 'chen-sihai',
+  name: '陈四海',
+  role: 'official',
+  faction: 'pragmatists',
+  position: '户部左侍郎',
+  reputation: 70,
+  loyalty: 70,
+  ambition: 75
+};
+
+export const XiaoDezi: NpcData = {
+  id: 'xiao-dezi',
+  name: '小德子',
+  role: 'eunuch',
+  faction: 'imperial-court',
+  position: '御前太监',
+  reputation: 60,
+  loyalty: 95,
+  ambition: 30
+};
+
+export const QiuYue: NpcData = {
+  id: 'qiu-yue',
+  name: '秋月',
+  role: 'maid',
+  faction: 'imperial-court',
+  position: '贴身宫女',
+  reputation: 55,
+  loyalty: 90,
+  ambition: 25
+};
+
+export const XuDa: NpcData = {
+  id: 'xu-da',
+  name: '徐达',
+  role: 'official',
+  faction: 'military',
+  position: '蓟辽总督',
+  reputation: 80,
+  loyalty: 95,
+  ambition: 45
+};
+
+export const LiuZhang: NpcData = {
+  id: 'liu-zhang',
+  name: '刘璋',
+  role: 'merchant',
+  faction: 'pragmatists',
+  position: '江南富商',
+  reputation: 65,
+  loyalty: 60,
+  ambition: 80
+};
+
+export const SunSide: NpcData = {
+  id: 'sun-side',
+  name: '孙思德',
+  role: 'official',
+  faction: 'imperial-court',
+  position: '太医院院判',
+  reputation: 70,
+  loyalty: 55,
+  ambition: 65
+};
+
+export const SEED_NPCS_UPDATED: NpcData[] = [
+  ...SEED_NPCS,
+  EMpressDowagerXiao,
+  WangFuquan,
+  ZhouWenyuan,
+  LinWaner,
+  ZhaoHuchen,
+  ChenSihai,
+  XiaoDezi,
+  QiuYue,
+  XuDa,
+  LiuZhang,
+  SunSide
 ];

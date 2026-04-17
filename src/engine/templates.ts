@@ -31,33 +31,33 @@ export const TEMPLATES: Template[] = [
     id: 'tax_increase_success',
     condition: 'fiscal > 1000',
     severity: 1,
-    text: '建兴{year}年，户部上奏加征{value}两白银，国库得以充实。'
+    text: '永德{year}年，户部上奏加征{value}两白银，国库得以充实。'
   },
   {
     id: 'tax_increase_fail',
     condition: 'fiscal <= 1000',
     severity: 3,
-    text: '建兴{year}年，加税政策引发民怨，{location}地区出现骚乱。'
+    text: '永德{year}年，加税政策引发民怨，{location}地区出现骚乱。'
   },
   // 军事相关
   {
     id: 'military_victory',
     condition: 'military > 5000',
     severity: 1,
-    text: '建兴{year}年，我军在{location}大破敌军，斩首{value}级。'
+    text: '永德{year}年，我军在{location}大破敌军，斩首{value}级。'
   },
   {
     id: 'military_defeat',
     condition: 'military <= 5000',
     severity: 3,
-    text: '建兴{year}年，{location}失守，守将{npc_name}战死。'
+    text: '永德{year}年，{location}失守，守将{npc_name}战死。'
   },
   // 灾害相关
   {
     id: 'flood_disaster',
     condition: 'weather_this_year < 0.3',
     severity: 2,
-    text: '建兴{year}年，黄河决口，淹没良田{value}顷，灾民遍野。'
+    text: '永德{year}年，黄河决口，淹没良田{value}顷，灾民遍野。'
   },
   // 政治相关
   {

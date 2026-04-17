@@ -40,11 +40,46 @@ function interpolate(template: string, vars: Record<string, unknown>): string {
 }
 
 // 解析JSON，支持从文本中提取第一个JSON对象
+// 解析JSON，支持从文本中提取第一个JSON对象，支持嵌套JSON
 function parseJSON<T>(raw: string): T | null {
+  // 1. 先尝试直接解析
   try {
     return JSON.parse(raw) as T;
   } catch {
-    // 尝试提取第一个 {...} 块
+    // 2. 尝试提取有效的 JSON 块
+    // 找到最后一个配对的 {...} 块（从末尾往前扫描）
+    let balance = 0;
+    let start = -1;
+    let end = -1;
+
+    // 从末尾向前扫描，找最外层 {}
+    for (let i = raw.length - 1; i >= 0; i--) {
+      const char = raw[i];
+      if (char === '}') {
+        if (balance === 0) {
+          end = i; // 找到闭合位置
+        }
+        balance++;
+      } else if (char === '{') {
+        balance--;
+        if (balance === 0 && end !== -1) {
+          start = i; // 找到开始位置
+          break;
+        }
+      }
+    }
+
+    // 如果找到了配对的 {}
+    if (start !== -1 && end !== -1) {
+      const candidate = raw.substring(start, end + 1);
+      try {
+        return JSON.parse(candidate) as T;
+      } catch {
+        // 继续尝试其他方法
+      }
+    }
+
+    // 3. 作为最后手段，尝试正则匹配（旧方法）
     const match = raw.match(/\{[\s\S]*?\}/);
     if (match) {
       try {
@@ -53,6 +88,7 @@ function parseJSON<T>(raw: string): T | null {
         return null;
       }
     }
+
     return null;
   }
 }
@@ -85,12 +121,25 @@ export async function processCommand(
 
   // ── 1. B 档：指令归一化 ──
   const normalizePrompt = loadPrompt('normalize-command');
-  const intentRaw = await llmCall('B', [
-    { role: 'system', content: interpolate(normalizePrompt, { world: JSON.stringify(state.world) }) },
-    { role: 'user', content: interpolate(normalizePrompt, { player_input: command }) }
-  ]);
+  const normalizeMessages = [
+    { role: 'system', content: normalizePrompt },
+    { role: 'user', content: command }
+  ];
 
+  let intentRaw = await llmCall('B', normalizeMessages);
   let intent = parseJSON<IntentResult>(intentRaw);
+
+  // 如果解析失败，重试一次（添加明确的JSON输出提示）
+  if (!intent) {
+    const retryMessages = [
+      ...normalizeMessages,
+      { role: 'user', content: '请只输出 JSON，不要有其他文字。确保格式正确，包括正确的引号和逗号。' }
+    ];
+    intentRaw = await llmCall('B', retryMessages);
+    intent = parseJSON<IntentResult>(intentRaw);
+  }
+
+  // 如果仍然失败，使用降级值
   if (!intent) {
     intent = { intent: '其他', targets: [], params: {}, raw: command };
   }

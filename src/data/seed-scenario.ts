@@ -3,8 +3,8 @@ import { createEmptyGameState } from '../engine/types';
 import { SEED_NPCS } from './seed-npcs';
 
 export const SEED_WORLD: Partial<World> = {
-  dynasty: '架空·某朝',
-  era: '建兴',
+  dynasty: '靖朝',
+  era: '永德',
   year: 1,
   tone: '猜忌',
   named_events: [],
@@ -32,7 +32,7 @@ export const SEED_RESOURCES: Partial<Resources> = {
 };
 
 export const SEED_SCENARIO_DESCRIPTION = `
-建兴元年，新帝登基。
+永德元年，新帝登基。
 
 先帝在位三十年，晚年沉迷修道，朝政荒废。国库空虚，边关告急，朝中派系林立。
 

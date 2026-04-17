@@ -40,8 +40,10 @@ function App() {
       // 尝试加载最近存档，没有则进新建档页
       getDefaultAdapter().load('slot-1').then(saved => {
         if (saved) {
+          console.log('尝试初始化状态，存档数据:', saved);
           initState(saved);
-          location.hash = '/court';
+          console.log('状态初始化完成');
+          setTimeout(() => { setTimeout(() => { location.hash = '/court'; }, 100); }, 50);
         } else {
           location.hash = '/new';
         }
