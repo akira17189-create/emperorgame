@@ -11,7 +11,7 @@
 
 ## 🚀 快速开始
 
-```bash
+```
 # 安装依赖
 npm install
 
@@ -26,21 +26,26 @@ npm run build
 
 ```
 皇帝游戏/
-├── src/                    # 源代码
-│   ├── engine/            # 核心引擎
-│   │   ├── narrator.ts   # 叙事生成系统
-│   │   ├── arbitration.ts # 多Agent仲裁系统
-│   │   ├── tick.ts       # 离线演算引擎
-│   │   └── skills.ts     # 技能系统
-│   ├── ui/                # 用户界面
-│   ├── prompts/           # AI提示词
-│   └── data/              # 游戏数据
-├── ai-context/             # AI开发上下文
+├── ai-context/             # AI开发上下文和源代码
+│   ├── src/               # 源代码
+│   │   ├── engine/        # 核心引擎
+│   │   │   ├── narrator.ts     # 叙事生成系统
+│   │   │   ├── arbitration.ts  # 多Agent仲裁系统
+│   │   │   ├── tick.ts         # 离线演算引擎
+│   │   │   └── skills.ts       # 技能系统
+│   │   ├── ui/            # 用户界面
+│   │   │   ├── CourtPage.tsx   # 朝堂页面
+│   │   │   ├── NewGamePage.tsx # 新游戏页面
+│   │   │   └── ...             # 其他页面组件
+│   │   ├── prompts/       # AI提示词
+│   │   ├── data/          # 游戏数据
+│   │   └── styles/        # 样式文件
 │   ├── docs/              # 工程文档
-│   ├── lore/              # 世界观设定
-│   └── src/               # 源代码（完整）
-├── docs/                   # 项目文档
-└── index.html             # 入口页面
+│   └── lore/              # 世界观设定
+├── index.html             # 入口页面
+├── package.json           # 项目配置
+├── vite.config.ts         # 构建配置
+└── README.md              # 项目说明
 ```
 
 ## 🔧 开发状态
