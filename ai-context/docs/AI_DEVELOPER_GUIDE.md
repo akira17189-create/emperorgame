@@ -27,9 +27,9 @@ npm run dev
 4. 游戏状态通过 `getState()` 和 `setState()` 管理
 
 ### 当前优先级
-1. 完成 `src/engine/narrator.ts` 的游戏逻辑
-2. 完善 `src/ui/CourtPage.tsx` 的游戏交互
-3. 优化LLM提示词和响应处理
+1. ✅ 已完成仲裁系统集成（Phase 2.1）
+2. ⏳ 待完成 tick.ts 离线演算引擎（Phase 2.2）
+3. ⏳ 待完成资源管理系统（Phase 2.3）
 
 ### Git信息
 - 仓库: https://github.com/akira17189-create/emperorgame.git
@@ -38,6 +38,22 @@ npm run dev
 
 
 ## TODO/FIXME列表
+
+### 已完成项目（Phase 2.1 - 2026-04-18）
+- ✅ `src\engine\arbitration.ts` - 多Agent仲裁系统核心实现
+- ✅ `src\engine\narrator.ts` - 集成仲裁系统，支持多NPC决策
+- ✅ `src\ui\CourtPage.tsx` - 添加仲裁结果展示UI
+- ✅ `src\styles\components.css` - 添加仲裁面板样式
+
+### TODO项目
+- `src\engine\save.ts:85` - 实装时需要 @supabase/supabase-js 依赖 + 用户登录流程
+- `src\engine\skills.ts:18` - 替换为 mimo 生成的技能内容
+- `src\engine\tick.ts:28` - 实现离线演算逻辑 (Phase 2.2)
+- `src\engine\tick.ts:44` - 实现具体演算逻辑 (Phase 2.2)
+- `src\engine\tick.ts:55` - 实现NPC行为演算 (Phase 2.2)
+- `src\engine\tick.ts:84` - 实现批量演算 (Phase 2.2)
+- `src\engine\tick.ts:106` - 实现资源趋势计算 (Phase 2.2)
+- `src\engine\tick.ts:122` - 实现游戏结束条件检查 (Phase 2.2)
 
 ### TODO项目
 - `src\engine\save.ts:85` - 实装时需要 @supabase/supabase-js 依赖 + 用户登录流程
@@ -104,31 +120,13 @@ npm run dev
   - Token预算护栏验证 ✅
   - 技能系统整合（32个技能ID）✅
   - 系统测试（10个意图类型100%可用）✅
+- **Phase 2.1**: 多Agent仲裁系统 ✅ (2026-04-18)
+  - 创建 `src/engine/arbitration.ts` ✅
+  - 更新 `src/engine/narrator.ts` 集成仲裁 ✅
+  - 更新 `src/ui/CourtPage.tsx` 仲裁结果展示 ✅
+  - 更新 `src/styles/components.css` 仲裁面板样式 ✅
 
 #### 当前阶段
-- **Phase 2**: 核心功能开发（待开始）
-  - arbitration.md 完善（多Agent仲裁）
-  - tick.ts 实现（离线演算引擎）
-  - 资源管理系统
+- **Phase 2.2**: tick.ts 实现（离线演算引擎）⏳ 待开始
+- **Phase 2.3**: 资源管理系统 ⏳ 待开始
 
-#### Git状态
-- **仓库**: https://github.com/akira17189-create/emperorgame.git
-- **分支**: main（与远程同步）
-- **最新提交**: Phase 2计划已记录并推送
-
-#### 文件同步状态
-- [x] `06_mvp_scope.md` - 已更新Phase 2计划
-- [x] `README.md` - 已更新项目状态
-- [x] `AI_DEVELOPER_GUIDE.md` - 已更新工作规范
-- [ ] `PROJECT_STRUCTURE.md` - 待更新（如有结构变更）
-
-### 注意事项
-1. **不要新建文件**: 所有更新必须在现有文件中进行
-2. **保持一致性**: 确保所有相关文件的状态一致
-3. **及时同步**: 完成任务后立即同步，避免遗漏
-4. **清晰记录**: 使用清晰的中文描述，便于后续AI理解
-5. **向后兼容**: 保持现有功能完整性
-
----
-
-*工作规范记录时间: 2026年04月18日*

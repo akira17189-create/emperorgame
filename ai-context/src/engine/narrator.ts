@@ -1,6 +1,11 @@
 import type { GameState, NPC, ChronicleEntry } from './types';
 import { llmCall } from './llm';
 import { getSnapshot } from './state';
+import { 
+  shouldTriggerArbitration, 
+  executeArbitration, 
+  type ArbitrationResult 
+} from './arbitration';
 
 // 导入prompt文件作为字符串（Vite ?raw导入）
 import normalizeCommandPrompt from '../prompts/normalize-command.md?raw';
@@ -30,6 +35,7 @@ export interface NarratorResult {
   decision: DecisionTrace;
   narration: string;
   chronicle_entry: Omit<ChronicleEntry, 'id'>;
+  arbitration?: ArbitrationResult;
 }
 
 // 简单的模板插值函数
@@ -110,42 +116,16 @@ function loadPrompt(name: string): string {
   }
 }
 
-export async function processCommand(
+/**
+ * 为单个NPC生成决策
+ */
+export async function generateNPCDecision(
   command: string,
-  state: GameState,
-  targetNpcId: string
-): Promise<NarratorResult> {
-  const npc = state.npcs.find(n => n.id === targetNpcId);
-  if (!npc) {
-    throw new Error(`NPC with id ${targetNpcId} not found`);
-  }
-
-  // ── 1. B 档：指令归一化 ──
-  const normalizePrompt = loadPrompt('normalize-command');
-  const normalizeMessages = [
-    { role: 'system', content: normalizePrompt },
-    { role: 'user', content: command }
-  ];
-
-  let intentRaw = await llmCall('B', normalizeMessages);
-  let intent = parseJSON<IntentResult>(intentRaw);
-
-  // 如果解析失败，重试一次（添加明确的JSON输出提示）
-  if (!intent) {
-    const retryMessages = [
-      ...normalizeMessages,
-      { role: 'user', content: '请只输出 JSON，不要有其他文字。确保格式正确，包括正确的引号和逗号。' }
-    ];
-    intentRaw = await llmCall('B', retryMessages);
-    intent = parseJSON<IntentResult>(intentRaw);
-  }
-
-  // 如果仍然失败，使用降级值
-  if (!intent) {
-    intent = { intent: '其他', targets: [], params: {}, raw: command };
-  }
-
-  // ── 2. 拼装 Layer 2+3 Prompt ──
+  intent: IntentResult,
+  npc: NPC,
+  state: GameState
+): Promise<DecisionTrace> {
+  // 拼装 Layer 2+3 Prompt
   const worldRules = loadPrompt('layer1-world-rules');
   const rolePrompt = loadPrompt('role-execution');
   const snapshot = getSnapshot(state);
@@ -203,7 +183,7 @@ export async function processCommand(
     params_json: JSON.stringify(intent.params),
   });
 
-  // ── 3. A 档：角色执行 → DecisionTrace ──
+  // A 档：角色执行 → DecisionTrace
   const traceRaw = await llmCall('A', [{ role: 'system', content: systemMsg }]);
   let decision = parseJSON<DecisionTrace>(traceRaw);
 
@@ -220,32 +200,132 @@ export async function processCommand(
   }
   decision.npc_id = npc.id;
 
-  // ── 4. A 档：Layer 4 叙事 ──
-  const narrationPromptTemplate = loadPrompt('narration');
-  const narrationMsg = interpolate(narrationPromptTemplate, {
-    world_snapshot: snapshot,
-    decision_json: JSON.stringify(decision),
-    scene_type: '官员对话',
-    style_tags: state.style_state.current_tags.join('、'),
-    npc_name: npc.name,
-    dynasty: state.world.dynasty,
-    tone: state.world.tone,
+  return decision;
+}
+
+/**
+ * 处理指令（支持多NPC仲裁）
+ */
+export async function processCommand(
+  command: string,
+  state: GameState,
+  targetNpcId: string
+): Promise<NarratorResult> {
+  const npc = state.npcs.find(n => n.id === targetNpcId);
+  if (!npc) {
+    throw new Error(`NPC with id ${targetNpcId} not found`);
+  }
+
+  // ── 1. B 档：指令归一化 ──
+  const normalizePrompt = loadPrompt('normalize-command');
+  const normalizeMessages = [
+    { role: 'system', content: normalizePrompt },
+    { role: 'user', content: command }
+  ];
+
+  let intentRaw = await llmCall('B', normalizeMessages);
+  let intent = parseJSON<IntentResult>(intentRaw);
+
+  // 如果解析失败，重试一次（添加明确的JSON输出提示）
+  if (!intent) {
+    const retryMessages = [
+      ...normalizeMessages,
+      { role: 'user', content: '请只输出 JSON，不要有其他文字。确保格式正确，包括正确的引号和逗号。' }
+    ];
+    intentRaw = await llmCall('B', retryMessages);
+    intent = parseJSON<IntentResult>(intentRaw);
+  }
+
+  // 如果仍然失败，使用降级值
+  if (!intent) {
+    intent = { intent: '其他', targets: [], params: {}, raw: command };
+  }
+
+  // ── 2. 为所有活跃NPC生成决策 ──
+  const activeNPCs = state.npcs.filter(n => n.status === 'active').slice(0, 3); // 最多3个NPC
+  const npcDecisions: Array<{ npc: NPC; decision: DecisionTrace }> = [];
+
+  // 并行为所有NPC生成决策
+  const decisionPromises = activeNPCs.map(async (activeNpc) => {
+    const decision = await generateNPCDecision(command, intent, activeNpc, state);
+    return { npc: activeNpc, decision };
   });
-  const narration = await llmCall('A', [{ role: 'system', content: narrationMsg }]);
+
+  const decisions = await Promise.all(decisionPromises);
+  npcDecisions.push(...decisions);
+
+  // ── 3. 检查是否需要仲裁 ──
+  const needsArbitration = shouldTriggerArbitration(npcDecisions, state);
+  
+  let arbitrationResult: ArbitrationResult | undefined;
+  let finalNarration: string;
+  let finalDecision: DecisionTrace;
+
+  if (needsArbitration && npcDecisions.length >= 2) {
+    // ── 4A. 执行仲裁流程 ──
+    arbitrationResult = await executeArbitration(command, npcDecisions, state);
+    finalNarration = arbitrationResult.narrative;
+    finalDecision = npcDecisions[0].decision; // 使用第一个NPC的决策作为主决策
+  } else {
+    // ── 4B. 单NPC决策流程（原有逻辑）───
+    const primaryDecision = npcDecisions.find(d => d.npc.id === targetNpcId) || npcDecisions[0];
+    finalDecision = primaryDecision.decision;
+
+    // A 档：Layer 4 叙事
+    const narrationPromptTemplate = loadPrompt('narration');
+    const snapshot = getSnapshot(state);
+    const narrationMsg = interpolate(narrationPromptTemplate, {
+      world_snapshot: snapshot,
+      decision_json: JSON.stringify(finalDecision),
+      scene_type: '官员对话',
+      style_tags: state.style_state.current_tags.join('、'),
+      npc_name: primaryDecision.npc.name,
+      dynasty: state.world.dynasty,
+      tone: state.world.tone,
+    });
+    finalNarration = await llmCall('A', [{ role: 'system', content: narrationMsg }]);
+  }
 
   // ── 5. 组装 ChronicleEntry ──
   const entry: Omit<ChronicleEntry, 'id'> = {
     kind: '列传',
-    subject_id: npc.id,
+    subject_id: targetNpcId,
     year_range: [state.world.year, state.world.year],
-    text: narration,
+    text: finalNarration,
     style_tags: state.style_state.current_tags,
     source_logs: [],
     image: null,
     image_prompt: null,
   };
 
-  return { decision, narration, chronicle_entry: entry };
+  // 如果有仲裁结果，更新游戏状态
+  if (arbitrationResult) {
+    entry.kind = '本纪'; // 仲裁事件更重大，使用本纪
+    entry.text = arbitrationResult.narrative;
+  }
+
+  return { 
+    decision: finalDecision, 
+    narration: finalNarration, 
+    chronicle_entry: entry,
+    arbitration: arbitrationResult
+  };
+}
+
+/**
+ * 处理指令（多NPC版本，用于上朝场景）
+ */
+export async function processCommandMultiNPC(
+  command: string,
+  state: GameState
+): Promise<NarratorResult> {
+  // 使用第一个活跃NPC作为目标
+  const targetNpc = state.npcs.find(n => n.status === 'active');
+  if (!targetNpc) {
+    throw new Error('No active NPC found');
+  }
+
+  return processCommand(command, state, targetNpc.id);
 }
 
 // 保留原有的辅助函数，但不再使用

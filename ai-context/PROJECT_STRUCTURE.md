@@ -22,11 +22,13 @@
 ## 🔍 AI快速导航
 
 ### 核心文件（修改游戏逻辑）
-1. **`src/engine/narrator.ts`** - 叙事生成核心逻辑
-2. **`src/engine/skills.ts`** - 技能系统实现
-3. **`src/prompts/arbitration.md`** - 仲裁机制（冲突叙事生成）
-4. **`src/prompts/narration.md`** - 叙事提示词模板
-5. **`src/prompts/role-execution.md`** - 角色执行逻辑
+1. **`src/engine/narrator.ts`** - 叙事生成核心逻辑（已集成仲裁系统）
+2. **`src/engine/arbitration.ts`** - 多Agent仲裁系统（Phase 2.1新增）
+3. **`src/engine/skills.ts`** - 技能系统实现
+4. **`src/engine/tick.ts`** - 离线演算引擎（Phase 2.2待实现）
+5. **`src/prompts/arbitration.md`** - 仲裁机制文档（冲突叙事生成）
+6. **`src/prompts/narration.md`** - 叙事提示词模板
+7. **`src/prompts/role-execution.md`** - 角色执行逻辑
 
 ### 配置文件（修改游戏数据）
 1. **`src/data/core-characters.ts`** - 核心角色数据
@@ -35,14 +37,18 @@
 
 ### 界面文件（修改UI）
 1. **`src/ui/NewGamePage.tsx`** - 新游戏页面
-2. **`src/ui/CourtPage.tsx`** - 朝堂页面
+2. **`src/ui/CourtPage.tsx`** - 朝堂页面（已集成仲裁结果展示）
 3. **`src/ui/SavesPage.tsx`** - 存档页面
+
+### 样式文件
+1. **`src/styles/components.css`** - 组件样式（已添加仲裁面板样式）
 
 ## 📚 文档导航
 
 ### 工程文档（`docs/`）
 - **阅读顺序**: `docs/README.md` → `00_overview.md` → `01_architecture.md`
 - **核心文档**: `03_fixes_p1.md`（问题修复记录）
+- **进度跟踪**: `06_mvp_scope.md`（MVP范围与进度）
 
 ### 世界观设定（`lore/`）
 - **快速入口**: `lore/游戏核心设定整合版.md`
@@ -81,6 +87,18 @@
 2. **保持同步**: 修改逻辑后同步更新相关文档
 3. **测试验证**: 修改后运行`npm run dev`测试
 4. **版本控制**: 使用Git管理更改
+
+## 🚀 当前开发状态
+
+### Phase 2.1 完成（2026-04-18）
+- ✅ 多Agent仲裁系统核心实现
+- ✅ 仲裁系统与叙事引擎集成
+- ✅ 仲裁结果UI展示
+- ✅ 仲裁面板样式设计
+
+### 下一步开发
+- ⏳ Phase 2.2: tick.ts 实现（离线演算引擎）
+- ⏳ Phase 2.3: 资源管理系统
 
 ---
 *最后更新: 2026年4月18日*

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { getState, subscribe, setState as setGameState } from '../engine/state';
 import { processCommand } from '../engine/narrator';
+import type { ArbitrationResult } from '../engine/arbitration';
 import { NpcCard } from './components/NpcCard';
 import { LoadingShimmer } from './components/LoadingShimmer';
 import { Navbar } from './components/Navbar';
@@ -18,7 +19,8 @@ export function CourtPage() {
   const [state, setState] = useState(getState());
   const narrationRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToast();
-  const [step, setStep] = useState<'' | 'normalizing' | 'deciding' | 'narrating'>('');
+  const [step, setStep] = useState<'' | 'normalizing' | 'deciding' | 'narrating' | 'arbitrating'>('');
+  const [arbitrationResult, setArbitrationResult] = useState<ArbitrationResult | null>(null);
 
   useEffect(() => {
     return subscribe((newState) => setState(newState));
@@ -38,6 +40,7 @@ export function CourtPage() {
 
     setIsProcessing(true);
     setNarration('');
+    setArbitrationResult(null);
 
     try {
       if (demoMode) {
@@ -60,14 +63,23 @@ export function CourtPage() {
 
       // 步骤 1: 指令归一化
       setStep('normalizing');
-      const result = await processCommand(command, state, targetNpc.id);
-
+      
       // 步骤 2: 角色决策推演
       setStep('deciding');
-      // (processCommand 内部已完成 role-execution)
+      
+      // 步骤 3: 检查是否需要仲裁
+      setStep('arbitrating');
+      
+      const result = await processCommand(command, state, targetNpc.id);
 
-      // 步骤 3: 叙事生成
+      // 步骤 4: 叙事生成
       setStep('narrating');
+
+      // 如果有仲裁结果，显示仲裁信息
+      if (result.arbitration) {
+        setArbitrationResult(result.arbitration);
+        addToast('info', '触发御前辩论');
+      }
 
       setGameState(draft => {
         const entry = { ...result.chronicle_entry, id: `entry-${Date.now()}` };
@@ -85,7 +97,21 @@ export function CourtPage() {
           if (npc.state.recent_events.length > 3) npc.state.recent_events.pop();
         }
 
-        // draft.world.year += 1; // 由 tick 系统统一处理年份推进，避免双重计数
+        // 如果有仲裁结果，更新游戏状态
+        if (result.arbitration) {
+          // 更新关系
+          if (result.arbitration.game_state_updates.relationship_change) {
+            for (const [key, change] of Object.entries(result.arbitration.game_state_updates.relationship_change)) {
+              // 这里可以添加更复杂的关系更新逻辑
+              console.log(`关系变化: ${key} -> ${change}`);
+            }
+          }
+          
+          // 添加集体记忆
+          if (result.arbitration.game_state_updates.collective_memory_added) {
+            draft.world.collective_memory.push(...result.arbitration.game_state_updates.collective_memory_added);
+          }
+        }
       });
 
       try {
@@ -168,7 +194,60 @@ export function CourtPage() {
             <div className="step-indicator">
               {step === 'normalizing' && '📝 正在解析旨意…'}
               {step === 'deciding' && `⚖️  ${state.npcs.find(n => n.id === activeNpcId)?.name || '大臣'} 正在权衡…`}
+              {step === 'arbitrating' && '🏛️ 检查朝堂分歧…'}
               {step === 'narrating' && '✍️ 史官执笔中…'}
+            </div>
+          )}
+
+          {/* 仲裁结果展示 */}
+          {arbitrationResult && (
+            <div className="arbitration-panel">
+              <div className="arbitration-panel__header">
+                <h3>⚔️ {arbitrationResult.title}</h3>
+                <div className="arbitration-panel__meta">
+                  <span>冲突强度: {(arbitrationResult.conflict_analysis.intensity_score * 100).toFixed(0)}%</span>
+                  <span>升级风险: {(arbitrationResult.conflict_analysis.escalation_risk * 100).toFixed(0)}%</span>
+                </div>
+              </div>
+              
+              {/* 对话亮点 */}
+              <div className="arbitration-panel__highlights">
+                <h4>对话亮点</h4>
+                {arbitrationResult.dialogue_highlights.map((highlight, index) => (
+                  <div key={index} className="arbitration-highlight">
+                    <strong>{highlight.speaker}:</strong> "{highlight.text}"
+                    <div className="arbitration-highlight__meta">
+                      <span>语气: {highlight.tone}</span>
+                      <span>潜台词: {highlight.subtext}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* 非语言细节 */}
+              <div className="arbitration-panel__cues">
+                <h4>场景细节</h4>
+                <ul>
+                  {arbitrationResult.nonverbal_cues.map((cue, index) => (
+                    <li key={index}>{cue}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* 后续事件种子 */}
+              {arbitrationResult.next_scenario_seeds.length > 0 && (
+                <div className="arbitration-panel__seeds">
+                  <h4>后续发展</h4>
+                  <ul>
+                    {arbitrationResult.next_scenario_seeds.map((seed, index) => (
+                      <li key={index}>
+                        <strong>{seed.description}</strong>
+                        <div>触发条件: {seed.trigger_condition}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
 
