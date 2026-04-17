@@ -91,10 +91,7 @@ function parseJSON<T>(raw: string): T | null {
 
     return null;
   }
-}
-
-// 加载prompt文件内容（已经通过?raw导入）
-function loadPrompt(name: string): string {
+}function loadPrompt(name: string): string {
   switch (name) {
     case 'normalize-command':
       return normalizeCommandPrompt;
@@ -121,25 +118,12 @@ export async function processCommand(
 
   // ── 1. B 档：指令归一化 ──
   const normalizePrompt = loadPrompt('normalize-command');
-  const normalizeMessages = [
-    { role: 'system', content: normalizePrompt },
-    { role: 'user', content: command }
-  ];
+  const intentRaw = await llmCall('B', [
+    { role: 'system', content: interpolate(normalizePrompt, { world: JSON.stringify(state.world) }) },
+    { role: 'user', content: interpolate(normalizePrompt, { player_input: command }) }
+  ]);
 
-  let intentRaw = await llmCall('B', normalizeMessages);
   let intent = parseJSON<IntentResult>(intentRaw);
-
-  // 如果解析失败，重试一次（添加明确的JSON输出提示）
-  if (!intent) {
-    const retryMessages = [
-      ...normalizeMessages,
-      { role: 'user', content: '请只输出 JSON，不要有其他文字。确保格式正确，包括正确的引号和逗号。' }
-    ];
-    intentRaw = await llmCall('B', retryMessages);
-    intent = parseJSON<IntentResult>(intentRaw);
-  }
-
-  // 如果仍然失败，使用降级值
   if (!intent) {
     intent = { intent: '其他', targets: [], params: {}, raw: command };
   }
