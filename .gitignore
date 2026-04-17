@@ -1,0 +1,45 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 编辑器配置
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# TypeScript缓存
+*.tsbuildinfo
+
+# 临时文件
+*.tmp
+*.temp
+
+# 覆盖率报告
+coverage/
+
+# 本地配置
+*.local
+
+# 存档文件
+saves/

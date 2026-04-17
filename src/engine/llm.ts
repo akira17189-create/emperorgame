@@ -1,0 +1,124 @@
+import type { LLMConfig } from './types';
+
+export type LLMLayer = 'A' | 'B';
+
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export class NoLLMConfigError extends Error {
+  constructor() {
+    super('LLM configuration not found. Please configure LLM settings first.');
+    this.name = 'NoLLMConfigError';
+  }
+}
+
+export class LLMNetworkError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public statusText: string
+  ) {
+    super(message);
+    this.name = 'LLMNetworkError';
+  }
+}
+
+const LLM_CONFIG_KEY = 'llm_config';
+
+export async function llmCall(
+  layer: LLMLayer,
+  messages: ChatMessage[],
+  opts?: { maxTokens?: number; temperature?: number }
+): Promise<string> {
+  const config = getLLMConfig();
+  if (!config) {
+    throw new NoLLMConfigError();
+  }
+
+  const model = layer === 'A' ? config.modelMain : (config.modelCheap || config.modelMain);
+  const maxTokens = opts?.maxTokens ?? config.maxTokens;
+  const temperature = opts?.temperature ?? config.temperature;
+
+  const url = `${config.baseURL}/chat/completions`;
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+
+  // 根据 provider 设置认证头
+  switch (config.provider) {
+    case 'openai':
+      headers['Authorization'] = `Bearer ${config.apiKey}`;
+      break;
+    case 'anthropic':
+      headers['x-api-key'] = config.apiKey;
+      headers['anthropic-version'] = '2023-06-01';
+      break;
+    case 'custom':
+    default:
+      headers['Authorization'] = `Bearer ${config.apiKey}`;
+      break;
+  }
+
+  const body = {
+    model,
+    messages,
+    max_tokens: maxTokens,
+    temperature
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      throw new LLMNetworkError(
+        `LLM request failed: ${response.status} ${response.statusText}`,
+        response.status,
+        response.statusText
+      );
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    if (error instanceof LLMNetworkError) {
+      throw error;
+    }
+    
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new LLMNetworkError(
+        `Network error: ${error.message}`,
+        0,
+        'Network Error'
+      );
+    }
+    
+    throw error;
+  }
+}
+
+export function getLLMConfig(): LLMConfig | null {
+  try {
+    const configStr = localStorage.getItem(LLM_CONFIG_KEY);
+    if (!configStr) {
+      return null;
+    }
+    return JSON.parse(configStr) as LLMConfig;
+  } catch {
+    return null;
+  }
+}
+
+export function setLLMConfig(config: LLMConfig): void {
+  localStorage.setItem(LLM_CONFIG_KEY, JSON.stringify(config));
+}
+
+export function clearLLMConfig(): void {
+  localStorage.removeItem(LLM_CONFIG_KEY);
+}

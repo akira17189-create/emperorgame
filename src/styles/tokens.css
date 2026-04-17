@@ -1,0 +1,68 @@
+:root {
+  /* 背景层次 */
+  --bg-base:        #FAF6EE;   /* 宣纸白，主背景 */
+  --bg-surface:     #F2ECD8;   /* 纸面，卡片背景 */
+  --bg-overlay:     #E8DFC0;   /* 悬浮层 */
+  --bg-sunken:      #EDE5CC;   /* 内嵌区域 */
+
+  /* 文字 */
+  --text-primary:   #1C1409;   /* 墨黑，主文字 */
+  --text-secondary: #5C4A2A;   /* 褪色墨，次级文字 */
+  --text-muted:     #9C8060;   /* 淡墨，提示文字 */
+  --text-inverse:   #FAF6EE;   /* 反色，深色背景上 */
+
+  /* 强调色 */
+  --accent-red:     #8B1A1A;   /* 朱砂红，主强调（按钮/链接/高亮） */
+  --accent-red-hover: #6B1212; /* 朱砂深，hover */
+  --accent-gold:    #B8860B;   /* 赭金，次级强调（标题装饰） */
+  --accent-ink:     #2C3E50;   /* 青墨，信息类强调 */
+
+  /* 边框 */
+  --border-default: #D4C5A9;   /* 淡墨线 */
+  --border-strong:  #A89070;   /* 深墨线 */
+  --border-subtle:  #E8DFC0;   /* 极淡线 */
+
+  /* 状态色 */
+  --status-danger:  #8B1A1A;
+  --status-warning: #B8860B;
+  --status-success: #2D5A27;
+  --status-info:    #2C3E50;
+
+  /* 间距（继承 Lovable 的间距节奏） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* 圆角（历史感，偏方正） */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  /* 字体 */
+  --font-serif:  "Source Han Serif SC", "Noto Serif SC", "FangSong", Georgia, serif;
+  --font-sans:   "Source Han Sans SC", "Noto Sans SC", "PingFang SC", system-ui, sans-serif;
+  --font-mono:   "JetBrains Mono", "Consolas", monospace;
+
+  /* 字号 */
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  28px;
+  --text-3xl:  36px;
+
+  /* 阴影（水墨晕染感） */
+  --shadow-sm:  0 1px 3px rgba(28, 20, 9, 0.12);
+  --shadow-md:  0 4px 12px rgba(28, 20, 9, 0.15);
+  --shadow-lg:  0 8px 24px rgba(28, 20, 9, 0.20);
+
+  /* 过渡 */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+}

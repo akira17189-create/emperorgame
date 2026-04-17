@@ -1,0 +1,56 @@
+[
+  {
+    "name": "方直",
+    "alias": "字守正，号石斋",
+    "title": "都察院左佥都御史",
+    "background": "寒门出身，乡试解元，殿试二甲第七。在地方任知县时曾因拒绝摊派苛税，差点被上司摘了乌纱帽。先帝在位时调入都察院，三年上了二十七道奏疏，一半在骂同僚，一半在劝皇帝。新皇登基后，他照例开火——这次炮口对准了内帑开支。（同僚私下叫他“方铁头”）皇帝看他头疼，但又舍不得真罚。毕竟满朝文武，肯说真话的只剩这一个了。",
+    "personality": "固执如牛，认理不认人。把《大明律》当圣经，连内阁首辅的轿子超规制都要弹劾。不通人情世故，同僚婚丧嫁娶一概不送礼，理由是“俸禄乃民脂民膏”。但治下百姓给他立过生祠——这事儿他从不提。",
+    "motivation": "肃清吏治，匡正纲纪。坚信只要官员都像他这样，天下自然太平。至于皇帝听不听，那是皇帝的事；说不说，是他的事。",
+    "relationships": {
+      "with_money_qian": "死对头。钱谦的每一份升迁，在他眼里都是朝廷的耻辱。",
+      "with_zheng_jing": "互相尊重。郑经的务实他认可，但觉得年轻人手段太杂，不够纯粹。"
+    },
+    "event_triggers": [
+      "弹劾宠臣贪腐，可能引发皇帝震怒或朝堂对峙",
+      "拒绝执行他认为不合礼制的旨意，导致政令卡壳",
+      "地方灾情上报，他坚持实地核查，打乱赈灾节奏"
+    ],
+    "image_prompt": "Chinese ancient official in Ming dynasty censor uniform, stern facial expression, standing rigidly in a courtroom, holding an impeachment memorial, ink wash painting style, traditional Chinese aesthetics"
+  },
+  {
+    "name": "钱谦",
+    "alias": "字受益，号莲溪",
+    "title": "礼部右侍郎",
+    "background": "父亲是前朝四品知府，家底殷实。科举成绩平平（三甲同进士出身），但胜在会来事。先帝时期靠给太子讲学混了个脸熟，新皇登基，他第一批上表劝进，文采斐然（其实找了三个幕僚合伙写的）。三年里从六品主事蹿升到三品侍郎，速度让同僚眼红。目前圣眷正浓，但野心还裹在谦恭的表皮下。",
+    "personality": "笑面虎，见人三分礼。能把马屁拍得清新脱俗，送礼送到人心坎里。记忆力极好，记得每位上官的喜好忌讳。但骨子里极度自私，提拔亲信时眼睛都不眨。",
+    "motivation": "向上爬，爬到能荫庇子孙的位置。暂时不需要贪污——家族产业够花了。他要的是权力，是那种“一个眼神就能让下面人跑断腿”的感觉。",
+    "relationships": {
+      "with_fang_zhi": "烦透了这个愣头青，但表面功夫做到位。每次被弹劾，都上书请罪，转头给方直的政敌递刀子。",
+      "with_zheng_jing": "警惕。郑经的才干让他不安，但目前两人没有利益冲突，所以维持着客气。"
+    },
+    "event_triggers": [
+      "借主持科举之机，安插门生故吏，构建人脉网",
+      "揣摩皇帝喜好，提议修建宫观或南巡，消耗国库",
+      "暗中收集政敌把柄，关键时刻抛出致命一击"
+    ],
+    "image_prompt": "Chinese ancient official in Ming dynasty ceremonial robe, subtle smile, holding a jade tablet, standing in a palace corridor, warm lighting, traditional Chinese painting style"
+  },
+  {
+    "name": "郑经",
+    "alias": "字时济，号拙庵",
+    "title": "翰林院侍讲学士",
+    "background": "神童出身，十七岁中举，二十岁点翰林。本该平步青云，却因在策论里大谈“税制积弊”，被先帝冷藏了五年。新皇登基后，偶然看到他的一篇边防策，召来问对，惊为天人。目前挂着翰林院的闲职，实则常被皇帝叫去私下议事。翅膀还没硬，但风已经来了。",
+    "personality": "沉稳得不像年轻人。话不多，每句都落在实处。擅长把复杂问题拆解成可执行的步骤，同僚评价他“像个账房先生”。但私下爱读兵书和水利志——这些和科举无关。",
+    "motivation": "改革，但不是为了青史留名。他见过家乡洪灾后饿殍遍野，觉得当官不做事，不如回家卖红薯。目标是推动一条鞭法试点，先从江南开始。",
+    "relationships": {
+      "with_fang_zhi": "敬重老前辈的骨气，但觉得方直太爱在道德高地放炮，实际效果有限。",
+      "with_money_qian": "看穿了钱谦的底色，但不动声色。知道这种人迟早要对付，但不是现在。"
+    },
+    "event_triggers": [
+      "提出清丈田亩的方案，触动地方豪强利益",
+      "被皇帝委任为新政试点的执行者，成为众矢之的",
+      "边关告急，他的边防策被翻出来，卷入军事决策漩涡"
+    ],
+    "image_prompt": "Chinese ancient young scholar-official in Ming dynasty academic robe, thoughtful expression, holding a scroll map, in a study room filled with books, soft natural light, traditional ink painting style"
+  }
+]
