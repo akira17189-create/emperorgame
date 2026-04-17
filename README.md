@@ -131,3 +131,36 @@ npm run dev
 ## 许可证
 
 本项目仅供学习和演示使用。
+
+
+## 开发状态 (截至 2026-04-17)
+
+✅ **已完成的核心功能**:
+- `main.tsx` 应用入口文件完整实现
+- Hash路由系统（/settings, /new, /court, /chronicle, /saves）
+- 首次加载逻辑：检查LLM配置 → 尝试加载存档 → 跳转相应页面
+- 所有UI页面组件（SettingsPage, NewGamePage, CourtPage, ChroniclePage, SavesPage）
+- 游戏引擎核心模块（state, llm, save, types, narrator等）
+
+✅ **修复的问题**:
+- 修复了白屏问题（main.tsx从空文件变为完整应用）
+- 正确导入所有页面组件（使用命名导入）
+- 完整的路由和状态管理
+
+🔄 **待完善/可扩展的功能**:
+- 游戏逻辑与LLM集成
+- 存档系统优化
+- UI/UX改进
+- 游戏平衡性调整
+
+## 快速开始
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+```
+
+访问 http://localhost:5173

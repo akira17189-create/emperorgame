@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'preact/hooks';
 import { getState, subscribe } from '../engine/state';
 import { ChronicleEntry } from './components/ChronicleEntry';
+import { Navbar } from './components/Navbar';
 
 export function ChroniclePage() {
   const [state, setState] = useState(getState());
@@ -56,6 +57,8 @@ export function ChroniclePage() {
   }, [state.chronicle.official]);
   
   return (
+    <div className="page-layout">
+      <Navbar />
     <div className="chronicle-page">
       <div className="container">
         <div className="chronicle-page__header">
@@ -144,6 +147,7 @@ export function ChroniclePage() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

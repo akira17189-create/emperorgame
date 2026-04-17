@@ -2,6 +2,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { getLLMConfig, setLLMConfig, clearLLMConfig, llmCall, type ChatMessage } from '../engine/llm';
 import { type LLMConfig } from '../engine/types';
 import { useToast } from './components/Toast';
+import { getDefaultAdapter } from '../engine/save';
 
 export function SettingsPage() {
   const [config, setConfig] = useState<LLMConfig>({
@@ -16,7 +17,12 @@ export function SettingsPage() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+  const [hasSave, setHasSave] = useState(false);
   const { addToast } = useToast();
+
+  useEffect(() => {
+    getDefaultAdapter().load('slot-1').then(s => setHasSave(!!s)).catch(() => {});
+  }, []);
   
   // 加载现有配置
   useEffect(() => {
@@ -102,10 +108,17 @@ export function SettingsPage() {
           请先配置 LLM 才能开始游戏
         </div>
       )}
-      
+
       <div className="container">
         <div className="card">
-          <h1 className="card-title">LLM 配置</h1>
+          <div className="settings-page__header">
+            <h1 className="card-title">LLM 配置</h1>
+            {hasSave && (
+              <a href="#/court" className="btn btn-secondary settings-page__back">
+                ← 返回游戏
+              </a>
+            )}
+          </div>
           <p className="text-muted">配置 AI 模型以启用游戏叙事功能</p>
           
           <div className="form-group">
@@ -115,8 +128,12 @@ export function SettingsPage() {
               className="input"
               value={config.baseURL}
               onChange={(e) => handleChange('baseURL', (e.target as HTMLInputElement).value)}
-              placeholder="例如：https://api.openai.com/v1"
+              placeholder="例如：https://kspmas.ksyun.com/v1"
             />
+            <p className="form-hint">
+              填到 <code>/v1</code> 为止，不要加 <code>/chat/completions</code>。
+              若出现 CORS 错误，请确认 <code>.env.local</code> 中的 <code>VITE_API_BASE_URL</code> 与此处一致，然后重启开发服务器。
+            </p>
           </div>
           
           <div className="form-group">

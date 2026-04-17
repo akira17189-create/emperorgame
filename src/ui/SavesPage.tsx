@@ -2,6 +2,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { getDefaultAdapter, type SaveMeta } from '../engine/save';
 import { initState } from '../engine/state';
 import { useToast } from './components/Toast';
+import { Navbar } from './components/Navbar';
 
 export function SavesPage() {
   const [saves, setSaves] = useState<SaveMeta[]>([]);
@@ -154,6 +155,8 @@ export function SavesPage() {
   };
   
   return (
+    <div className="page-layout">
+      <Navbar />
     <div className="saves-page">
       <div className="container">
         <div className="saves-page__header">
@@ -187,6 +190,7 @@ export function SavesPage() {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 }

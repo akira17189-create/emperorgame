@@ -41,7 +41,24 @@ export async function llmCall(
   const maxTokens = opts?.maxTokens ?? config.maxTokens;
   const temperature = opts?.temperature ?? config.temperature;
 
-  const url = `${config.baseURL}/chat/completions`;
+  // Normalize baseURL: strip any trailing /chat/completions the user may have pasted
+  const normalizedBase = config.baseURL
+    .replace(/\/chat\/completions\/?$/, '')
+    .replace(/\/$/, '');
+
+  // In dev/preview mode route through the Vite proxy to bypass CORS.
+  // The proxy strips /api-proxy and forwards to the origin configured in .env.local.
+  let url: string;
+  if (import.meta.env.DEV || import.meta.env.MODE === 'preview') {
+    try {
+      const parsed = new URL(normalizedBase);
+      url = `/api-proxy${parsed.pathname}/chat/completions`;
+    } catch {
+      url = `${normalizedBase}/chat/completions`;
+    }
+  } else {
+    url = `${normalizedBase}/chat/completions`;
+  }
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json'

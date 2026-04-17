@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { Navbar } from './components/Navbar';
 import { createEmptyGameState } from '../engine/types';
 import { initState } from '../engine/state';
 import { getDefaultAdapter } from '../engine/save';
@@ -41,6 +42,8 @@ export function NewGamePage() {
   };
   
   return (
+    <div className="page-layout">
+      <Navbar />
     <div className="new-game-page">
       <div className="container">
         <div className="new-game-page__header">
@@ -101,6 +104,7 @@ export function NewGamePage() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }
