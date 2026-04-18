@@ -206,17 +206,20 @@ export async function gameTick(
     }
 
     // 6. 组装最终结果
+    const finalNarration = npcNarration || narrationResult.narration;
     console.log('[TICK] 组装最终结果', { 
       npcNarration: npcNarration?.substring(0, 50), 
       narrationResultNarration: narrationResult.narration?.substring(0, 50),
-      finalNarration: (npcNarration || narrationResult.narration)?.substring(0, 50)
+      finalNarration: finalNarration?.substring(0, 50),
+      npcNarrationType: typeof npcNarration,
+      narrationResultNarrationType: typeof narrationResult.narration
     });
     const result: TickResult = {
       success: true,
       newState: simulationResult.newState,
       events: simulationResult.events,
       warnings: simulationResult.warnings,
-      narration: npcNarration || narrationResult.narration,
+      narration: finalNarration,
       chronicle_entry: npcChronicleEntry || narrationResult.chronicle_entry,
       decision: npcDecision,
       arbitration: arbitrationResult ? {
