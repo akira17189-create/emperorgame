@@ -30,13 +30,19 @@ export async function generateNarration(
   try {
     // 如果有仲裁结果，使用仲裁叙事
     if (arbitrationResult?.narrative) {
-      const chronicleEntry = createChronicleEntry(state, arbitrationResult.narration, '本纪');
+      const chronicleEntry = createChronicleEntry(state, arbitrationResult.narrative, '本纪');
+      
       return {
         success: true,
         narration: arbitrationResult.narrative,
-        chronicle_entry: chronicleEntry
+        chronicle_entry: chronicleEntry,
+        // 统一返回 structured_output（与普通叙事保持一致）
+        structured_output: arbitrationResult.structured_output || {
+          text: arbitrationResult.narrative,
+          events: [],
+          mood: '平静'
+        }
       };
-      structured_output: narrationResult.structured_output,
     }
 
     // 否则生成普通叙事
@@ -145,10 +151,6 @@ async function generateNormalNarration(state: GameState, events: string[]): Prom
       }
     };
   }
-}
-    temperature: 0.7,
-    tag: 'narration'
-  });
 }
 
 /**

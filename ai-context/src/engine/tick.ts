@@ -5,7 +5,7 @@ import { createGoalsManager } from './goals-manager';
 import { arbitrateEvents } from './phases/arbitration';
 import { generateNarration, checkGameEndConditions } from './phases/narration';
 import { processCommand } from './narrator';
-import { updateState, applyEffects, createEffect } from './state-updater';
+// import { updateState, applyEffects, createEffect } from './state-updater'; // 已不再使用
 
 export interface TickResult {
   success: boolean;
@@ -72,25 +72,25 @@ export async function gameTick(
         
         // 如果有仲裁结果，应用它
         if (npcResult.arbitration) {
-          const updates = npcResult.arbitration.game_state_updates;
+          const arbitrationUpdates = npcResult.arbitration.game_state_updates;
           
-        // 使用updateState应用状态更新
-        const updates = {
-          resources: updates.resource_change || {},
-          collective_memory: updates.collective_memory_added || []
-        };
-
-        if (Object.keys(updates).length > 0) {
-          simulationResult.newState = updateState(simulationResult.newState, updates);
-        }
+          if (arbitrationUpdates) {
+            // 应用资源变化（与后面事件仲裁保持完全一致的逻辑）
+            if (arbitrationUpdates.resource_change) {
+              for (const [key, delta] of Object.entries(arbitrationUpdates.resource_change)) {
+                if (key in currentState.resources) {
+                  (currentState.resources as Record<string, number>)[key] =
+                    Math.max(0, ((currentState.resources as Record<string, number>)[key] ?? 0) + delta);
+                }
+              }
             }
-          }
-          
-          // 添加集体记忆
-          if (updates.collective_memory_added && updates.collective_memory_added.length > 0) {
-            currentState.world.collective_memory.push(...updates.collective_memory_added);
-            if (currentState.world.collective_memory.length > 20) {
-              currentState.world.collective_memory = currentState.world.collective_memory.slice(-20);
+            
+            // 添加集体记忆
+            if (arbitrationUpdates.collective_memory_added && arbitrationUpdates.collective_memory_added.length > 0) {
+              currentState.world.collective_memory.push(...arbitrationUpdates.collective_memory_added);
+              if (currentState.world.collective_memory.length > 20) {
+                currentState.world.collective_memory = currentState.world.collective_memory.slice(-20);
+              }
             }
           }
         }

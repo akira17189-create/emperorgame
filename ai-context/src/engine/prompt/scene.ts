@@ -124,7 +124,6 @@ export function buildScenePrompt(input: SceneInput): string {
     if (targetNpc.state?.recent_events?.length > 0) {
       scenePrompt += `- 近期事件：${targetNpc.state.recent_events.join('；')}\n`;
     }
-  }
   
   // 6. 当前事件
   if (events.length > 0) {
