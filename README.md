@@ -100,28 +100,41 @@ npm run build
 
 ```
 皇帝游戏/
+├── PROJECT_PROGRESS.md        # 📊 项目进度总结（新！）
 ├── ai-context/                 # AI开发上下文和源代码
 │   ├── src/                   # 源代码目录
 │   │   ├── engine/           # 核心游戏引擎
-│   │   │   ├── narrator.ts    # 叙事生成系统（344行）
 │   │   │   ├── arbitration.ts # 多Agent仲裁系统（752行）
-│   │   │   ├── tick.ts        # 离线演算引擎（136行）
-│   │   │   ├── skills.ts      # 技能路由系统
-│   │   │   ├── llm.ts         # LLM调用封装
-│   │   │   └── types.ts       # 类型定义（342行）
+│   │   │   ├── narrator.ts    # 叙事生成系统（344行）
+│   │   │   ├── tick.ts        # 离线演算引擎（323行）
+│   │   │   ├── skills.ts      # 技能路由系统（650行）
+│   │   │   ├── state.ts       # 状态管理系统（292行）
+│   │   │   ├── llm.ts         # LLM调用封装（141行）
+│   │   │   ├── types.ts       # 类型定义（352行）
+│   │   │   └── phases/        # 游戏阶段处理器
+│   │   │       ├── arbitration.ts # 仲裁阶段（7898字节）
+│   │   │       ├── input.ts       # 输入阶段（1717字节）
+│   │   │       ├── narration.ts   # 叙事阶段（6797字节）
+│   │   │       └── simulation.ts  # 模拟阶段（6772字节）
 │   │   ├── ui/                # 用户界面组件
-│   │   │   ├── CourtPage.tsx   # 朝堂页面（301行）
-│   │   │   ├── NewGamePage.tsx # 新游戏页面
-│   │   │   ├── ChroniclePage.tsx # 史册页面
-│   │   │   └── SettingsPage.tsx # 设置页面
+│   │   │   ├── CourtPage.tsx   # 朝堂页面（8343字节）
+│   │   │   ├── ChroniclePage.tsx # 史册页面（5724字节）
+│   │   │   ├── NewGamePage.tsx # 新游戏页面（4037字节）
+│   │   │   ├── SettingsPage.tsx # 设置页面（8292字节）
+│   │   │   └── SavesPage.tsx   # 存档管理（6171字节）
 │   │   ├── prompts/           # AI提示词系统
 │   │   │   ├── arbitration.md  # 多Agent仲裁Prompt
 │   │   │   ├── narration.md    # 叙事生成Prompt
 │   │   │   └── normalize-command.md # 指令归一化
 │   │   ├── data/              # 游戏数据
 │   │   └── styles/            # 样式文件
-│   ├── docs/                  # 工程文档（16个文件）
-│   └── lore/                  # 世界观设定（10+文件）
+│   ├── docs/                  # 工程文档（20+文件）
+│   ├── lore/                  # 世界观设定（15+文件）
+│   └── reports/               # 实现报告（4个报告）
+│       ├── phase2_1_implementation_report.md
+│       ├── phase2_2_implementation_report.md
+│       ├── phase2_3_implementation_report.md
+│       └── refactoring_report.md
 ├── index.html                 # 入口页面
 ├── package.json               # 项目配置
 └── vite.config.ts             # 构建配置
@@ -135,19 +148,37 @@ npm run build
 
 ### 已完成 ✅
 
-| 阶段 | 功能 | 状态 |
-|------|------|:----:|
-| **Phase 1.1** | narrator.ts JSON解析修复 | ✅ |
-| **Phase 1.2** | 技能系统接入（32个技能） | ✅ |
-| **Phase 1.3** | Token预算护栏、系统测试 | ✅ |
-| **Phase 2.1** | 多Agent仲裁系统 | ✅ |
+| 阶段 | 功能 | 完成时间 | 状态 |
+|------|------|----------|:----:|
+| **Phase 1.1** | narrator.ts JSON解析修复 | 2026-04-17 | ✅ |
+| **Phase 1.2** | 技能系统接入（32个技能） | 2026-04-17 | ✅ |
+| **Phase 1.3** | Token预算护栏、系统测试 | 2026-04-17 | ✅ |
+| **Phase 2.1** | 多Agent仲裁系统 | 2026-04-18 | ✅ |
+| **Phase 2.2** | 完整资源系统 | 2026-04-18 | ✅ |
+| **Phase 2.3** | NPC自主行为系统 | 2026-04-18 | ✅ |
 
-### 进行中 ⏳
+### 下一阶段规划 📋
 
 | 阶段 | 功能 | 预估工时 | 状态 |
 |------|------|----------|:----:|
-| **Phase 2.2** | tick.ts 离线演算引擎 | 3天 | ⏳ |
-| **Phase 2.3** | 资源管理系统 | 2天 | ⏳ |
+| **Phase 3.1** | 政策系统实现 | 3天 | 📋 规划中 |
+| **Phase 3.2** | 世界事件系统 | 2天 | 📋 规划中 |
+| **Phase 3.3** | UI/UX优化 | 3天 | 📋 规划中 |
+
+### 当前系统能力
+
+**核心功能**：
+- ✅ 多Agent决策仲裁：NPC之间因立场不同产生冲突，系统自动仲裁
+- ✅ 完整资源系统：14个资源字段的精确计算和平衡
+- ✅ NPC自主行为：基于NPC特质的自动行为触发
+- ✅ 动态叙事生成：基于决策和仲裁结果的实时剧情生成
+- ✅ 离线演算：玩家离线期间游戏世界自动演化
+
+**技术实现**：
+- ✅ 三层资源架构：Core层（每tick）、Support层（事件触发）、Meta层（状态记录）
+- ✅ 防数值爆炸算法：确保游戏平衡性
+- ✅ 可配置行为规则：NPC行为规则支持动态配置
+- ✅ 变化日志系统：详细记录所有状态变化
 
 ---
 
@@ -181,6 +212,17 @@ npm run build
 
 <div style="background: #f7f4ed; border: 1px solid #eceae4; border-radius: 12px; padding: 20px;">
 
+### 📊 项目进度
+- [项目进度总结](PROJECT_PROGRESS.md)
+- [Phase 2 开发计划](ai-context/docs/09_phase2_development_plan.md)
+- [Phase 2.1 实现报告](ai-context/reports/phase2_1_implementation_report.md)
+- [Phase 2.2 实现报告](ai-context/reports/phase2_2_implementation_report.md)
+- [Phase 2.3 实现报告](ai-context/reports/phase2_3_implementation_report.md)
+
+</div>
+
+<div style="background: #f7f4ed; border: 1px solid #eceae4; border-radius: 12px; padding: 20px;">
+
 ### 📖 工程文档
 - [项目概览](ai-context/docs/00_overview.md)
 - [架构设计](ai-context/docs/01_architecture.md)
@@ -200,6 +242,21 @@ npm run build
 </div>
 
 </div>
+
+### 对于新AI助手
+
+**快速上手指南**：
+1. **首先阅读**：[项目进度总结](PROJECT_PROGRESS.md) - 了解当前开发状态
+2. **然后查看**：[Phase 2 开发计划](ai-context/docs/09_phase2_development_plan.md) - 了解设计思路
+3. **参考实现**：查看 `ai-context/reports/` 目录下的实现报告
+4. **了解设定**：阅读 `ai-context/lore/` 目录下的世界观文档
+
+**当前系统能力**：
+- 多Agent决策仲裁系统
+- 完整资源管理系统
+- NPC自主行为系统
+- 动态叙事生成系统
+- 离线演算引擎
 
 ---
 
