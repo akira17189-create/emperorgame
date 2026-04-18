@@ -261,15 +261,9 @@ useEffect(() => {
                       targetNpcId: npc.id
                     });
 
-                    // 应用游戏状态更新
-                    const { produce } = await import('immer');
-                    const newState = produce(currentState, draft => {
-                      Object.assign(draft, tickResult.state);
-                    });
-
                     // 更新全局状态
                     const { setState: updateGlobalState } = await import('../engine/state');
-                    updateGlobalState(newState);
+                    updateGlobalState(tickResult.state);
 
                     // 显示叙事文本
                     if (tickResult.narration) {
