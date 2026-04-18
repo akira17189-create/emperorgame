@@ -54,7 +54,16 @@ function App() {
   switch (route) {
     case '/settings': return <SettingsPage />;
     case '/new': return <NewGamePage />;
-    case '/court': return <CourtPage />;
+    case '/court': 
+        // 检查状态是否已初始化，如果未初始化则自动初始化
+        try {
+          getState();
+        } catch {
+          // 状态未初始化，自动初始化新游戏
+          initState({ version: 1, dynasty: '清朝', year: 1, era: '永德', npcs: [], npcIdCounter: 0, tone: '肃穆', flags: {}, scenes: [], selectedScene: '', publicFavor: 50, treasury: 1000, military: 50, political: 50, eventLog: [] });
+          console.log('自动初始化游戏状态');
+        }
+        return <CourtPage />;
     case '/chronicle': return <ChroniclePage />;
     case '/saves': return <SavesPage />;
     default: return <div style="padding:2rem">加载中…</div>;
