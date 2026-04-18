@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { getState, subscribe, setState as setGameState } from '../engine/state';
-import { executeTick, checkGameEndConditions } from '../engine/tick';
+import { executeTick } from '../engine/tick';
+import { checkGameEndConditions } from '../engine/phases/narration';
 import { NpcCard } from './components/NpcCard';
 import { LoadingShimmer } from './components/LoadingShimmer';
 import { Navbar } from './components/Navbar';
