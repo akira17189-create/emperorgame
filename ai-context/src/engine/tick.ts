@@ -42,6 +42,7 @@ export async function gameTick(
   targetNpcId?: string
 ): Promise<TickResult> {
   try {
+    console.log('[TICK] gameTick 开始执行', { command, targetNpcId });
     let currentState = { ...state };
     let processedCommand = command;
     let npcDecision = null;
@@ -65,7 +66,9 @@ export async function gameTick(
           status: 'active'
         }];
       }
+        console.log('[TICK] 准备调用 processCommand', { command, targetNpcId, npc: targetNpc?.name });
         const npcResult = await processCommand(command, currentState, targetNpcId);
+        console.log('[TICK] processCommand 调用成功', { narration: npcResult.narration?.substring(0, 100) });
         npcDecision = npcResult.decision;
         npcNarration = npcResult.narration;
         npcChronicleEntry = npcResult.chronicle_entry;
@@ -105,7 +108,8 @@ export async function gameTick(
           }
         }
       } catch (error) {
-        console.error('NPC交互处理失败:', error);
+        console.error('[TICK] NPC交互处理失败:', error);
+        console.error('[TICK] 错误详情:', error.message, error.stack);
         // 继续执行，不中断整个流程
       }
     } else if (command) {
@@ -187,6 +191,7 @@ export async function gameTick(
     }
 
     // 4. 生成世界叙事
+    console.log('[TICK] 准备调用 generateNarration', { targetNpcId, eventsCount: simulationResult.events.length });
     const narrationResult = await generateNarration(
       simulationResult.newState,
       simulationResult.events,
@@ -201,6 +206,11 @@ export async function gameTick(
     }
 
     // 6. 组装最终结果
+    console.log('[TICK] 组装最终结果', { 
+      npcNarration: npcNarration?.substring(0, 50), 
+      narrationResultNarration: narrationResult.narration?.substring(0, 50),
+      finalNarration: (npcNarration || narrationResult.narration)?.substring(0, 50)
+    });
     const result: TickResult = {
       success: true,
       newState: simulationResult.newState,

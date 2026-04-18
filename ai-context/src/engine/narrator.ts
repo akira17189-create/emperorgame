@@ -120,12 +120,14 @@ export async function processCommand(
   state: GameState,
   targetNpcId: string
 ): Promise<NarratorResult> {
+  console.log('[NARRATOR] processCommand 开始执行', { command, targetNpcId });
   const npc = state.npcs.find(n => n.id === targetNpcId);
   if (!npc) {
     throw new Error(`NPC with id ${targetNpcId} not found`);
   }
 
   // ── 1. B 档：指令归一化 ──
+  console.log('[NARRATOR] 准备调用 LLM 进行指令归一化');
   const normalizePrompt = loadPrompt('normalize-command');
   const intentRaw = await llmCall('B', [
     { role: 'system', content: interpolate(normalizePrompt, { world: JSON.stringify(state.world) }) },
@@ -167,7 +169,9 @@ export async function processCommand(
   });
 
   // ── 3. A 档：角色执行 → DecisionTrace ──
+  console.log('[NARRATOR] 准备调用 LLM 进行角色执行');
   const traceRaw = await llmCall('A', [{ role: 'system', content: systemMsg }]);
+  console.log('[NARRATOR] 角色执行完成', { traceRaw: traceRaw?.substring(0, 100) });
   let decision = parseJSON<DecisionTrace>(traceRaw);
 
   if (!decision) {
@@ -184,6 +188,7 @@ export async function processCommand(
   decision.npc_id = npc.id;
 
   // ── 4. A 档：Layer 4 叙事 ──
+  console.log('[NARRATOR] 准备调用 LLM 生成叙事');
   const narrationPromptTemplate = loadPrompt('narration');
   const narrationMsg = interpolate(narrationPromptTemplate, {
     world_snapshot: snapshot,
@@ -195,6 +200,7 @@ export async function processCommand(
     tone: state.world.tone,
   });
   const narration = await llmCall('A', [{ role: 'system', content: narrationMsg }]);
+  console.log('[NARRATOR] 叙事生成完成', { narration: narration?.substring(0, 100) });
 
   // ── 5. 组装 ChronicleEntry ──
   const entry: Omit<ChronicleEntry, 'id'> = {
@@ -208,6 +214,7 @@ export async function processCommand(
     image_prompt: null,
   };
 
+  console.log('[NARRATOR] processCommand 执行完成');
   return { decision, narration, chronicle_entry: entry };
 }
 

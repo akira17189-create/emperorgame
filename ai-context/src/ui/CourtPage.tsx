@@ -264,7 +264,7 @@ useEffect(() => {
                     // 更新全局状态
                     const { setState: updateGlobalState } = await import('../engine/state');
                     updateGlobalState(draft => {
-                      Object.assign(draft, tickResult.state);
+                      Object.assign(draft, tickResult.newState);
                     });
 
                     // 显示叙事文本
@@ -274,7 +274,10 @@ useEffect(() => {
 
                     setIsProcessing(false);
                   } catch (error) {
-                    console.error('NPC发言失败:', error);
+                    console.error('[NPC发言] 失败:', error);
+                    console.error('[NPC发言] 错误详情:', error instanceof Error ? error.message : String(error));
+                    console.error('[NPC发言] 错误堆栈:', error instanceof Error ? error.stack : '无堆栈');
+                    addToast('error', `NPC发言失败: ${error instanceof Error ? error.message : '未知错误'}`);
                     setIsProcessing(false);
                   }
                 }
