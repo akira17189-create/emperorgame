@@ -47,9 +47,23 @@ useEffect(() => {
       setTimeout(async () => {
         try {
           console.log('游戏初始化：触发第一个 tick');
-          await executeTick(getState(), '');
+          setIsProcessing(true);
+
+          const tickResult = await executeTick(getState(), '');
+
+          // 显示叙事文本
+          if (tickResult.narration) {
+            await typewriterEffect(tickResult.narration);
+          } else if (demoMode) {
+            // 演示模式使用模板
+            const fallback = renderTemplate('weather_good', { year: getState().world.year });
+            if (fallback) await typewriterEffect(fallback);
+          }
+
+          setIsProcessing(false);
         } catch (error) {
           console.error('游戏初始化失败:', error);
+          setIsProcessing(false);
         }
       }, 1000);
     }
