@@ -268,8 +268,17 @@ useEffect(() => {
                     });
 
                     // 显示叙事文本
+                    console.log('[NPC发言] 检查叙述文本', { 
+                      narration: tickResult.narration?.substring(0, 50),
+                      narrationLength: tickResult.narration?.length,
+                      narrationType: typeof tickResult.narration
+                    });
                     if (tickResult.narration) {
+                      console.log('[NPC发言] 开始显示叙述文本', { narration: tickResult.narration?.substring(0, 100) });
                       await typewriterEffect(tickResult.narration);
+                      console.log('[NPC发言] 叙述文本显示完成');
+                    } else {
+                      console.warn('[NPC发言] 叙述文本为空', { tickResult });
                     }
 
                     setIsProcessing(false);
