@@ -100,7 +100,6 @@ npm run build
 
 ```
 皇帝游戏/
-├── PROJECT_PROGRESS.md        # 📊 项目进度总结（新！）
 ├── ai-context/                 # AI开发上下文和源代码
 │   ├── src/                   # 源代码目录
 │   │   ├── engine/           # 核心游戏引擎
@@ -111,33 +110,48 @@ npm run build
 │   │   │   ├── state.ts       # 状态管理系统（292行）
 │   │   │   ├── llm.ts         # LLM调用封装（141行）
 │   │   │   ├── types.ts       # 类型定义（352行）
+│   │   │   ├── goals-manager.ts # NPC目标管理系统
+│   │   │   ├── state-updater.ts # 状态更新系统
+│   │   │   ├── templates.ts   # C档模板系统
+│   │   │   ├── save.ts        # 存档系统
 │   │   │   └── phases/        # 游戏阶段处理器
-│   │   │       ├── arbitration.ts # 仲裁阶段（7898字节）
-│   │   │       ├── input.ts       # 输入阶段（1717字节）
-│   │   │       ├── narration.ts   # 叙事阶段（6797字节）
-│   │   │       └── simulation.ts  # 模拟阶段（6772字节）
+│   │   │       ├── arbitration.ts # 仲裁阶段
+│   │   │       ├── input.ts       # 输入阶段
+│   │   │       ├── narration.ts   # 叙事阶段
+│   │   │       └── simulation.ts  # 模拟阶段
 │   │   ├── ui/                # 用户界面组件
-│   │   │   ├── CourtPage.tsx   # 朝堂页面（8343字节）
-│   │   │   ├── ChroniclePage.tsx # 史册页面（5724字节）
-│   │   │   ├── NewGamePage.tsx # 新游戏页面（4037字节）
-│   │   │   ├── SettingsPage.tsx # 设置页面（8292字节）
-│   │   │   └── SavesPage.tsx   # 存档管理（6171字节）
+│   │   │   ├── CourtPage.tsx   # 朝堂页面
+│   │   │   ├── ChroniclePage.tsx # 史册页面
+│   │   │   ├── NewGamePage.tsx # 新游戏页面
+│   │   │   ├── SettingsPage.tsx # 设置页面
+│   │   │   ├── SavesPage.tsx   # 存档管理
+│   │   │   └── components/    # UI组件库
 │   │   ├── prompts/           # AI提示词系统
 │   │   │   ├── arbitration.md  # 多Agent仲裁Prompt
 │   │   │   ├── narration.md    # 叙事生成Prompt
-│   │   │   └── normalize-command.md # 指令归一化
+│   │   │   ├── normalize-command.md # 指令归一化
+│   │   │   ├── role-execution.md # 角色执行逻辑
+│   │   │   └── layer1-world-rules.md # 世界规则
 │   │   ├── data/              # 游戏数据
-│   │   └── styles/            # 样式文件
+│   │   │   ├── core-characters.ts # 核心角色数据
+│   │   │   ├── seed-npcs.ts   # NPC种子数据
+│   │   │   ├── seed-scenario.ts # 场景种子数据
+│   │   │   ├── labels.ts      # 标签系统
+│   │   │   └── skills-bundle.ts # 技能包
+│   │   ├── styles/            # 样式文件
+│   │   │   ├── tokens.css     # 设计令牌
+│   │   │   ├── base.css       # 基础样式
+│   │   │   └── components.css # 组件样式
+│   │   └── main.tsx           # 应用入口
 │   ├── docs/                  # 工程文档（20+文件）
 │   ├── lore/                  # 世界观设定（15+文件）
-│   └── reports/               # 实现报告（4个报告）
-│       ├── phase2_1_implementation_report.md
-│       ├── phase2_2_implementation_report.md
-│       ├── phase2_3_implementation_report.md
-│       └── refactoring_report.md
+│   ├── reports/               # 实现报告
+│   └── prompts/               # 外部提示词
 ├── index.html                 # 入口页面
 ├── package.json               # 项目配置
-└── vite.config.ts             # 构建配置
+├── tsconfig.json              # TypeScript配置
+├── tsconfig.node.json         # Node.js TypeScript配置
+└── vite.config.ts             # Vite构建配置
 ```
 
 </div>
@@ -161,8 +175,8 @@ npm run build
 
 | 阶段 | 功能 | 预估工时 | 状态 |
 |------|------|----------|:----:|
-| **Phase 3.1** | 政策系统实现 | 3天 | 📋 规划中 |
-| **Phase 3.2** | 世界事件系统 | 2天 | 📋 规划中 |
+| **Phase 3.1** | 政策系统实现（22个政策） | 3天 | 📋 规划中 |
+| **Phase 3.2** | 世界事件系统（32个事件） | 2天 | 📋 规划中 |
 | **Phase 3.3** | UI/UX优化 | 3天 | 📋 规划中 |
 
 ### 当前系统能力
@@ -173,8 +187,6 @@ npm run build
 - ✅ NPC自主行为：基于NPC特质的自动行为触发
 - ✅ 动态叙事生成：基于决策和仲裁结果的实时剧情生成
 - ✅ 离线演算：玩家离线期间游戏世界自动演化
-
-**技术实现**：
 - ✅ 三层资源架构：Core层（每tick）、Support层（事件触发）、Meta层（状态记录）
 - ✅ 防数值爆炸算法：确保游戏平衡性
 - ✅ 可配置行为规则：NPC行为规则支持动态配置
@@ -206,6 +218,44 @@ npm run build
 
 ---
 
+## 🏗️ 技术架构
+
+### 运行形态
+
+```
+┌──────────────────────────────────────────┐
+│         GitHub Pages（纯静态托管）          │
+│  ┌────────────────────────────────────┐  │
+│  │ index.html + 打包后的 JS / CSS       │  │
+│  │ /assets/*  （图位占位目录）          │  │
+│  └────────────────────────────────────┘  │
+└──────────────────────────────────────────┘
+                    │
+                    ▼（浏览器运行）
+┌──────────────────────────────────────────┐
+│ 浏览器端                                    │
+│ ├─ GameState（内存）                        │
+│ ├─ IndexedDB（存档）                        │
+│ ├─ localStorage（llm_config）                │
+│ └─ fetch(baseURL + /v1/chat/completions)    │
+└──────────────────────────────────────────┘
+                    │
+                    ▼（玩家自填的 API endpoint）
+┌──────────────────────────────────────────┐
+│ 任意 OpenAI 兼容的 LLM 服务                  │
+└──────────────────────────────────────────┘
+```
+
+### 轻量化三档生成
+
+| 档位 | 场景 | 调用方 | 模型 |
+|------|------|--------|------|
+| **A** | 上朝官员对话、重大事件叙事、史册段落 | `llmCall('A', ...)` | 玩家填的 `modelMain` |
+| **B** | 普通奏折、小事件、NPC闲聊、指令归一化 | `llmCall('B', ...)` | 玩家填的 `modelCheap` |
+| **C** | 天气、资源日志、代理执政日志、占位对话 | `templates.render(id, vars)` | 本地字符串插值，0 API |
+
+---
+
 ## 📚 文档导航
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 32px 0;">
@@ -213,11 +263,10 @@ npm run build
 <div style="background: #f7f4ed; border: 1px solid #eceae4; border-radius: 12px; padding: 20px;">
 
 ### 📊 项目进度
-- [项目进度总结](PROJECT_PROGRESS.md)
-- [Phase 2 开发计划](ai-context/docs/09_phase2_development_plan.md)
 - [Phase 2.1 实现报告](ai-context/reports/phase2_1_implementation_report.md)
 - [Phase 2.2 实现报告](ai-context/reports/phase2_2_implementation_report.md)
 - [Phase 2.3 实现报告](ai-context/reports/phase2_3_implementation_report.md)
+- [重构报告](ai-context/reports/refactoring_report.md)
 
 </div>
 
@@ -228,6 +277,7 @@ npm run build
 - [架构设计](ai-context/docs/01_architecture.md)
 - [MVP范围](ai-context/docs/06_mvp_scope.md)
 - [AI开发指南](ai-context/docs/AI_DEVELOPER_GUIDE.md)
+- [Phase 3 开发计划](ai-context/docs/11_phase3_development_plan.md)
 
 </div>
 
@@ -246,8 +296,8 @@ npm run build
 ### 对于新AI助手
 
 **快速上手指南**：
-1. **首先阅读**：[项目进度总结](PROJECT_PROGRESS.md) - 了解当前开发状态
-2. **然后查看**：[Phase 2 开发计划](ai-context/docs/09_phase2_development_plan.md) - 了解设计思路
+1. **首先阅读**：[架构设计](ai-context/docs/01_architecture.md) - 了解系统架构
+2. **然后查看**：[Phase 3 开发计划](ai-context/docs/11_phase3_development_plan.md) - 了解下一步开发方向
 3. **参考实现**：查看 `ai-context/reports/` 目录下的实现报告
 4. **了解设定**：阅读 `ai-context/lore/` 目录下的世界观文档
 
@@ -296,7 +346,7 @@ npm run build
 ### AI开发流程
 
 1. 阅读 `ai-context/docs/AI_DEVELOPER_GUIDE.md` 了解开发指南
-2. 查看 `ai-context/docs/06_mvp_scope.md` 了解当前任务
+2. 查看 `ai-context/docs/11_phase3_development_plan.md` 了解当前任务
 3. 修改代码后同步更新相关文档
 4. 使用Git管理版本
 
@@ -320,3 +370,9 @@ npm run build
 [![GitHub issues](https://img.shields.io/github/issues/akira17189-create/emperorgame?style=social)](https://github.com/akira17189-create/emperorgame/issues)
 
 </div>
+
+</parameter>
+<function=end_write_file>
+<parameter=brief>完成README.md文件更新</parameter>
+</function>
+</tool_call>
