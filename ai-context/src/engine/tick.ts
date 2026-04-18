@@ -107,6 +107,7 @@ export async function gameTick(
             npc.state.recent_events.pop();
           }
         }
+        console.log('[TICK] NPC交互处理完成，继续执行世界模拟');
       } catch (error) {
         console.error('[TICK] NPC交互处理失败:', error);
         console.error('[TICK] 错误详情:', error.message, error.stack);
@@ -128,7 +129,9 @@ export async function gameTick(
     }
 
     // 2. 模拟世界状态变化
+    console.log('[TICK] 开始世界模拟');
     const simulationResult = simulateWorld(currentState);
+    console.log('[TICK] 世界模拟完成', { success: simulationResult.success, eventsCount: simulationResult.events?.length });
     if (!simulationResult.success) {
       return {
         success: false,
