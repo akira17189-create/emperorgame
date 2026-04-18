@@ -1,13 +1,15 @@
 export { buildSystemPrompt } from './system';
 export { buildStylePrompt, getStyleFromState } from './style';
 export type { NarrativeStyle } from './style';
-export { buildMemoryPrompt, summarizeMemory, MemoryItem } from './memory';
+export { buildMemoryPrompt, summarizeMemory } from './memory';
+export type { MemoryItem } from './memory';
 export { buildScenePrompt, buildMinimalScenePrompt, SceneInput } from './scene';
 
 import { buildSystemPrompt } from './system';
 import { buildStylePrompt, getStyleFromState } from './style';
 import type { NarrativeStyle } from './style';
 import { buildMemoryPrompt } from './memory';
+import type { MemoryItem } from './memory';
 import { buildScenePrompt, SceneInput } from './scene';
 
 export interface PromptInput {
