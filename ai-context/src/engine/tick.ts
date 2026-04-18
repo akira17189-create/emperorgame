@@ -1,7 +1,7 @@
 import type { GameState } from './types';
 import { handlePlayerInput } from './phases/input';
 import { simulateWorld } from './phases/simulation';
-import { createGoalsManager } from './goals-manager';
+
 import { arbitrateEvents } from './phases/arbitration';
 import { generateNarration, checkGameEndConditions } from './phases/narration';
 import { processCommand } from './narrator';
@@ -154,27 +154,7 @@ export async function gameTick(
     }
 
 
-    // 2.5 更新NPC目标（基于simulation结果）
-    const goalsManager = createGoalsManager(simulationResult.newState);
 
-    // 为没有目标的NPC初始化目标
-    simulationResult.newState.npcs.forEach(npc => {
-      if (npc.status === 'active' && (!npc.goals || npc.goals.length === 0)) {
-        goalsManager.initializeGoalsFromTraits(npc.id, npc.traits || []);
-      }
-    });
-
-    // 根据事件更新目标优先级
-    if (simulationResult.events.length > 0) {
-      simulationResult.newState.npcs.forEach(npc => {
-        if (npc.status === 'active') {
-          // 这里可以根据具体事件类型进行更复杂的逻辑
-          // 目前简单地根据事件数量调整目标优先级
-          const eventImpact = Math.min(0.1, simulationResult.events.length * 0.02);
-          goalsManager.updateGoalsFromEvent(npc.id, '世界事件', eventImpact);
-        }
-      });
-    }
     // 3. 仲裁事件（如果有）
     let arbitrationResult = null;
     if (simulationResult.events.length > 0) {
