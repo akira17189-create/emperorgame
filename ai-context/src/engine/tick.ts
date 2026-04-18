@@ -130,8 +130,19 @@ export async function gameTick(
 
     // 2. 模拟世界状态变化
     console.log('[TICK] 开始世界模拟');
-    const simulationResult = simulateWorld(currentState);
-    console.log('[TICK] 世界模拟完成', { success: simulationResult.success, eventsCount: simulationResult.events?.length });
+    let simulationResult;
+    try {
+      simulationResult = simulateWorld(currentState);
+      console.log('[TICK] 世界模拟完成', { success: simulationResult.success, eventsCount: simulationResult.events?.length });
+    } catch (simulationError) {
+      console.error('[TICK] 世界模拟异常:', simulationError);
+      simulationResult = {
+        success: true,
+        newState: currentState,
+        events: ['世界模拟异常，使用当前状态'],
+        warnings: ['世界模拟异常']
+      };
+    }
     if (!simulationResult.success) {
       return {
         success: false,
