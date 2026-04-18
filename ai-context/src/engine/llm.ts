@@ -138,4 +138,88 @@ export function setLLMConfig(config: LLMConfig): void {
 
 export function clearLLMConfig(): void {
   localStorage.removeItem(LLM_CONFIG_KEY);
+}/**
+ * 统一的LLM调用入口
+ * 所有地方必须使用此函数调用LLM，禁止直接拼prompt + fetch
+ */
+export async function callLLM({
+  system,
+  user,
+  temperature = 0.7,
+  tag = 'general'
+}: {
+  system: string;
+  user: string;
+  temperature?: number;
+  tag?: string;
+}): Promise<string> {
+  const messages: ChatMessage[] = [
+    { role: 'system', content: system },
+    { role: 'user', content: user }
+  ];
+
+  // 根据tag选择layer
+  const layer: LLMLayer = tag === 'narration' ? 'A' : 'B';
+
+  // 记录日志（可选）
+  console.log(`[LLM Call] Tag: ${tag}, Layer: ${layer}, Temperature: ${temperature}`);
+
+  try {
+    const result = await llmCall(layer, messages, { temperature });
+    return result;
+  } catch (error) {
+    console.error(`[LLM Call Failed] Tag: ${tag}, Error:`, error);
+    throw error;
+  }
+}
+
+/**
+ * 带重试机制的LLM调用
+ */
+export async function callLLMWithRetry({
+  system,
+  user,
+  temperature = 0.7,
+  tag = 'general',
+  maxRetries = 2
+}: {
+  system: string;
+  user: string;
+  temperature?: number;
+  tag?: string;
+  maxRetries?: number;
+}): Promise<string> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await callLLM({ system, user, temperature, tag });
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      
+      if (attempt < maxRetries) {
+        // 等待一段时间后重试
+        const delay = Math.pow(2, attempt) * 1000; // 指数退避
+        console.log(`[LLM Retry] Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError || new Error('LLM call failed after retries');
+}
+
+/**
+ * 批量LLM调用（用于并行处理多个请求）
+ */
+export async function batchCallLLM(
+  requests: Array<{
+    system: string;
+    user: string;
+    temperature?: number;
+    tag?: string;
+  }>
+): Promise<string[]> {
+  const promises = requests.map(request => callLLM(request));
+  return Promise.all(promises);
 }

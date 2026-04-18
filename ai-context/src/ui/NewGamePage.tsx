@@ -27,7 +27,7 @@ export function NewGamePage() {
       
       // 保存到存档
       const saveAdapter = getDefaultAdapter();
-      await saveAdapter.save('slot_1', newState);
+      await saveAdapter.save('slot-1', newState);
       
       addToast('success', '新游戏已创建');
       

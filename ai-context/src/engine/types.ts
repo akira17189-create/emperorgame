@@ -116,6 +116,7 @@ export interface NPC {
   relations: Record<string, Relation>;
   voice: VoiceProfile;
   visual: Visual;
+  goals: NPCGoal[];
 }
 
 export interface NPCState {
@@ -339,4 +340,26 @@ export function createEmptyNPC(id: string, name: string): NPC {
     voice: { features: [], syntax_rules: [], forbidden_phrases: [] },
     visual: { image: null, image_prompt: null }
   };
+}
+// DecisionTrace（叙事引擎的决策追踪结构）
+export interface DecisionTrace {
+  npc_id: string;
+  interpretation: string;
+  decision_path: string[];
+  motivation: string;
+  attitude: string;
+  final_action: string;
+  hidden_action: string | null;
+}
+
+
+export interface NPCGoal {
+  id: string;
+  description: string;
+  priority: number; // 0~1，1为最高优先级
+  created_year: number;
+  last_updated_year: number;
+  status: 'active' | 'completed' | 'abandoned';
+  progress?: number; // 0~1，表示目标完成进度
+  sub_goals?: string[]; // 子目标描述
 }

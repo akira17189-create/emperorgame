@@ -1,18 +1,12 @@
 import type { GameState, NPC, ChronicleEntry } from './types';
 import { llmCall } from './llm';
 import { getSnapshot } from './state';
-import { 
-  shouldTriggerArbitration, 
-  executeArbitration, 
-  type ArbitrationResult 
-} from './arbitration';
 
 // 导入prompt文件作为字符串（Vite ?raw导入）
 import normalizeCommandPrompt from '../prompts/normalize-command.md?raw';
 import layer1WorldRulesPrompt from '../prompts/layer1-world-rules.md?raw';
 import roleExecutionPrompt from '../prompts/role-execution.md?raw';
 import narrationPrompt from '../prompts/narration.md?raw';
-import { SKILL_ROUTES, getSkillContent } from './skills';
 
 export interface IntentResult {
   intent: string;
@@ -35,7 +29,13 @@ export interface NarratorResult {
   decision: DecisionTrace;
   narration: string;
   chronicle_entry: Omit<ChronicleEntry, 'id'>;
-  arbitration?: ArbitrationResult;
+  arbitration?: {
+    narrative: string;
+    game_state_updates: {
+      resource_change?: Record<string, number>;
+      collective_memory_added?: string[];
+    };
+  };
 }
 
 // 简单的模板插值函数
@@ -100,7 +100,6 @@ function parseJSON<T>(raw: string): T | null {
   }
 }
 
-// 加载prompt文件内容（已经通过?raw导入）
 function loadPrompt(name: string): string {
   switch (name) {
     case 'normalize-command':
@@ -116,16 +115,29 @@ function loadPrompt(name: string): string {
   }
 }
 
-/**
- * 为单个NPC生成决策
- */
-export async function generateNPCDecision(
+export async function processCommand(
   command: string,
-  intent: IntentResult,
-  npc: NPC,
-  state: GameState
-): Promise<DecisionTrace> {
-  // 拼装 Layer 2+3 Prompt
+  state: GameState,
+  targetNpcId: string
+): Promise<NarratorResult> {
+  const npc = state.npcs.find(n => n.id === targetNpcId);
+  if (!npc) {
+    throw new Error(`NPC with id ${targetNpcId} not found`);
+  }
+
+  // ── 1. B 档：指令归一化 ──
+  const normalizePrompt = loadPrompt('normalize-command');
+  const intentRaw = await llmCall('B', [
+    { role: 'system', content: interpolate(normalizePrompt, { world: JSON.stringify(state.world) }) },
+    { role: 'user', content: interpolate(normalizePrompt, { player_input: command }) }
+  ]);
+
+  let intent = parseJSON<IntentResult>(intentRaw);
+  if (!intent) {
+    intent = { intent: '其他', targets: [], params: {}, raw: command };
+  }
+
+  // ── 2. 拼装 Layer 2+3 Prompt ──
   const worldRules = loadPrompt('layer1-world-rules');
   const rolePrompt = loadPrompt('role-execution');
   const snapshot = getSnapshot(state);
@@ -147,43 +159,14 @@ export async function generateNPCDecision(
     satisfaction: npc.state.satisfaction,
     behavior: npc.state.behavior_modifier,
     recent_events: npc.state.recent_events.join('、') || '无',
-    skills_content: (() => {
-      // 根据意图获取技能ID列表
-      const skillIds = SKILL_ROUTES[intent.intent] || SKILL_ROUTES['其他'];
-
-      // 获取技能内容，最多3个技能
-      const maxSkills = 3;
-      let content = '';
-      let totalLength = 0;
-      const maxLength = 1200; // 约1500 token
-
-      for (const skillId of skillIds.slice(0, maxSkills)) {
-        const skillContent = getSkillContent(skillId);
-        if (skillContent) {
-          // 估算长度（中文字符）
-          const skillLength = skillContent.length;
-          if (totalLength + skillLength > maxLength) {
-            // 超过长度限制，截断并添加提示
-            const remaining = maxLength - totalLength;
-            if (remaining > 20) { // 至少保留一些内容
-              content += skillContent.substring(0, remaining - 10) + '…（技能内容已截断）';
-            }
-            break;
-          }
-          content += skillContent + '\n\n';
-          totalLength += skillLength;
-        }
-      }
-
-      return content.trim();
-    })(),
+    skills_content: '', // MVP 阶段为空字符串
     intent_raw: intent.raw,
     intent_type: intent.intent,
     targets: intent.targets.join('、'),
     params_json: JSON.stringify(intent.params),
   });
 
-  // A 档：角色执行 → DecisionTrace
+  // ── 3. A 档：角色执行 → DecisionTrace ──
   const traceRaw = await llmCall('A', [{ role: 'system', content: systemMsg }]);
   let decision = parseJSON<DecisionTrace>(traceRaw);
 
@@ -200,132 +183,32 @@ export async function generateNPCDecision(
   }
   decision.npc_id = npc.id;
 
-  return decision;
-}
-
-/**
- * 处理指令（支持多NPC仲裁）
- */
-export async function processCommand(
-  command: string,
-  state: GameState,
-  targetNpcId: string
-): Promise<NarratorResult> {
-  const npc = state.npcs.find(n => n.id === targetNpcId);
-  if (!npc) {
-    throw new Error(`NPC with id ${targetNpcId} not found`);
-  }
-
-  // ── 1. B 档：指令归一化 ──
-  const normalizePrompt = loadPrompt('normalize-command');
-  const normalizeMessages = [
-    { role: 'system', content: normalizePrompt },
-    { role: 'user', content: command }
-  ];
-
-  let intentRaw = await llmCall('B', normalizeMessages);
-  let intent = parseJSON<IntentResult>(intentRaw);
-
-  // 如果解析失败，重试一次（添加明确的JSON输出提示）
-  if (!intent) {
-    const retryMessages = [
-      ...normalizeMessages,
-      { role: 'user', content: '请只输出 JSON，不要有其他文字。确保格式正确，包括正确的引号和逗号。' }
-    ];
-    intentRaw = await llmCall('B', retryMessages);
-    intent = parseJSON<IntentResult>(intentRaw);
-  }
-
-  // 如果仍然失败，使用降级值
-  if (!intent) {
-    intent = { intent: '其他', targets: [], params: {}, raw: command };
-  }
-
-  // ── 2. 为所有活跃NPC生成决策 ──
-  const activeNPCs = state.npcs.filter(n => n.status === 'active').slice(0, 3); // 最多3个NPC
-  const npcDecisions: Array<{ npc: NPC; decision: DecisionTrace }> = [];
-
-  // 并行为所有NPC生成决策
-  const decisionPromises = activeNPCs.map(async (activeNpc) => {
-    const decision = await generateNPCDecision(command, intent, activeNpc, state);
-    return { npc: activeNpc, decision };
+  // ── 4. A 档：Layer 4 叙事 ──
+  const narrationPromptTemplate = loadPrompt('narration');
+  const narrationMsg = interpolate(narrationPromptTemplate, {
+    world_snapshot: snapshot,
+    decision_json: JSON.stringify(decision),
+    scene_type: '官员对话',
+    style_tags: state.style_state.current_tags.join('、'),
+    npc_name: npc.name,
+    dynasty: state.world.dynasty,
+    tone: state.world.tone,
   });
-
-  const decisions = await Promise.all(decisionPromises);
-  npcDecisions.push(...decisions);
-
-  // ── 3. 检查是否需要仲裁 ──
-  const needsArbitration = shouldTriggerArbitration(npcDecisions, state);
-  
-  let arbitrationResult: ArbitrationResult | undefined;
-  let finalNarration: string;
-  let finalDecision: DecisionTrace;
-
-  if (needsArbitration && npcDecisions.length >= 2) {
-    // ── 4A. 执行仲裁流程 ──
-    arbitrationResult = await executeArbitration(command, npcDecisions, state);
-    finalNarration = arbitrationResult.narrative;
-    finalDecision = npcDecisions[0].decision; // 使用第一个NPC的决策作为主决策
-  } else {
-    // ── 4B. 单NPC决策流程（原有逻辑）───
-    const primaryDecision = npcDecisions.find(d => d.npc.id === targetNpcId) || npcDecisions[0];
-    finalDecision = primaryDecision.decision;
-
-    // A 档：Layer 4 叙事
-    const narrationPromptTemplate = loadPrompt('narration');
-    const snapshot = getSnapshot(state);
-    const narrationMsg = interpolate(narrationPromptTemplate, {
-      world_snapshot: snapshot,
-      decision_json: JSON.stringify(finalDecision),
-      scene_type: '官员对话',
-      style_tags: state.style_state.current_tags.join('、'),
-      npc_name: primaryDecision.npc.name,
-      dynasty: state.world.dynasty,
-      tone: state.world.tone,
-    });
-    finalNarration = await llmCall('A', [{ role: 'system', content: narrationMsg }]);
-  }
+  const narration = await llmCall('A', [{ role: 'system', content: narrationMsg }]);
 
   // ── 5. 组装 ChronicleEntry ──
   const entry: Omit<ChronicleEntry, 'id'> = {
     kind: '列传',
-    subject_id: targetNpcId,
+    subject_id: npc.id,
     year_range: [state.world.year, state.world.year],
-    text: finalNarration,
+    text: narration,
     style_tags: state.style_state.current_tags,
     source_logs: [],
     image: null,
     image_prompt: null,
   };
 
-  // 如果有仲裁结果，更新游戏状态
-  if (arbitrationResult) {
-    entry.kind = '本纪'; // 仲裁事件更重大，使用本纪
-    entry.text = arbitrationResult.narrative;
-  }
-
-  return { 
-    decision: finalDecision, 
-    narration: finalNarration, 
-    chronicle_entry: entry,
-    arbitration: arbitrationResult
-  };
-}
-
-/**
- * 处理指令（多NPC版本，用于上朝场景）
- */
-export async function processCommandMultiNPC(
-  command: string,
-  state: GameState
-): Promise<NarratorResult> {
-  // 使用第一个活跃NPC作为目标
-  const targetNpc = state.npcs.find(n => n.status === 'active');
-  if (!targetNpc) {
-    throw new Error('No active NPC found');
-  }
-
-  return processCommand(command, state, targetNpc.id);
+  return { decision, narration, chronicle_entry: entry };
 }
 
 // 保留原有的辅助函数，但不再使用

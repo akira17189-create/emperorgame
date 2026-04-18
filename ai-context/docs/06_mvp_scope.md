@@ -18,255 +18,196 @@ last_updated: 2026-04-18
 |------|---------|
 | LLM 配置页 | 表单填 baseURL / apiKey / modelMain / modelCheap；localStorage 保存；测试按钮（发一次极小请求校验可用） |
 | 新建档 | 选"明朝 · 嘉靖三年"一个预置剧本；固定初始 resources；固定 3 个种子 NPC |
-| 金銮殿场景 | 纯 CSS 宣纸背景 + 3 个 NPC 占位卡 + 底部指令输入框 |
-| 3 个种子 NPC | 完整 `NPC` 字段：海瑞 / 严嵩 / 张居正（权重、voice、memory 空） |
-| 自由文本指令 | 输入框 + 提交按钮 + 骨架加载态 |
-| 指令归一化 | B 档 LLM 调用，返回 `intent` |
-| 单 NPC 决策 | **MVP 不做多 Agent 冲突**；只挑 1 个最相关 NPC（按 intent 的 `by_role` 命中）生成 decision_trace |
-| 叙事生成 | A 档 LLM 调 Layer 4 Prompt，生成 150~300 字中文叙事 |
-| 史册写入 | decision_trace + 叙事写入 `chronicle.official[]` |
-| 史册查看页 | `#/chronicle` 路由，按年倒序列出条目，可展开看全文 |
-| IDB 存档 | 手动"保存"按钮，最多 3 个存档槽，支持加载/删除 |
-| 路由 | hash 路由：settings / new / court / chronicle / saves |
+| CourtPage 核心 UI | 指令输入框；NPC 列表（头像 + 名字 + 官职 + faction 徽章）；史册列（事件流，可翻页查看历史）；资源面板 |
+| **游戏循环（必做）** | 1. 指令归一化 → 2. 角色决策（role-execution.md） → 3. 叙事（narrator.ts） → 4. 进史册（chronicle） → 5. 展示反馈 |
+| 指令归一化 | 前端将玩家输入转成结构化的 `Intent` + `params`（`normalize-command.md` 调用 LLM） |
+| 角色决策 | 当前所有 NPC 各自针对 `Intent` 产生决策（`role-execution.md`） |
+| 叙事 | 基于决策结果生成叙述性段落（`narrator.ts`） |
+| 存档/读档 | JSON 保存 GameState，localStorage 存至少 3 个存档位 |
+| 基本 UI 布局 | 三栏布局（左 NPC 列表，中史册，右资源面板） |
+| 资源面板 | 显示 6 项核心资源（food, population, fiscal, military, morale, threat）的当前数字 |
 
-### ❌ 不包含（Out，后续阶段处理）
+### ❌ 不包含（Out）
 
-- 多 Agent 冲突与仲裁（Prompt 4 先不实装）
-- 放置 / 资源 tick（`engine/tick.ts` 暂不写，资源静止）
-- 代理执政 / 离线演算
-- 挂起事件 / 密信 UI
-- 记忆 LRU 淘汰（MVP 的 NPC 记忆为空或固定）
-- 政策系统（MVP 指令不改政策）
-- 风格标签切换（MVP 固定用"史官视角 + 克制叙述"）
-- 王朝轮回 / 传承 / 内禅密旨
-- 真实图片（占位纹章即可）
-- 音效
-- 云存档（留接口不实装）
-- 指令校验与越狱检测（先相信玩家）
-- 缓存层（`hash()` 缓存暂不实装）
+| 模块 | 为什么排除 |
+|------|----------|
+| 战斗/行军/地图 | MVP 纯朝廷场景 |
+| 经济模型 | 仅静态数字显示，无供需计算 |
+| NPC 自主行为 | Phase 2 做 |
+| 政策系统 | Phase 2 做 |
+| 离线 tick 计算 | 仅放置空文件 `tick.ts`，资源静止 |
+| 随机事件生成 | Phase 2 做 |
+| 多存档位管理 UI | 仅 localStorage 保存，手动导入/导出 |
+| 音效/音乐 | 纯视觉交互 |
 
 ---
 
 ## 2. 文件交付清单（MVP 阶段 1）
 
-```
-./
-├── index.html                  Vite 入口
-├── vite.config.ts
-├── package.json
-├── src/
-│   ├── main.ts                 bootstrap + 路由
-│   ├── styles.css
-│   ├── engine/
-│   │   ├── types.ts            从 04_gamestate_schema.md 翻译
-│   │   ├── state.ts            单例 + 发布订阅
-│   │   ├── save.ts             IDBAdapter + Supabase 占位类
-│   │   ├── llm.ts              三档调度（MVP 只用 A、B）
-│   │   ├── skills.ts           路由字典 + 拼装
-│   │   └── narrator.ts         Prompt 拼装 + JSON 解析
-│   ├── prompts/
-│   │   ├── layer1-world-rules.md
-│   │   ├── normalize-command.md
-│   │   ├── role-execution.md
-│   │   └── narration.md
-│   ├── data/
-│   │   ├── seed-npcs.ts        海瑞 / 严嵩 / 张居正
-│   │   ├── seed-scenario.ts    明朝嘉靖三年初始状态
-│   │   └── labels.ts           英→中映射
-│   └── ui/
-│       ├── SettingsPage.tsx
-│       ├── NewGamePage.tsx
-│       ├── CourtPage.tsx
-│       ├── ChroniclePage.tsx
-│       ├── SavesPage.tsx
-│       └── components/
-│           ├── VisualSlot.tsx
-│           ├── NpcCard.tsx
-│           └── ChronicleEntry.tsx
-```
+| 文件路径 | 目标 |
+|----------|------|
+| `src/ui/components/ConfigPage.tsx` | LLM 配置页：表单 + localStorage + 测试 |
+| `src/ui/components/NewGamePage.tsx` | 剧本选择页（就一个预置剧本） |
+| `src/ui/components/CourtPage.tsx` | 主界面三栏布局 |
+| `src/ui/components/NpcCard.tsx` | NPC 头像卡组件 |
+| `src/ui/components/ResourcePanel.tsx` | 资源面板组件 |
+| `src/ui/components/ChroniclePanel.tsx` | 史册列组件（支持翻页） |
+| `src/engine/normalize-command.ts` | 调用 LLM 将玩家输入转 Intent |
+| `src/engine/role-execution.ts` | 调用 LLM 生成每个 NPC 的决策 |
+| `src/engine/narrator.ts` | 调用 LLM 生成事件叙事 |
+| `src/engine/state.ts` | GameState 读写、初始化、存档/读档 |
+| `src/engine/types.ts` | TypeScript 类型定义（从本 schema 翻译） |
+| `src/engine/tick.ts` 空文件 + 导出签名 | 阶段 2 |
+| `src/engine/chronicle.ts` | 史册数据结构 + 历史记录 |
+| `src/data/seed-scenario.ts` | 预置剧本（一个） |
+| `src/data/seed-npcs.ts` | 3 个种子 NPC（方直、钱谦、郑经） |
+| `src/data/core-characters.ts` | 核心人物模板库（供 role-execution 参照） |
+| `src/prompts/normalize-command.md` | 归一化指令 prompt |
+| `src/prompts/role-execution.md` | 角色决策 prompt |
+| `src/prompts/narrator.md` | 叙事 prompt |
+| `docs/00_overview.md` | 项目概述 |
+| `docs/01_architecture.md` | 工程架构 |
+| `docs/04_gamestate_schema.md` | 数据模型 schema |
+| `docs/05_prompt_layers.md` | prompt 分层说明 |
+| `docs/06_mvp_scope.md` | 本文件 |
+| `public/index.html` | 打包后唯一入口 |
+| `vite.config.ts` | Vite 构建配置 |
+| `package.json` | 依赖与脚本 |
+| `.gitignore` | git 忽略文件 |
+| `README.md` | 项目简介（用户可见） |
+
+**交付物形态**：打包后的静态网站（`npm run build` → `dist/`）可部署到 GitHub Pages。
 
 ---
 
 ## 3. 验收 Checklist
 
-MVP 完成 = 以下全部 ✅：
+MVP 通过标准（**所有项必须完成**）：
 
-- [ ] **C1 配置校验**：清空 localStorage 后打开游戏，被强制跳到设置页；填错的 key 点"测试"按钮报错；填对后可继续。
-- [ ] **C2 一次完整流程**：新建档 → 金銮殿 → 输入"加税三成" → 3 秒内看到加载动画 → 海瑞说出一段 150~300 字的反对话（符合 15 条文风，无"内心复杂"等禁词） → 点"存档" → 刷新页面 → 加载存档 → 状态完整恢复。
-- [ ] **C3 史册可读**：连续输入 3 个不同指令后，史册页按年倒序显示 3 条记录，每条可展开看全文和"决策依据"折叠区（decision_path 的中文渲染）。
-- [ ] **C4 devtools 零泄漏**：Network 面板能看到 fetch 去了玩家填的 baseURL，Authorization header 可见（自己的 key，无所谓），但没有任何第三方追踪请求。
-- [ ] **C5 空配置降级**：清空 llm_config 后，游戏能打开新档（走 C 档占位文案），能看存档，不崩溃；明确提示"当前为只读演示模式"。
-- [ ] **C6 Gzip ≤ 300KB**：`npm run build` 产物 gzip 后 ≤ 300KB。
-- [ ] **C7 占位图不报错**：所有 NPC / 史册条目的 `image` 字段为 null，但 UI 不出现碎图或控制台 404。
-- [ ] **C8 GitHub Pages 部署**：push 到 main 后 GitHub Actions 自动部署到 Pages，访问 URL 即可玩。
+### ✅ 玩家视角流程
+- [ ] 打开页面 → 可配置 LLM（或跳过，用默认） → 新建游戏（选预置剧本） → 进入 CourtPage
+- [ ] CourtPage 看到 3 个 NPC（头像 + 名字 + 官职 + faction 徽章）、资源面板、史册列（空）、指令输入框
+- [ ] 在输入框打字（如"加税"）→ 回车 → **5 秒内**得到史册新增一条叙事事件
+- [ ] 叙事事件包含 NPC 名字、对话、事件描述，读起来像史官记载
+- [ ] 可点史册列的"翻页"查看更早历史
+- [ ] 可保存游戏（自动存 localStorage） → 退出页面 → 重新打开 → 能读档继续
+- [ ] 资源面板显示 6 项数字（暂不变化）
+
+### ✅ 技术实现流程
+- [ ] 指令输入后，前端调 `normalize-command.ts` 得到 `{ intent: '...', params: {...} }`
+- [ ] 对每个 NPC 调 `role-execution.ts` 得到决策数组
+- [ ] 调 `narrator.ts` 将决策转成叙事文本
+- [ ] 叙事文本存入 `chronicle`
+- [ ] UI 更新史册列（新增项在顶部）
+
+### ✅ 数据完整性
+- [ ] 存档 JSON 包含所有 GameState 字段（`meta`, `emperor`, `world`, `resources`, `npcs`, `events`, `chronicle`, `style_state`）
+- [ ] 读档后游戏状态恢复（NPC 位置、史册历史、资源数字）
+- [ ] 3 个种子 NPC 数据从 `seed-npcs.ts` 载入，带完整 traits、state、relations、voice、visual
+
+### ✅ 基本可用性
+- [ ] 无明显 JS 错误
+- [ ] 页面布局不崩（窗口缩放至 800px 宽仍可读）
+- [ ] 所有文字可见（无重叠、截断）
+- [ ] 无死循环、内存泄漏
 
 ---
 
 ## 4. 不在本阶段解决但需要**接口预留**的
 
-这些字段 / 钩子在 MVP 中就要**存在但不实装**，避免后续重构：
-
-| 预留点 | 为谁预留 |
-|--------|---------|
-| `SaveAdapter` 接口 + Supabase 占位类 | 阶段 ? 云存档 |
-| `GameState.events` / `pending_events` 字段 | 阶段 2 放置系统 |
-| `GameState.world.wills[]` 字段 | 阶段 3 传承 |
-| `engine/tick.ts` 空文件 + 导出签名 | 阶段 2 |
-| Prompt 4 仲裁模板（文件就绪，不调用）| 阶段 3 多 Agent |
-| `Visual` 字段全量落位 | 阶段 4 真图 |
-| Style tag 切换器 UI（开关隐藏）| 风格扩展 |
+| 模块 | 接口预留方式 |
+|------|------------|
+| tick 离线演算 | `engine/tick.ts` 导出 `executeTick(state: GameState): GameState`，暂返回原 state |
+| NPC 自主行为 | `NPCState` 已有 `pressure`, `satisfaction`, `recent_events`, `behavior_modifier`, `loyalty_to_emperor` 字段 |
+| 资源变化影响 | `Resources` 字段齐全（见 schema），计算逻辑留空 |
+| 政策系统 | `Policies` 类型预留 |
+| 随机事件 | `Events` 类型预留 |
+| 存档位管理 UI | `meta` 包含 `slot` 字段，UI 暂不展示选择器 |
 
 ---
 
 ## 5. MVP 预估工作量
 
-| 子任务 | 预估 | 说明 |
-|--------|------|------|
-| TS schema 翻译 | 半天 | 从 `04_gamestate_schema.md` 照抄 |
-| Vite + Preact 项目骨架 | 半天 | |
-| LLM 调用封装 + provider 适配 | 半天 | OpenAI / Anthropic headers 差异 |
-| Prompt 模板 .md 文件编写 | 半天 | 照抄 `05_prompt_layers.md` |
-| 5 个页面 + 组件 | 2 天 | |
-| IDB 存档适配器 | 半天 | 用 `idb` npm 包 |
-| 种子数据（NPC × 3 + 剧本 × 1） | 半天 | 需要人类补内容 |
-| 样式 / 宣纸感 | 半天 | |
-| 联调 + bug fix | 1 天 | |
-| GH Pages 部署 | 2 小时 | Actions 一次过 |
+| 模块 | 预估时间 | 说明 |
+|------|----------|------|
+| 基础工程搭建 | 1 天 | Vite + React + TypeScript 配置 |
+| LLM 配置页 | 0.5 天 | 表单 + localStorage |
+| 新建档页 | 0.5 天 | 单剧本选择 |
+| CourtPage 三栏布局 | 1 天 | 左中右自适应布局 |
+| NPC 卡片组件 | 0.5 天 | 头像 + 信息 |
+| 资源面板组件 | 0.5 天 | 6 项数字显示 |
+| 史册列组件 | 1 天 | 翻页 + 时间线 |
+| 指令归一化 | 1 天 | prompt 调优 + 前端集成 |
+| 角色决策 | 1 天 | prompt 调优 + 前端集成 |
+| 叙事生成 | 1 天 | prompt 调优 + 前端集成 |
+| 存档/读档 | 1 天 | JSON 序列化/反序列化 |
+| 类型定义（types.ts） | 0.5 天 | 从 schema 翻译 |
+| 数据文件（seed-*） | 0.5 天 | 写死初始数据 |
+| prompt 文档撰写 | 1 天 | 3 个 prompt.md 文件 |
+| 联调测试 | 1 天 | 确保端到端流程通 |
+| **总计** | **11 天** | 保守估计 |
 
-总计：**约 6~7 个人日**。
+**风险**：LLM prompt 调优可能超时（响应质量不稳定）。应对：先用简单 prompt 让流程跑通，质量迭代提升。
 
 ---
 
 ## 6. 下一阶段（MVP+1）拿到 MVP 再开
 
-不在本文讨论。MVP 验收通过后，参考以下顺序扩展：
+MVP 完成后，启动 Phase 2：
 
 1. **放置层**：`engine/tick.ts` + 离线演算 + 挂起事件 UI
-2. **多 Agent 冲突**：Prompt 4 启用 + 并发调度
-3. **政策系统**：标签化政策 + UI
-4. **风格切换**：让玩家选主题风格
-5. **传承 / 王朝轮回**：内禅密旨 + 继承系统
-6. **真图灌入**：按目录约定批量填图
-7. **云存档**：实装 SupabaseAdapter
+2. **资源管理系统**：资源变化对 NPC 行为的影响
+3. **NPC 自主行为**：NPC 会基于其性格和立场做出自主决策，如上书谏言、派系斗争等
+4. **政策系统**：玩家可颁布政策，影响资源、NPC 态度
+5. **随机事件**：天灾、边患、祥瑞等
 
 ---
 
 ## 7. Phase 2 核心功能开发计划（当前阶段）
 
-**执行时间**: 2026年04月18日  
-**前置条件**: Phase 1.3 完成（技能系统、Token护栏、系统测试）
 **目标**: 实现游戏核心机制，从"指令-叙事"提升到"指令-决策-演算-叙事"
 
-### 7.1 任务清单
+### 7.1 Phase 2 整体时间表
 
-| 任务 | 优先级 | 预估工时 | 描述 | 状态 |
+| 任务 | 优先级 | 预估时间 | 内容 | 状态 |
 |------|--------|----------|------|------|
-| **arbitration.md 完善** | P1 | 2天 | 多Agent仲裁系统，处理NPC间冲突与博弈 | ✅ 已完成 |
 | **tick.ts 实现** | P1 | 3天 | 离线演算引擎，处理资源变化、NPC行为、随机事件 | ⏳ 待开始 |
-| **资源管理系统** | P1 | 2天 | 粮食、人口、财政、军事、民心等资源的计算与平衡 | ⏳ 待开始 |
+| **资源管理系统** | P1 | 2天 | 资源变化对NPC行为的影响 | ⏳ 待开始 |
+| **NPC自主行为** | P1 | 3天 | NPC会基于性格和立场做出自主决策 | ⏳ 待开始 |
+| **政策系统** | P2 | 2天 | 玩家可颁布政策，影响资源、NPC态度 | ⏳ 待开始 |
+| **随机事件系统** | P2 | 2天 | 天灾、边患、祥瑞等随机事件 | ⏳ 待开始 |
+| **UI增强** | P3 | 2天 | 资源变化动画、事件通知UI | ⏳ 待开始 |
 
-### 7.2 详细任务说明
+**总预估时间**: 14天
 
-#### 7.2.1 arbitration.md 完善（多Agent仲裁系统）
+### 7.2.2 tick.ts 实现（离线演算引擎）
+
+**功能范围**:
+- **资源变化**: 基于政策、NPC行为、随机事件计算资源变化
+- **NPC行为**: NPC基于其性格、立场、记忆做出自主决策
+- **随机事件**: 基于当前状态概率触发随机事件
+
+**技术实现**:
+1. 创建 `src/engine/tick.ts` 核心逻辑
+2. 实现 `executeTick(state: GameState): GameState` 函数
+3. 集成到游戏循环: 玩家指令 → 叙事 → tick计算 → 更新UI
+
+### 7.3 Phase 2 核心功能模块
+
+#### 7.3.1 NPC自主行为系统
 
 **目标**: 实现游戏权谋感的核心，处理多个NPC之间的冲突与博弈
 
-**关键组件**:
-- **NPC立场分析**: 基于NPC的role、loyalty、memory分析其立场
-- **冲突检测**: 识别NPC之间的利益冲突和立场对立
-- **仲裁机制**: 皇帝作为最终仲裁者，决定采纳哪一方的建议
-- **博弈结果**: 生成符合各方立场的决策和叙事
+**机制设计**:
+1. **压力积累**: NPC的pressure随时间积累
+2. **行为触发**: 当pressure达到阈值时，触发自主行为
+3. **行为类型**:
+   - 上书谏言 (loyalty高)
+   - 派系结盟 (ambition高) 
+   - 贪腐敛财 (greed高)
+   - 改革建议 (rationality高)
 
-**技术要求**:
-- 输入: IntentResult + NPC列表 + 世界状态
-- 输出: DecisionTrace[] + 冲突描述 + 最终决策
-- Prompt: `arbitration.md` 需要包含完整的仲裁逻辑
-
-#### 7.2.2 tick.ts 实现（离线演算引擎）
-
-**目标**: 实现完整的离线演算引擎，处理游戏世界的自动演化
-
-**关键组件**:
-- **资源变化**: 基于政策、NPC行为、随机事件计算资源变化
-- **NPC行为**: NPC基于其性格、立场、记忆做出自主决策
-- **随机事件**: 生成符合时代背景的随机事件
-- **世界状态更新**: 更新世界状态，推进游戏时间
-
-**技术要求**:
-- 输入: GameState + 决策历史 + 随机种子
-- 输出: GameState更新 + 事件列表 + 世界变化描述
-- 文件: `engine/tick.ts` 需要实现 `executeTick` 函数
-
-#### 7.2.3 资源管理系统
-
-**目标**: 实现完整的资源计算与平衡机制
-
-**关键资源**:
-- **粮食**: 产量、消耗、储备
-- **人口**: 总数、农业人口、军事人口
-- **财政**: 收入、支出、国库
-- **军事**: 兵力、军费、装备
-- **民心**: 满意度、忠诚度、稳定性
-
-**技术要求**:
-- 资源消耗与产出计算
-- 资源平衡机制
-- 资源危机预警
-- 资源变化对NPC行为的影响
-
-### 7.3 架构约束
-
-1. **状态管理**: 只通过 `getState()`/`setState()` 管理状态
-2. **依赖控制**: 不引入新npm包（目标bundle ≤ 300KB gzip）
-3. **XSS防护**: LLM输出通过 `typewriterEffect` 渲染，无 `innerHTML`
-4. **知识库优先**: 基于 `skill_routing_supplement.md` 实现路由
-5. **向后兼容**: 保持Phase 1的功能完整性
-
-### 7.4 验收标准
-
-- [ ] **C1 多Agent仲裁**: 输入"加税"指令后，海瑞、严嵩、张居正各自表达立场，皇帝需要做出选择
-- [ ] **C2 离线演算**: 连续输入3个指令后，tick系统自动推进一年，资源自动变化
-- [ ] **C3 资源平衡**: 粮食、人口、财政等资源有明确的计算逻辑，不会出现负数或溢出
-- [ ] **C4 随机事件**: 有一定概率触发随机事件，如天灾、外敌入侵、官员腐败等
-- [ ] **C5 NPC自主行为**: NPC会基于其性格和立场做出自主决策，如上书谏言、派系斗争等
-
-### 7.5 技能系统状态（Phase 1.3 完成）
-
-**技能ID覆盖情况**:
-- 总技能ID: 32个（在fallbackContent中定义）
-- 知识库技能: 12个（基于skill_routing_supplement.md）
-- 原始技能: 10个（基于skills-bundle.ts）
-- 补充技能: 10个（新增）
-
-**Token使用情况**:
-- 最大限制: 1200字符（约1500 token）
-- 实际使用: 94-152字符（约120-190 token）
-- 安全边际: 89%
-- 超限风险: 无
-
-**意图类型覆盖**:
-- 加税、减税、调兵、任命、赦免、征召、修筑、禁令、下诏、其他
-- 所有10个意图类型完全可用
-
-### 7.6 预估工作量
-
-| 子任务 | 预估 | 说明 | 状态 |
-|--------|------|------|------|
-| arbitration.md 编写 | 2天 | 多Agent仲裁Prompt设计与实现 | ✅ 已完成 (2026-04-18) |
-| tick.ts 核心逻辑 | 2天 | 资源变化、NPC行为、随机事件 | ⏳ 待开始 |
-| 资源管理系统 | 1天 | 资源计算与平衡机制 | ⏳ 待开始 |
-| 系统集成测试 | 1天 | 多Agent、tick、资源系统的联合测试 | ⏳ 待开始 |
-| bug修复与优化 | 1天 | 性能优化、边界情况处理 | ⏳ 待开始 |
-
-**总计：约7~8个人日**
-
-### 7.7 Phase 2.1 完成记录（2026-04-18）
-
-**完成内容**：
-- ✅ 创建 `src/engine/arbitration.ts` - 多Agent仲裁系统核心实现
-- ✅ 更新 `src/engine/narrator.ts` - 集成仲裁系统，支持多NPC决策
-- ✅ 更新 `src/ui/CourtPage.tsx` - 添加仲裁结果展示UI
-- ✅ 更新 `src/styles/components.css` - 添加仲裁面板样式
+#### 7.3.2 多Agent仲裁系统（已完成）
 
 **功能特性**：
 1. **冲突检测**：基于NPC立场差异、情绪状态、态度对立自动触发仲裁
@@ -286,6 +227,196 @@ MVP 完成 = 以下全部 ✅：
 - Phase 2.2: tick.ts 实现（离线演算引擎）
 - Phase 2.3: 资源管理系统
 
+## 8. 核心游戏循环规则（字段全覆盖原则）
+
+### 8.1 核心原则：所有字段必须参与游戏循环
+
+**规则**：GameState中所有43个字段都必须：
+1. **有明确用途**（但不要求每tick都参与计算）
+2. 在NPC行为中有触发或影响作用（如果适用）
+3. 在玩家决策中有明确的映射关系（如果适用）
+4. 在UI中有可视化反馈（如果适用）
+
+**重要修正**：所有字段必须有用途，但不要求参与每tick计算。字段分为三层：
+- **Core（必须参与tick）**：food / fiscal / military / morale / population / threat
+- **Support（间接参与）**：eunuch / faction / commerce / tax_rate
+- **Flavor（只记录，不参与计算）**：knowledge / memory / named_events / wills
+
+### 8.2 字段列表与覆盖率验证
+
+**Resources（14/14 完全覆盖）**：
+- `food, population, fiscal, military, morale, eunuch, threat, faction, agri_pop, land_fertility, tax_rate, military_cost, disaster_relief, commerce` - 全部在Tick规则中使用
+
+**Emperor（8/8 完全覆盖）**：
+- `id, name` - 基础标识（固定）
+- `age, generation` - 每年tick自动变化
+- `prestige` - NPC行为影响
+- `traits, knowledge, memory` - 事件触发时自动更新
+
+**World（9/9 完全覆盖）**：
+- `dynasty, era, year` - 时间演变（tick更新）
+- `tone` - 受resources变化和重大events影响
+- `named_events, collective_memory, wills` - NPC行为和玩家决策自动记录
+- `weather_this_year, conflict_ratio` - Tick随机变化
+
+**NPCState（5/5 完全覆盖）**：
+- `pressure, satisfaction, loyalty_to_emperor` - NPC行为触发和结果
+- `recent_events, behavior_modifier` - 行为触发时自动更新
+
+**TraitWeights（6/6 完全覆盖）**：
+- `loyalty, ambition, greed, courage, rationality, stability` - 全部6个特质影响NPC行为概率和效果
+
+### 8.3 Tick最小规则（覆盖所有Resources字段）
+
+**重要修正**：所有数值变化使用加法增长+clamp，禁止指数增长（禁止使用 `*1.05` 等乘法增长）。
+
+1. **粮食生产与消耗**：
+   - `food = clamp(food + (agri_pop * land_fertility * 0.2 - population * 0.05), 0, 10000)`
+
+2. **人口自然变化**：
+   - `population = clamp(population + (morale - 50) * 0.1, 0, 100000)`
+
+3. **财政收入与支出**：
+   - `fiscal = clamp(fiscal + (tax_rate * population * 0.12 - military_cost - disaster_relief), 0, 100000)`
+
+4. **军事变化**：
+   - `military = clamp(military - (threat * 0.5), 0, 10000)`
+   - `military_cost = clamp(military * 0.02, 0, 1000)`
+
+5. **民心与宦官变化**：
+   - `morale = clamp(morale + (100 - tax_rate * 200 - faction * 0.5) * 0.1, 0, 100)`
+   - `eunuch = clamp(eunuch + faction * 0.2, 0, 100)`
+
+6. **派系与威胁演变**：
+   - `faction = clamp(faction + eunuch * 0.2, 0, 100)`
+   - `threat = clamp(threat + 2 + (100 - military) * 0.05, 0, 100)`
+
+7. **经济与环境变化**：
+   - `commerce = clamp(commerce + (100 - threat) * 0.5, 0, 10000)`
+   - `land_fertility = clamp(land_fertility * (0.95 + weather_this_year * 0.1), 0, 1)`
+
+**clamp函数定义**：
+```typescript
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+```
+
+### 8.4 NPC行为规则（可配置框架）
+
+**重要修正**：NPC行为规则必须可配置，不写死在代码中。Phase 2只实现2条规则作为示例。
+
+#### 8.4.1 行为规则框架（必须实现）
+
+```typescript
+type NPCBehaviorRule = {
+  id: string;
+  condition: (npc: NPC, state: GameState) => boolean;
+  effect: (npc: NPC, state: GameState) => ChangeSet;
+}
+
+function applyNpcBehaviors(state: GameState, rules: NPCBehaviorRule[]): GameState {
+  // 从外部读取规则，不写死在代码中
+  rules.forEach(rule => {
+    state.npcs.forEach(npc => {
+      if (rule.condition(npc, state)) {
+        const changes = rule.effect(npc, state);
+        // 应用changes到state
+      }
+    });
+  });
+  return state;
+}
+```
+
+#### 8.4.2 Phase 2 实现的2条规则（示例）
+
+**规则1：忠诚高 → 上奏**
+```typescript
+{
+  id: 'loyalty_report',
+  condition: (npc, state) => npc.traits.loyalty > 80 && npc.state.pressure > 70,
+  effect: (npc, state) => ({
+    emperor: { prestige: state.emperor.prestige + (npc.state.loyalty_to_emperor - 50) * 0.2 },
+    npcs: { [npc.id]: { state: { pressure: npc.state.pressure - 10 } } }
+  })
+}
+```
+
+**规则2：贪婪高 → 贪腐**
+```typescript
+{
+  id: 'greed_corruption',
+  condition: (npc, state) => npc.traits.greed > 70 && state.resources.fiscal > 1000,
+  effect: (npc, state) => ({
+    resources: { fiscal: state.resources.fiscal - 50 },
+    npcs: { [npc.id]: { state: { satisfaction: npc.state.satisfaction + 5 } } }
+  })
+}
+```
+
+#### 8.4.3 规则存放位置
+
+- 规则定义放在 `core-characters.ts` 或单独的 `rules.ts` 中
+- deepseek 以后改规则，不动代码
+- 行为规则是"玩法设计"，不是代码逻辑
+
+### 8.5 Emperor和World字段演变规则
+
+**时间自动变化（每tick）**：
+- `emperor.age += 1`
+- `world.year += 1`
+- 每25年：`emperor.generation += 1`
+- `world.weather_this_year = random(0, 1)`
+
+**事件触发更新**：
+- 重大决策成功：添加 `emperor.knowledge` 条目
+- NPC重要行为：添加 `world.named_events` 记录
+- 玩家显著影响：添加 `world.collective_memory` 记忆
+- generation变化可能触发 `world.dynasty` 或 `world.era` 更新
+
+### 8.6 实施要求
+
+1. **强制验证**：每次实现新功能时，必须检查所有相关字段是否被覆盖
+2. **文档更新**：字段作用变更时，必须更新 `docs/04_gamestate_schema.md`
+3. **测试覆盖**：每个字段至少有一个单元测试验证其变化逻辑
+4. **UI反馈**：Phase 2只展示Core层6个资源和关键Support层4个资源，其他字段只记录不展示
+5. **tick.ts 结构要求**：
+   - **不允许重写现有文件结构**：不改GameState结构，不改函数签名
+   - 只允许新增子函数，在executeTick内串联调用
+   - 必须拆分为多个子函数，禁止单函数堆叠逻辑
+   - 推荐结构：
+   ```typescript
+   function executeTick(state: GameState): GameState {
+     // 1. 时间推进
+     const newState = applyTimeEvolution(state);
+     // 2. 资源计算（只处理6个核心资源）
+     const newResources = applyCoreResourceRules(newState.resources);
+     // 3. NPC 行为（从外部读取规则）
+     const newNpcs = applyNpcBehaviors(newState.npcs, newState, npcBehaviorRules);
+     // 4. 收集日志
+     const logs = collectChangeLogs();
+     return { ...newState, resources: newResources, npcs: newNpcs };
+   }
+   ```
+6. **NPC 行为规则要求**：
+   - 行为规则必须可配置，不可写死在代码中
+   - 所有规则通过数据结构传入（NPCBehaviorRule类型）
+   - Phase 2只实现2条规则：loyalty高→上奏，greed高→贪腐
+   - 规则定义放在 `core-characters.ts` 或单独的 `rules.ts` 中
+7. **NPC 触发条件规范**：所有触发条件必须是 `字段 + 明确比较符 + 数值` 格式，例如：
+   - 正确：`satisfaction < 40`、`loyalty > 80`
+   - 错误：`satisfaction40`、`loyalty60`
+
+### 8.7 重要性说明
+
+遵守"字段全覆盖原则"确保：
+- **避免僵尸字段**：所有设计字段都实际参与游戏
+- **系统一致性**：字段间有清晰的相互影响关系
+- **可扩展性**：新功能可以基于现有字段构建，无需新增
+- **玩家可理解**：所有数值变化都有明确的原因和反馈
+
+---
 ### 7.7 下一阶段（Phase 3）展望
 
 Phase 2完成后，可进入以下高级功能开发：
@@ -299,3 +430,4 @@ Phase 2完成后，可进入以下高级功能开发：
 ---
 
 *Phase 2计划记录时间: 2026年04月18日*
+

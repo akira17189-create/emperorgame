@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { getState, subscribe, setState as setGameState } from '../engine/state';
-import { processCommand } from '../engine/narrator';
-import type { ArbitrationResult } from '../engine/arbitration';
+import { executeTick, checkGameEndConditions } from '../engine/tick';
 import { NpcCard } from './components/NpcCard';
 import { LoadingShimmer } from './components/LoadingShimmer';
 import { Navbar } from './components/Navbar';
@@ -19,8 +18,6 @@ export function CourtPage() {
   const [state, setState] = useState(getState());
   const narrationRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToast();
-  const [step, setStep] = useState<'' | 'normalizing' | 'deciding' | 'narrating' | 'arbitrating'>('');
-  const [arbitrationResult, setArbitrationResult] = useState<ArbitrationResult | null>(null);
 
   useEffect(() => {
     return subscribe((newState) => setState(newState));
@@ -40,7 +37,6 @@ export function CourtPage() {
 
     setIsProcessing(true);
     setNarration('');
-    setArbitrationResult(null);
 
     try {
       if (demoMode) {
@@ -51,74 +47,82 @@ export function CourtPage() {
         return;
       }
 
-      // 优先使用选中的 NPC，否则使用第一个 active NPC
-      const targetNpc = activeNpcId
-        ? state.npcs.find(n => n.id === activeNpcId)
-        : state.npcs.find(n => n.status === 'active');
+      // 优先使用已选中的 NPC，否则取第一个活跃 NPC
+      const targetNpc =
+        (activeNpcId ? state.npcs.find(n => n.id === activeNpcId && n.status === 'active') : null)
+        ?? state.npcs.find(n => n.status === 'active');
+
       if (!targetNpc) {
         addToast('error', '没有可用的NPC');
         return;
       }
       setActiveNpcId(targetNpc.id);
 
-      // 步骤 1: 指令归一化
-      setStep('normalizing');
-      
-      // 步骤 2: 角色决策推演
-      setStep('deciding');
-      
-      // 步骤 3: 检查是否需要仲裁
-      setStep('arbitrating');
-      
-      const result = await processCommand(command, state, targetNpc.id);
+      // 使用统一的入口调用gameTick
+      const tickResult = await executeTick(state, command, { 
+        targetNpcId: targetNpc.id 
+      });
 
-      // 步骤 4: 叙事生成
-      setStep('narrating');
-
-      // 如果有仲裁结果，显示仲裁信息
-      if (result.arbitration) {
-        setArbitrationResult(result.arbitration);
-        addToast('info', '触发御前辩论');
-      }
-
+      // 应用游戏状态更新
       setGameState(draft => {
-        const entry = { ...result.chronicle_entry, id: `entry-${Date.now()}` };
-        draft.chronicle.official.unshift(entry);
+        // 1. 更新游戏状态
+        Object.assign(draft, tickResult.newState);
 
-        draft.events.raw_logs.push({
-          year: draft.world.year,
-          kind: 'command',
-          payload: { command, decision: result.decision }
-        });
-
-        const npc = draft.npcs.find(n => n.id === targetNpc.id);
-        if (npc) {
-          npc.state.recent_events.unshift(`${draft.world.year}年：${result.decision.final_action}`);
-          if (npc.state.recent_events.length > 3) npc.state.recent_events.pop();
+        // 2. 写入chronicle（如果有）
+        if (tickResult.chronicle_entry) {
+          const entry = { ...tickResult.chronicle_entry, id: `entry-${Date.now()}` };
+          draft.chronicle.official.unshift(entry);
         }
 
-        // 如果有仲裁结果，更新游戏状态
-        if (result.arbitration) {
-          // 更新关系
-          if (result.arbitration.game_state_updates.relationship_change) {
-            for (const [key, change] of Object.entries(result.arbitration.game_state_updates.relationship_change)) {
-              // 这里可以添加更复杂的关系更新逻辑
-              console.log(`关系变化: ${key} -> ${change}`);
-            }
-          }
-          
-          // 添加集体记忆
-          if (result.arbitration.game_state_updates.collective_memory_added) {
-            draft.world.collective_memory.push(...result.arbitration.game_state_updates.collective_memory_added);
-          }
+        // 3. 写入原始日志
+        if (tickResult.decision) {
+          draft.events.raw_logs.push({
+            year: draft.world.year,
+            kind: 'command',
+            payload: { command, decision: tickResult.decision }
+          });
+        }
+
+        // 4. 将 tick 事件追加进待叙述队列
+        if (tickResult.events.length > 0) {
+          draft.events.pending.push(
+            ...tickResult.events.map((e, i) => ({
+              id: `tick-${draft.world.year}-${i}`,
+              triggered_year: draft.world.year,
+              template_id: 'tick_event',
+              severity: tickResult.warnings.length > 0 ? 2 : 1,
+              raw_payload: { text: e },
+              seal: 'normal' as const,
+              narrated: false,
+            }))
+          );
+        }
+
+        // 5. 检查游戏结束
+        const endCheck = checkGameEndConditions(draft);
+        if (endCheck.isEnded) {
+          draft.events.pending.push({
+            id: `end-${draft.world.year}`,
+            triggered_year: draft.world.year,
+            template_id: 'game_end',
+            severity: 5,
+            raw_payload: { reason: endCheck.reason },
+            seal: 'bloody',
+            narrated: false,
+          });
         }
       });
 
+      // 自动保存
       try {
         await getDefaultAdapter().save('slot-1', getState());
       } catch { /* auto-save best-effort */ }
 
-      await typewriterEffect(result.narration);
+      // 显示叙事文本
+      if (tickResult.narration) {
+        await typewriterEffect(tickResult.narration);
+      }
+      
       setCommand('');
       addToast('success', '指令已处理');
     } catch (error) {
@@ -131,8 +135,6 @@ export function CourtPage() {
       }
     } finally {
       setIsProcessing(false);
-      setActiveNpcId(null);
-      setStep('');
     }
   };
 
@@ -184,72 +186,10 @@ export function CourtPage() {
                 key={npc.id}
                 npc={npc}
                 isActive={activeNpcId === npc.id}
-                onClick={() => setActiveNpcId(npc.id)}
+                onClick={() => setActiveNpcId(npc.id === activeNpcId ? null : npc.id)}
               />
             ))}
           </div>
-
-          {/* 步骤状态提示 */}
-          {step && (
-            <div className="step-indicator">
-              {step === 'normalizing' && '📝 正在解析旨意…'}
-              {step === 'deciding' && `⚖️  ${state.npcs.find(n => n.id === activeNpcId)?.name || '大臣'} 正在权衡…`}
-              {step === 'arbitrating' && '🏛️ 检查朝堂分歧…'}
-              {step === 'narrating' && '✍️ 史官执笔中…'}
-            </div>
-          )}
-
-          {/* 仲裁结果展示 */}
-          {arbitrationResult && (
-            <div className="arbitration-panel">
-              <div className="arbitration-panel__header">
-                <h3>⚔️ {arbitrationResult.title}</h3>
-                <div className="arbitration-panel__meta">
-                  <span>冲突强度: {(arbitrationResult.conflict_analysis.intensity_score * 100).toFixed(0)}%</span>
-                  <span>升级风险: {(arbitrationResult.conflict_analysis.escalation_risk * 100).toFixed(0)}%</span>
-                </div>
-              </div>
-              
-              {/* 对话亮点 */}
-              <div className="arbitration-panel__highlights">
-                <h4>对话亮点</h4>
-                {arbitrationResult.dialogue_highlights.map((highlight, index) => (
-                  <div key={index} className="arbitration-highlight">
-                    <strong>{highlight.speaker}:</strong> "{highlight.text}"
-                    <div className="arbitration-highlight__meta">
-                      <span>语气: {highlight.tone}</span>
-                      <span>潜台词: {highlight.subtext}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* 非语言细节 */}
-              <div className="arbitration-panel__cues">
-                <h4>场景细节</h4>
-                <ul>
-                  {arbitrationResult.nonverbal_cues.map((cue, index) => (
-                    <li key={index}>{cue}</li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* 后续事件种子 */}
-              {arbitrationResult.next_scenario_seeds.length > 0 && (
-                <div className="arbitration-panel__seeds">
-                  <h4>后续发展</h4>
-                  <ul>
-                    {arbitrationResult.next_scenario_seeds.map((seed, index) => (
-                      <li key={index}>
-                        <strong>{seed.description}</strong>
-                        <div>触发条件: {seed.trigger_condition}</div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* 叙事卷轴 */}
           <div className="scroll-panel" ref={narrationRef}>
@@ -271,9 +211,7 @@ export function CourtPage() {
               value={command}
               onChange={(e) => setCommand((e.target as HTMLTextAreaElement).value)}
               onKeyDown={handleKeyDown}
-              placeholder={activeNpcId
-      ? `向 ${state.npcs.find(n => n.id === activeNpcId)?.name || '大臣'} 下令…（Enter 发送，Shift+Enter 换行）`
-      : "请示陛下……（Enter 发送，Shift+Enter 换行）"}
+              placeholder="请示陛下……（Enter 发送，Shift+Enter 换行）"
               disabled={isProcessing}
               rows={3}
             />

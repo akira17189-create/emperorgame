@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
   } catch { /* ignore invalid URL */ }
 
   return {
+    root: 'ai-context',
     plugins: [preact()],
     base: './',
     build: {
@@ -21,7 +22,7 @@ export default defineConfig(({ mode }) => {
       minify: 'esbuild'
     },
     resolve: {
-      alias: { '@': '/src' }
+      alias: { '@': '/ai-context/src' }
     },
     server: {
       proxy: {

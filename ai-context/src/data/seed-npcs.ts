@@ -1,4 +1,10 @@
+
 import type { NPC } from '../engine/types';
+
+// 简化NPC数据类型（接受完整NPC或轻量对象）
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NpcData = { id: string; name: string; role: string; faction: string; [key: string]: any };
+
 
 export const SEED_NPCS: NPC[] = [
   {

@@ -1,6 +1,5 @@
-import type { GameState, NPC, DecisionTrace, ChronicleEntry } from './types';
+import type { GameState, NPC, DecisionTrace } from './types';
 import { llmCall } from './llm';
-import { getSnapshot } from './state';
 
 // 仲裁相关类型定义
 export interface ConflictNPC {
@@ -83,7 +82,7 @@ export interface ArbitrationResult {
  */
 export function shouldTriggerArbitration(
   decisions: Array<{ npc: NPC; decision: DecisionTrace }>,
-  state: GameState
+  _state: GameState
 ): boolean {
   // 至少需要两个NPC
   if (decisions.length < 2) {
@@ -230,7 +229,7 @@ export async function executeArbitration(
 /**
  * 论证权重计算
  */
-function calculateArgumentWeight(npc: NPC, decision: DecisionTrace, state: GameState): number {
+function calculateArgumentWeight(npc: NPC, decision: DecisionTrace, _state: GameState): number {
   let weight = 0.5; // 基础权重
 
   // 基于特质调整
@@ -432,7 +431,7 @@ function calculateWeights(conflictNPCs: ConflictNPC[], state: GameState): Weight
   };
 }
 
-function calculateFactionInfluence(npc: ConflictNPC, state: GameState): number {
+function calculateFactionInfluence(npc: ConflictNPC, _state: GameState): number {
   // 简化实现：基于派系在朝中的势力
   const factionPower: Record<string, number> = {
     '清流': 0.6,
@@ -482,8 +481,8 @@ async function generateArbitrationNarrative(
   try {
     // 调用LLM生成叙事
     const messages = [
-      { role: 'system', content: prompt },
-      { role: 'user', content: `请根据以上信息生成一段200-300字的御前辩论场景叙事。` }
+      { role: 'system' as const, content: prompt },
+      { role: 'user' as const, content: `请根据以上信息生成一段200-300字的御前辩论场景叙事。` }
     ];
     
     const narrative = await llmCall('A', messages);
@@ -554,7 +553,7 @@ ${dialogues}
 
 皇帝端坐龙椅，目光在${npcNames}之间来回扫视。殿内气氛凝重，各方势力暗流涌动。这场争论不仅关乎政策得失，更牵扯到朝堂权力的重新分配。
 
-最终，皇帝需要在${conflictNPCs[0].faction}派与${conflictNPCs[1]?.faction || '其他'}派之间做出抉择。无论选择哪一方，都将对朝局产生深远影响。`;
+最终，皇帝需要在${conflictNPCs[0].faction}派与${conflictNPCs[1]?.faction ?? '其他'}派之间做出抉择。无论选择哪一方，都将对朝局产生深远影响。`;
 }
 
 /**
@@ -684,7 +683,7 @@ function calculateGameStateEffects(
 
   // 添加集体记忆
   collectiveMemoryAdded.push(
-    `永德${state.world.year}年御前辩论：${conflictNPCs.map(npc => npc.name).join('与')}的${conflictNPCs[0].faction}与${conflictNPCs[1]?.faction || '其他'}派之争`
+    `永德${state.world.year}年御前辩论：${conflictNPCs.map(npc => npc.name).join('与')}的${conflictNPCs[0].faction}与${conflictNPCs[1]?.faction ?? '其他'}派之争`
   );
 
   return {

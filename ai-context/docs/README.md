@@ -1,48 +1,74 @@
+# AI上下文包
+
+本目录包含皇帝游戏项目的AI上下文文件，用于让AI快速了解项目结构和内容。
+
+## 📁 目录内容
+
+- `README.md` - 项目主README
+- `PROJECT_STRUCTURE.md` - 项目结构索引
+├── reports/          # 实现报告
+- `src/` - 源代码目录
+- `docs/` - 工程文档
+- `lore/` - 游戏世界观设定
+- `assets/` - 静态资源
+
+## 🚀 项目运行
+
+项目配置文件已移至根目录。要运行项目，请在根目录执行：
+
+```bash
+npm install
+npm run dev
+```
+
+## 🤖 AI使用指南
+
+### 快速理解项目
+1. 首先阅读 `PROJECT_STRUCTURE.md` 了解整体结构
+2. 然后查看 `src/README.md` 了解代码组织
+3. 最后参考 `docs/00_overview.md` 了解项目定位
+
+### 关键文件位置
+- **游戏逻辑**: `src/engine/` (核心引擎)
+- **AI提示词**: `src/prompts/` (生成逻辑)
+- **游戏数据**: `src/data/` (配置数据)
+- **界面组件**: `src/ui/` (用户界面)
+
+## 📝 注意事项
+
+1. 本目录仅包含AI理解项目所需的文件
+2. 配置文件、依赖、构建产物等在根目录或 `non-ai-files/` 目录
+3. 要修改项目，请在根目录进行操作
+
+## 🎯 当前开发状态
+
+### Phase 2.1 完成（2026-04-18）✅
+
+**多Agent仲裁系统已实现**
+
+- ✅ 创建 `src/engine/arbitration.ts` - 仲裁系统核心实现
+- ✅ 更新 `src/engine/narrator.ts` - 集成仲裁系统
+- ✅ 更新 `src/ui/CourtPage.tsx` - 仲裁结果UI展示
+- ✅ 更新 `src/styles/components.css` - 仲裁面板样式
+
+**功能特性**：
+1. **冲突检测**：基于NPC立场差异、情绪状态、态度对立自动触发仲裁
+2. **权重计算**：基于NPC特质、派系影响力、资源相关性计算论证权重
+3. **冲突分析**：分析根本原因、子冲突、冲突强度、升级风险
+4. **叙事生成**：调用LLM生成御前辩论场景，包含对话亮点、非语言细节
+5. **游戏状态更新**：计算关系变化、集体记忆添加
+6. **后续事件种子**：生成可能的后续发展事件
+
+### 下一步开发计划
+
+- ⏳ **Phase 2.2**: tick.ts 实现（离线演算引擎）
+- ⏳ **Phase 2.3**: 资源管理系统
+
+### 开发进度跟踪
+
+详细进度请查看：
+- `docs/06_mvp_scope.md` - MVP范围与进度
+- `docs/AI_DEVELOPER_GUIDE.md` - 开发指南与TODO列表
+
 ---
-purpose: docs 目录的入口索引。任何 AI / 人类进入此目录，先读本文件。
-audience: 全体
-last_updated: 2026-04-17
----
-
-# 《AI 历史模拟游戏》工程文档
-
-本目录是**工程落地文档**。原始设计文档和文风规则分别位于目录外层（见"文档权威等级"）。
-
-## 阅读顺序
-
-| 顺序 | 文件 | 用途 |
-|------|------|------|
-| 1 | [00_overview.md](./00_overview.md) | 项目定位、产物盘点、术语表 |
-| 2 | [01_architecture.md](./01_architecture.md) | 前后端架构、LLM 接入、轻量化、图位、技术栈 |
-| 3 | [02_review_v3.md](./02_review_v3.md) | V3 文档问题清单（P0/P1/P2） |
-| 4 | [03_fixes_p1.md](./03_fixes_p1.md) | P1 问题的具体填充（世界规则、多 Agent、记忆、离线公式、skill 路由） |
-| 5 | [04_gamestate_schema.md](./04_gamestate_schema.md) | GameState 顶层数据结构 |
-| 6 | [05_prompt_layers.md](./05_prompt_layers.md) | 4 层 Prompt 模板整合 |
-| 7 | [06_mvp_scope.md](./06_mvp_scope.md) | "上朝 + 史册"垂直切片边界 |
-| 8 | [07_preparation.md](./07_preparation.md) | 用 AI 协作开发前的准备清单 |
-| 9 | [08_decisions.md](./08_decisions.md) | 已拍板决策日志 |
-
-## 文档权威等级
-
-当同一主题在多处出现时，按下表决定以谁为准：
-
-| 主题 | 权威来源 |
-|------|---------|
-| 叙事文风（15 条规则 + 4 个场景示例） | `../历史游戏叙事引擎文风_SystemPrompt.md` |
-| 系统架构（Prompt 分层、人格权重、决策轨迹等概念骨架） | `../AI_History_Game_Design_V3_Executable.html` |
-| 技能知识库内容 | `../skill/` 目录 |
-| 工程落地细节（schema、文件布局、API 形态、MVP 范围） | **本目录 `docs/`** |
-| 已拍板的冲突裁定 | `./08_decisions.md` |
-
-## 修改规则
-
-1. 任何决策变更必须同步更新 `08_decisions.md`，并在对应文件顶部 `last_updated` 字段改日期。
-2. 新增文档使用 `NN_slug.md` 命名（两位数字前缀保证排序稳定）。
-3. 每个 md 文件顶部必须有 YAML frontmatter（`purpose / audience / last_updated`）。
-4. 文件之间交叉引用使用相对路径链接。
-5. 本目录下**不放业务代码**，业务代码后续放 `../src/` 和 `../api/`。
-
-## 当前状态
-
-- 阶段：**方案定稿完成**，未开始编码。
-- 下一步：按 `07_preparation.md` 的人类待办清单补齐素材，然后进入 MVP 阶段 1。
+*整理时间: 2026年4月18日*

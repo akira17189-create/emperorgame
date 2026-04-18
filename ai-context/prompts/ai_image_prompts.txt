@@ -1,0 +1,79 @@
+皇帝游戏AI图片生成Prompt
+==================================================
+
+一、NPC头像Prompt（256x256像素，PNG格式，透明背景）
+--------------------------------------------------
+方直 (都察院左佥都御史, 清流):
+  Chinese ancient young official, handsome anime-style face with sharp jawline and determined expression, clean-shaven face, age around 25-35, wearing Ming dynasty black gauze hat without red tassel or red bead decoration and solid blue official robe without any badge or pattern, stern and upright expression, holding a blank scroll with clearly separated hands, distinct fingers, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+钱谦 (礼部右侍郎, 帝党):
+  Chinese ancient mature official, handsome anime-style face with strong jawline and masculine features, small goatee beard, age around 40-50, wearing Ming dynasty black gauze hat without red tassel or red bead decoration and solid crimson official robe without any badge or pattern, sophisticated and shrewd expression, mature and experienced demeanor, charming uncle vibe, holding a jade tablet with clearly separated hands, distinct fingers, two hands not merged together, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+郑经 (翰林院侍讲学士, 务实派):
+  Chinese ancient young scholar, handsome anime-style face with scholarly charm, clean-shaven face, age around 20-30, wearing Ming dynasty black gauze hat without red tassel or red bead decoration and solid blue official robe without any badge or pattern, thoughtful and intelligent expression, holding a book scroll with clearly separated hands, distinct fingers, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+萧氏 (太后, 皇室):
+  Chinese ancient noble empress dowager, beautiful anime-style face with dignified elegance, mature woman with dignified bearing, age around 35-45, NOT young but not elderly, NOT wrinkled, wearing Ming dynasty luxurious crimson and gold phoenix robe with elaborate golden embroidery, wearing golden phoenix crown with jewels, NOT black and white, NOT plain, rich colors, crimson red and gold dominant, authoritative yet graceful expression, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+王福全 (司礼监掌印太监, 宦官):
+  Chinese ancient mature eunuch, handsome anime-style face with cunning eyes and thin mustache, age around 35-45, wearing Ming dynasty solid blue official uniform without any badge or pattern and black eunuch hat without red tassel or red bead decoration, subtle calculating smile, standing in palace corridor, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+周文渊 (礼部尚书, 清流):
+  Chinese ancient mature official, handsome anime-style face with dignified bearing and short beard, age around 45-55, wearing Ming dynasty black gauze hat without red tassel or red bead decoration and solid crimson official robe without any badge or pattern, upright and righteous expression, holding official documents with clearly separated hands, distinct fingers, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+林婉儿 (翰林院编修, 务实派):
+  Chinese ancient young female scholar, beautiful anime-style face with intelligent eyes, age around 20-25, wearing Ming dynasty elegant solid green official robe without any badge or pattern and scholar's cap, composed and clever expression, holding a writing brush with clearly separated hands, distinct fingers, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+赵虎臣 (兵部尚书, 军方):
+  Chinese ancient mature general, handsome anime-style face with heroic determination and short beard, age around 40-50, wearing Ming dynasty armor without any badge or pattern and black military helmet without red tassel or red bead decoration, fierce and brave expression, standing with sword, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+陈四海 (户部左侍郎, 务实派):
+  Chinese ancient mature official, handsome anime-style face with shrewd expression and thin mustache, age around 35-45, wearing Ming dynasty black gauze hat without red tassel or red bead decoration and solid crimson official robe without any badge or pattern, calculating and resourceful demeanor, holding an abacus with clearly separated hands, distinct fingers, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+小德子 (御前太监, 宦官):
+  Chinese ancient young eunuch, handsome anime-style face with loyal expression, clean-shaven face, age around 18-25, wearing Ming dynasty solid blue servant uniform and black eunuch hat without red tassel or red bead decoration, respectful and attentive demeanor, standing with folded hands, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+秋月 (贴身宫女, 皇室):
+  Chinese ancient young palace maid, beautiful anime-style face with gentle smile, age around 16-22, wearing Ming dynasty elegant solid pink hanfu with delicate floral embroidery, graceful and caring expression, holding a tea tray, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+徐达 (蓟辽总督, 军方):
+  Chinese ancient mature general, handsome anime-style face with experienced wisdom and short beard, age around 45-55, wearing Ming dynasty armor with golden accents without any badge or pattern, black official hat without red tassel or red bead decoration, commanding presence, standing at fortress wall, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+刘璋 (江南富商, 商人):
+  Chinese ancient young merchant, handsome anime-style face with shrewd charm, clean-shaven face, age around 25-35, wearing Ming dynasty luxurious solid dark purple silk robe without any pattern and black scholar hat without red tassel or red bead decoration, wealthy and sophisticated expression, holding a gold ingot with clearly separated hands, distinct fingers, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+孙思德 (太医院院判, 医官):
+  Chinese ancient mature physician, handsome anime-style face with compassionate expression and short beard, age around 40-50, wearing Ming dynasty solid blue medical official robe and black medical official hat without red tassel or red bead decoration, holding medicine herbs with clearly separated hands, distinct fingers, kind and wise demeanor, ink wash painting style blended with anime aesthetics, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+二、皇帝头像Prompt（256x256像素，PNG格式，透明背景）
+--------------------------------------------------
+A young emperor of eighteen years old, wearing Ming dynasty imperial dragon robe with golden crown, face obscured with blurred features and indistinct facial details, painted in the style of Disco Elysium with expressive brushstrokes, watercolor texture, muted color palette, atmospheric and melancholic mood, vague facial features suggesting youth but not clearly defined, ink wash painting blended with expressionist art style, PNG format, 256x256 pixels, transparent background, no text, no characters, no seals, no watermarks
+
+三、政策图标Prompt（128x128像素，PNG格式，透明背景）
+--------------------------------------------------
+default:
+  Chinese ancient policy document or seal stamp in Ming dynasty style, representing official decree, traditional Chinese calligraphy and official seal, ink wash painting style, simple background, PNG format, 128x128 pixels, transparent background, no text, no characters, no seals, no watermarks, no signatures, no calligraphy
+
+tax:
+  Chinese ancient tax policy document with red official seal, showing grain and coins, Ming dynasty style, traditional Chinese painting, PNG format, 128x128 pixels, transparent background, no text, no characters, no seals, no watermarks, no signatures, no calligraphy
+
+military:
+  Chinese ancient military decree with dragon emblem and red seal, showing weapons and soldiers, Ming dynasty style, traditional Chinese painting, PNG format, 128x128 pixels, transparent background, no text, no characters, no seals, no watermarks, no signatures, no calligraphy
+
+diplomacy:
+  Chinese ancient diplomatic document with jade seal, showing使者 and gifts, Ming dynasty style, traditional Chinese painting, PNG format, 128x128 pixels, transparent background, no text, no characters, no seals, no watermarks, no signatures, no calligraphy
+
+四、事件图片Prompt（512x256像素，PNG格式，透明背景）
+--------------------------------------------------
+default:
+  Chinese ancient historical scene in Ming dynasty style depicting court event, traditional Chinese architecture and costumes, ink wash painting style, atmospheric lighting, narrative composition, PNG format, 512x256 pixels, transparent background, no text, no characters, no seals, no watermarks, no signatures, no calligraphy
+
+court:
+  Chinese ancient court scene in Ming dynasty showing emperor and officials discussing state affairs, traditional Chinese palace interior, ink wash painting style, PNG format, 512x256 pixels, transparent background, no text, no characters, no seals, no watermarks, no signatures, no calligraphy
+
+battle:
+  Chinese ancient battle scene in Ming dynasty showing军队 and generals, traditional Chinese landscape with mountains and rivers, ink wash painting style, PNG format, 512x256 pixels, transparent background, no text, no characters, no seals, no watermarks, no signatures, no calligraphy
+
+disaster:
+  Chinese ancient disaster scene in Ming dynasty showing flood or drought with people suffering, traditional Chinese landscape, ink wash painting style, PNG format, 512x256 pixels, transparent background, no text, no characters, no seals, no watermarks, no signatures, no calligraphy
+
