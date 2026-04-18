@@ -11,6 +11,7 @@ import { SavesPage } from './ui/SavesPage';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
+import { SEED_NPCS } from './data/seed-npcs';
 
 // hash 路由
 type Route = '/settings' | '/new' | '/court' | '/chronicle' | '/saves' | '/';
