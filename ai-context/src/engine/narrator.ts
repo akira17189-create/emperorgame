@@ -130,8 +130,8 @@ export async function processCommand(
   console.log('[NARRATOR] 准备调用 LLM 进行指令归一化');
   const normalizePrompt = loadPrompt('normalize-command');
   const intentRaw = await llmCall('B', [
-    { role: 'system', content: interpolate(normalizePrompt, { world: JSON.stringify(state.world) }) },
-    { role: 'user', content: interpolate(normalizePrompt, { player_input: command }) }
+    { role: 'system', content: normalizePrompt },
+    { role: 'user', content: interpolate(normalizePrompt, { command: command || '(无指令)' }) }
   ]);
 
   let intent = parseJSON<IntentResult>(intentRaw);
