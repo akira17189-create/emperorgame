@@ -263,7 +263,9 @@ useEffect(() => {
 
                     // 更新全局状态
                     const { setState: updateGlobalState } = await import('../engine/state');
-                    updateGlobalState(tickResult.state);
+                    updateGlobalState(draft => {
+                      Object.assign(draft, tickResult.state);
+                    });
 
                     // 显示叙事文本
                     if (tickResult.narration) {
