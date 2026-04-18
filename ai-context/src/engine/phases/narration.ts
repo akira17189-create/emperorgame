@@ -120,14 +120,31 @@ async function generateNormalNarration(state: GameState, events: string[], targe
       const parsed = JSON.parse(result);
 
       // 验证必需字段
+      console.log('[NARRATION] JSON解析成功', { 
+        parsedText: parsed.text?.substring(0, 100),
+        parsedTextType: typeof parsed.text,
+        parsedTextLength: parsed.text?.length
+      });
       if (parsed.text && typeof parsed.text === 'string') {
+        console.log('[NARRATION] 返回 parsed.text');
         return parsed.text;
+      } else {
+        console.warn('[NARRATION] parsed.text 无效', { 
+          parsedText: parsed.text,
+          parsedTextType: typeof parsed.text
+        });
       }
     } catch (parseError) {
-      console.warn('JSON解析失败，使用原始文本:', parseError);
+      console.warn('[NARRATION] JSON解析失败，使用原始文本:', parseError);
+      console.log('[NARRATION] 原始文本', { 
+        result: result?.substring(0, 200),
+        resultType: typeof result,
+        resultLength: result?.length
+      });
     }
 
     // 如果JSON解析失败，返回原始文本
+    console.log('[NARRATION] 返回原始文本', { result: result?.substring(0, 100) });
     return result;
   } catch (error) {
     console.error('叙事生成失败:', error);
