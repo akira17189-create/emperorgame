@@ -41,6 +41,14 @@ export async function llmCall(
   const maxTokens = opts?.maxTokens ?? config.maxTokens;
   const temperature = opts?.temperature ?? config.temperature;
 
+  console.log(`[LLM] 开始调用`, { 
+    layer, 
+    model, 
+    messagesCount: messages.length,
+    firstMessage: messages[0]?.content?.substring(0, 50),
+    baseURL: config.baseURL
+  });
+
   // Normalize baseURL: strip any trailing /chat/completions the user may have pasted
   const normalizedBase = config.baseURL
     .replace(/\/chat\/completions\/?$/, '')
@@ -87,10 +95,25 @@ export async function llmCall(
   };
 
   try {
+    const startTime = Date.now();
+    console.log(`[LLM] 发送请求`, { url, model, maxTokens, temperature });
+
+    // 添加超时处理 (60秒)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+
     const response = await fetch(url, {
+      signal: controller.signal,
       method: 'POST',
       headers,
       body: JSON.stringify(body)
+    });
+
+    clearTimeout(timeoutId);
+    const endTime = Date.now();
+    console.log(`[LLM] 请求完成`, { 
+      status: response.status, 
+      duration: `${endTime - startTime}ms` 
     });
 
     if (!response.ok) {
@@ -161,11 +184,25 @@ export async function callLLM({
   // 根据tag选择layer
   const layer: LLMLayer = tag === 'narration' ? 'A' : 'B';
 
-  // 记录日志（可选）
-  console.log(`[LLM Call] Tag: ${tag}, Layer: ${layer}, Temperature: ${temperature}`);
+  // 记录日志
+  console.log(`[LLM Call] Tag: ${tag}, Layer: ${layer}, Temperature: ${temperature}`, {
+    systemLength: system?.length,
+    userLength: user?.length,
+    systemPreview: system?.substring(0, 100),
+    userPreview: user?.substring(0, 100)
+  });
 
   try {
+    const startTime = Date.now();
     const result = await llmCall(layer, messages, { temperature });
+    const endTime = Date.now();
+    console.log(`[LLM Call] 成功`, { 
+      tag, 
+      layer, 
+      duration: `${endTime - startTime}ms`,
+      resultLength: result?.length,
+      resultPreview: result?.substring(0, 100)
+    });
     return result;
   } catch (error) {
     console.error(`[LLM Call Failed] Tag: ${tag}, Error:`, error);
