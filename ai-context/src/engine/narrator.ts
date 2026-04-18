@@ -144,24 +144,34 @@ export async function processCommand(
   const rolePrompt = loadPrompt('role-execution');
   const snapshot = getSnapshot(state);
 
+  // 组装记忆摘要
+  const memorySummary = [
+    ...npc.memory.trauma.map((t: any) => `${t.year}年·${t.type}：${t.impact}`),
+    ...npc.memory.key_events.map((e: any) => `${e.year}年·${e.event_name}`)
+  ].join('\n') || '无重要记忆';
+
   const systemMsg = interpolate(rolePrompt, {
     layer1_rules: worldRules,
     npc_name: npc.name,
     npc_role: npc.role,
     npc_faction: npc.faction,
+    npc_id: npc.id,
     traits_json: JSON.stringify(npc.traits),
     bias_json: JSON.stringify(npc.bias),
     trauma: npc.memory.trauma.map((t: any) => `${t.year}年·${t.type}：${t.impact}`).join('\n') || '无',
     key_events: npc.memory.key_events.map((e: any) => `${e.year}年·${e.event_name}`).join('\n') || '无',
+    memory_summary: memorySummary,
     voice_features: npc.voice.features.join('、'),
     syntax_rules: npc.voice.syntax_rules.join('；'),
     forbidden: npc.voice.forbidden_phrases.join('、'),
     world_snapshot: snapshot,
     pressure: npc.state.pressure,
     satisfaction: npc.state.satisfaction,
-    behavior: npc.state.behavior_modifier,
+    behavior_modifier: npc.state.behavior_modifier,
     recent_events: npc.state.recent_events.join('、') || '无',
     skills_content: '', // MVP 阶段为空字符串
+    command: command || '(无指令)',
+    intent: intent.intent,
     intent_raw: intent.raw,
     intent_type: intent.intent,
     targets: intent.targets.join('、'),

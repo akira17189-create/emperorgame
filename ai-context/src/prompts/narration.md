@@ -129,15 +129,15 @@
 ## 输入格式
 
 场景类型：{{scene_type}}  （史书段落 / 官员对话 / 事件叙述 / 人物评价）
-风格标签：{{style_state.current_tags | join "、"}}
+风格标签：{{style_tags}}
 
 结构化输入：
 {{decision_json}}
 
 附加上下文：
-- 当前朝代：{{world.dynasty}}
-- 当前调性：{{world.tone}}
-- 涉及人物：{{npcs_involved | map name | join "、"}}
+- 当前朝代：{{dynasty}}
+- 当前调性：{{tone}}
+- 涉及人物：{{npc_name}}
 
 ## 输出要求
 
