@@ -24,6 +24,27 @@ export function CourtPage() {
     return subscribe((newState) => setState(newState));
   }, []);
 
+// 游戏初始化时自动触发第一个 tick，让NPC主动发言
+useEffect(() => {
+  const initGame = async () => {
+    // 检查是否是新游戏（没有历史记录或叙述）
+    const currentState = getState();
+    if (!currentState.narration || currentState.narration.trim() === '') {
+      // 延迟一点执行，让界面先渲染完成
+      setTimeout(async () => {
+        try {
+          console.log('游戏初始化：触发第一个 tick');
+          await executeTick('');
+        } catch (error) {
+          console.error('游戏初始化失败:', error);
+        }
+      }, 1000);
+    }
+  };
+  
+  initGame();
+}, []); // 空依赖数组，只在组件挂载时执行一次
+
   const saveGame = async () => {
     try {
       await getDefaultAdapter().save('slot-1', getState());
