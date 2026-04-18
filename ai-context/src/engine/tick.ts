@@ -190,7 +190,8 @@ export async function gameTick(
     const narrationResult = await generateNarration(
       simulationResult.newState,
       simulationResult.events,
-      arbitrationResult
+      arbitrationResult,
+      targetNpcId
     );
 
     // 5. 检查游戏结束条件

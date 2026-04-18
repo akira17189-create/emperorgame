@@ -25,7 +25,8 @@ export interface NarrationResult {
 export async function generateNarration(
   state: GameState,
   events: string[],
-  arbitrationResult?: any
+  arbitrationResult?: any,
+  targetNpcId?: string
 ): Promise<NarrationResult> {
   try {
     // 如果有仲裁结果，使用仲裁叙事
@@ -46,7 +47,7 @@ export async function generateNarration(
     }
 
     // 否则生成普通叙事
-    const narration = await generateNormalNarration(state, events);
+    const narration = await generateNormalNarration(state, events, targetNpcId);
     const chronicleEntry = createChronicleEntry(state, narration, '列传');
 
     return {
@@ -70,13 +71,16 @@ export async function generateNarration(
 /**
  * 生成普通叙事
  */
-async function generateNormalNarration(state: GameState, events: string[]): Promise<any> {
+async function generateNormalNarration(state: GameState, events: string[], targetNpcId?: string): Promise<any> {
   // 使用新的prompt系统
+  // 查找目标NPC
+  const targetNpc = targetNpcId ? state.npcs.find(npc => npc.id === targetNpcId) : undefined;
+
   const promptInput = {
     state,
     events,
     style: 'normal',
-    targetNpc: state.targetNpc // 传递目标NPC信息
+    targetNpc: targetNpc // 传递目标NPC对象
   };
 
   const { system, user } = buildPrompt(promptInput);
