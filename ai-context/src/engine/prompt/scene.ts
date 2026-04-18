@@ -141,6 +141,21 @@ export function buildScenePrompt(input: SceneInput): string {
     });
   }
   
+  // 8. NPC发言指令
+  if (targetNpc) {
+    scenePrompt += '
+八、NPC发言要求
+';
+    scenePrompt += `请以第三人称描述${targetNpc.name}的发言和举止。
+`;
+    scenePrompt += `发言应体现其性格特点、职位身份和当前状态。
+`;
+    scenePrompt += `发言内容应与当前事件和玩家指令相关。
+`;
+    scenePrompt += `使用适当的文言文或半文言文风格。
+`;
+  }
+
   return scenePrompt;
 }
 
