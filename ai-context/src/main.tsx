@@ -65,27 +65,34 @@ function App() {
     version: '1.0.0',
     created_at: new Date().toISOString(),
     last_saved_at: new Date().toISOString(),
-    save_slot: 'auto',
-    game_year: 0,
+    save_slot: 'slot_1',
+    game_year: 1,
     real_time_played_ms: 0
   },
   emperor: {
-    id: 'emperor-1',
-    name: '皇帝',
-    age: 20,
+    id: 'emperor_1',
+    name: '新帝',
+    age: 18,
     generation: 1,
     prestige: 50,
-    traits: { military: 50, diplomacy: 50, intrigue: 50, stewardship: 50 },
+    traits: {
+      loyalty: 50,
+      ambition: 50,
+      greed: 50,
+      courage: 50,
+      rationality: 50,
+      stability: 50
+    },
     knowledge: [],
     memory: { trauma: [], key_events: [] },
     wills_received: [],
-    visual: { portrait_url: '', portrait_prompt: '' }
+    visual: { image: null, image_prompt: null }
   },
   world: {
-    dynasty: '清朝',
+    dynasty: '靖朝',
     era: '永德',
     year: 1,
-    tone: '肃穆',
+    tone: '猜忌',
     named_events: [],
     collective_memory: [],
     wills: [],
@@ -93,42 +100,26 @@ function App() {
     conflict_ratio: 0.3
   },
   resources: {
-    food: 1000,
-    population: 500,
-    fiscal: 500,
-    military: 50,
+    food: 1200,
+    population: 12000,
+    fiscal: 6000,
+    military: 2000,
     morale: 70,
     eunuch: 30,
     threat: 20,
-    faction: 50,
-    agri_pop: 0.6,
+    faction: 40,
+    agri_pop: 6000,
     land_fertility: 0.7,
-    tax_rate: 0.2,
-    military_cost: 0.1,
-    disaster_relief: 0.05,
-    commerce: 0.3
+    tax_rate: 0.15,
+    military_cost: 200,
+    disaster_relief: 100,
+    commerce: 300
   },
-  policies: {
-    active: [],
-    history: []
-  },
-  npcs: [],
-  events: {
-    pending: [],
-    named: [],
-    raw_logs: [],
-    rolling_summary: ''
-  },
-  chronicle: {
-    official: [],
-    unofficial: [],
-    pending_segments: []
-  },
-  style_state: {
-    current_tags: ['清朝', '朝堂'],
-    rules_version: '1.0',
-    last_changed_year: 1
-  }
+  policies: { active: [], history: [] },
+  npcs: [...SEED_NPCS],
+  events: { pending: [], named: [], raw_logs: [], rolling_summary: '' },
+  chronicle: { official: [], unofficial: [], pending_segments: [] },
+  style_state: { current_tags: [], rules_version: '1.0.0', last_changed_year: 0 }
 });
           console.log('自动初始化游戏状态');
         }
