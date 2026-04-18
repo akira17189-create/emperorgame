@@ -246,7 +246,43 @@ useEffect(() => {
                 key={npc.id}
                 npc={npc}
                 isActive={activeNpcId === npc.id}
-                onClick={() => setActiveNpcId(npc.id === activeNpcId ? null : npc.id)}
+                onClick={async () => {
+                // 切换选中状态
+                setActiveNpcId(npc.id === activeNpcId ? null : npc.id);
+
+                // 如果点击的是未激活的NPC，触发该NPC发言
+                if (npc.id !== activeNpcId && npc.status === 'active' && !isProcessing) {
+                  try {
+                    setIsProcessing(true);
+                    setNarration('');
+
+                    const currentState = getState();
+                    const tickResult = await executeTick(currentState, '', {
+                      targetNpcId: npc.id
+                    });
+
+                    // 应用游戏状态更新
+                    const { produce } = await import('immer');
+                    const newState = produce(currentState, draft => {
+                      Object.assign(draft, tickResult.state);
+                    });
+
+                    // 更新全局状态
+                    const { setState: updateGlobalState } = await import('../engine/state');
+                    updateGlobalState(newState);
+
+                    // 显示叙事文本
+                    if (tickResult.narration) {
+                      await typewriterEffect(tickResult.narration);
+                    }
+
+                    setIsProcessing(false);
+                  } catch (error) {
+                    console.error('NPC发言失败:', error);
+                    setIsProcessing(false);
+                  }
+                }
+              }}
               />
             ))}
           </div>
