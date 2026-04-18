@@ -49,7 +49,7 @@ export async function gameTick(
     let npcChronicleEntry = null;
     
     // 1. 处理玩家指令和NPC交互（如果有）
-    if (command && targetNpcId) {
+    if (targetNpcId) {
       try {
         // 调用processCommand获取NPC决策和叙事
       // 确保NPC有goals字段
