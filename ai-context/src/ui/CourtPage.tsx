@@ -47,7 +47,7 @@ useEffect(() => {
       setTimeout(async () => {
         try {
           console.log('游戏初始化：触发第一个 tick');
-          await executeTick('');
+          await executeTick(getState(), '');
         } catch (error) {
           console.error('游戏初始化失败:', error);
         }
