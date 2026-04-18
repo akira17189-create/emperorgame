@@ -117,39 +117,17 @@ async function generateNormalNarration(state: GameState, events: string[]): Prom
 
       // 验证必需字段
       if (parsed.text && typeof parsed.text === 'string') {
-        return {
-          narration: parsed.text,
-          structured_output: {
-            text: parsed.text,
-            events: Array.isArray(parsed.events) ? parsed.events : [],
-            mood: parsed.mood || '平静'
-          }
-        };
+        return parsed.text;
       }
     } catch (parseError) {
       console.warn('JSON解析失败，使用原始文本:', parseError);
     }
 
     // 如果JSON解析失败，返回原始文本
-    return {
-      narration: result,
-      structured_output: {
-        text: result,
-        events: [],
-        mood: '平静'
-      }
-    };
+    return result;
   } catch (error) {
     console.error('叙事生成失败:', error);
-    const fallback = generateFallbackNarration(state, events);
-    return {
-      narration: fallback,
-      structured_output: {
-        text: fallback,
-        events: [],
-        mood: '平静'
-      }
-    };
+    return generateFallbackNarration(state, events);
   }
 }
 
