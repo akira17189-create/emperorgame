@@ -60,7 +60,76 @@ function App() {
           getState();
         } catch {
           // 状态未初始化，自动初始化新游戏
-          initState({ version: 1, dynasty: '清朝', year: 1, era: '永德', npcs: [], npcIdCounter: 0, tone: '肃穆', flags: {}, scenes: [], selectedScene: '', publicFavor: 50, treasury: 1000, military: 50, political: 50, eventLog: [] });
+          initState({
+  meta: {
+    version: '1.0.0',
+    created_at: new Date().toISOString(),
+    last_saved_at: new Date().toISOString(),
+    save_slot: 'auto',
+    game_year: 0,
+    real_time_played_ms: 0
+  },
+  emperor: {
+    id: 'emperor-1',
+    name: '皇帝',
+    age: 20,
+    generation: 1,
+    prestige: 50,
+    traits: { military: 50, diplomacy: 50, intrigue: 50, stewardship: 50 },
+    knowledge: [],
+    memory: { trauma: [], key_events: [] },
+    wills_received: [],
+    visual: { portrait_url: '', portrait_prompt: '' }
+  },
+  world: {
+    dynasty: '清朝',
+    era: '永德',
+    year: 1,
+    tone: '肃穆',
+    named_events: [],
+    collective_memory: [],
+    wills: [],
+    weather_this_year: 0.5,
+    conflict_ratio: 0.3
+  },
+  resources: {
+    food: 1000,
+    population: 500,
+    fiscal: 500,
+    military: 50,
+    morale: 70,
+    eunuch: 30,
+    threat: 20,
+    faction: 50,
+    agri_pop: 0.6,
+    land_fertility: 0.7,
+    tax_rate: 0.2,
+    military_cost: 0.1,
+    disaster_relief: 0.05,
+    commerce: 0.3
+  },
+  policies: {
+    active: [],
+    history: []
+  },
+  npcs: [],
+  events: {
+    pending: [],
+    named: [],
+    raw_logs: [],
+    rolling_summary: ''
+  },
+  chronicle: {
+    official: [],
+    unofficial: [],
+    pending_segments: []
+  },
+  style_state: {
+    current_tags: ['清朝', '朝堂'],
+    rules_version: '1.0',
+    last_changed_year: 1
+  }
+});
           console.log('自动初始化游戏状态');
         }
         return <CourtPage />;
