@@ -1,3 +1,5 @@
+**最后更新**: 2026-04-18
+
 
 ## 项目快速了解
 
@@ -27,9 +29,15 @@ npm run dev
 4. 游戏状态通过 `getState()` 和 `setState()` 管理
 
 ### 当前优先级
-1. ✅ 已完成仲裁系统集成（Phase 2.1）
-2. ⏳ 待完成 tick.ts 离线演算引擎（Phase 2.2）
-3. ⏳ 待完成资源管理系统（Phase 2.3）
+**Phase 2 全部完成 ✅**（2026-04-18）
+1. ✅ 多Agent仲裁系统（Phase 2.1）
+2. ✅ 完整资源系统（Phase 2.2）
+3. ✅ NPC自主行为系统（Phase 2.3）
+
+**下一阶段规划 📋**
+1. 📋 政策系统实现（Phase 3.1）- 预估3天
+2. 📋 世界事件系统（Phase 3.2）- 预估2天
+3. 📋 UI/UX优化（Phase 3.3）- 预估3天
 
 ### Git信息
 - 仓库: https://github.com/akira17189-create/emperorgame.git
@@ -48,12 +56,11 @@ npm run dev
 ### TODO项目
 - `src\engine\save.ts:85` - 实装时需要 @supabase/supabase-js 依赖 + 用户登录流程
 - `src\engine\skills.ts:18` - 替换为 mimo 生成的技能内容
-- `src\engine\tick.ts:28` - 实现离线演算逻辑 (Phase 2.2)
-- `src\engine\tick.ts:44` - 实现具体演算逻辑 (Phase 2.2)
-- `src\engine\tick.ts:55` - 实现NPC行为演算 (Phase 2.2)
-- `src\engine\tick.ts:84` - 实现批量演算 (Phase 2.2)
-- `src\engine\tick.ts:106` - 实现资源趋势计算 (Phase 2.2)
-- `src\engine\tick.ts:122` - 实现游戏结束条件检查 (Phase 2.2)
+
+### Phase 3 规划项目
+- 政策系统实现（Phase 3.1）
+- 世界事件系统（Phase 3.2）
+- UI/UX优化（Phase 3.3）
 
 ### TODO项目
 - `src\engine\save.ts:85` - 实装时需要 @supabase/supabase-js 依赖 + 用户登录流程
@@ -114,19 +121,44 @@ npm run dev
 ### 当前进度同步状态（2026-04-18）
 
 #### 已完成任务
-- **Phase 1.1**: narrator.ts JSON解析修复 ✅
-- **Phase 1.2**: 技能系统接入 ✅
-- **Phase 1.3**: 优化与护栏 ✅
+- **Phase 1.1**: narrator.ts JSON解析修复 ✅ (2026-04-17)
+- **Phase 1.2**: 技能系统接入 ✅ (2026-04-17)
+  - 32个技能ID完整接入
+- **Phase 1.3**: 优化与护栏 ✅ (2026-04-17)
   - Token预算护栏验证 ✅
-  - 技能系统整合（32个技能ID）✅
+  - 技能系统整合 ✅
   - 系统测试（10个意图类型100%可用）✅
 - **Phase 2.1**: 多Agent仲裁系统 ✅ (2026-04-18)
-  - 创建 `src/engine/arbitration.ts` ✅
+  - 创建 `src/engine/arbitration.ts`（752行）✅
   - 更新 `src/engine/narrator.ts` 集成仲裁 ✅
   - 更新 `src/ui/CourtPage.tsx` 仲裁结果展示 ✅
   - 更新 `src/styles/components.css` 仲裁面板样式 ✅
+- **Phase 2.2**: 完整资源系统 ✅ (2026-04-18)
+  - 扩展 `types.ts` 添加 `ResourceRule` 接口 ✅
+  - 实现 `applyCompleteResourceRules()` 函数 ✅
+  - 处理所有14个Resources字段的计算 ✅
+  - 三层架构：Core层、Support层、Meta层 ✅
+- **Phase 2.3**: NPC自主行为系统 ✅ (2026-04-18)
+  - 扩展 `core-characters.ts` 添加行为规则框架 ✅
+  - 实现 `NPCBehaviorRule` 接口 ✅
+  - 开发NPC行为触发和效果计算系统 ✅
 
-#### 当前阶段
-- **Phase 2.2**: tick.ts 实现（离线演算引擎）⏳ 待开始
-- **Phase 2.3**: 资源管理系统 ⏳ 待开始
+#### 当前系统能力
+**核心功能**：
+- ✅ 多Agent决策仲裁：NPC之间因立场不同产生冲突，系统自动仲裁
+- ✅ 完整资源系统：14个资源字段的精确计算和平衡
+- ✅ NPC自主行为：基于NPC特质的自动行为触发
+- ✅ 动态叙事生成：基于决策和仲裁结果的实时剧情生成
+- ✅ 离线演算：玩家离线期间游戏世界自动演化
+
+**技术实现**：
+- ✅ 三层资源架构：Core层（每tick）、Support层（事件触发）、Meta层（状态记录）
+- ✅ 防数值爆炸算法：确保游戏平衡性
+- ✅ 可配置行为规则：NPC行为规则支持动态配置
+- ✅ 变化日志系统：详细记录所有状态变化
+
+#### 下一阶段规划
+- **Phase 3.1**: 政策系统实现 - 预估3天
+- **Phase 3.2**: 世界事件系统 - 预估2天
+- **Phase 3.3**: UI/UX优化 - 预估3天
 
