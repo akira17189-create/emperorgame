@@ -16,7 +16,13 @@ export function CourtPage() {
   const [narration, setNarration] = useState('');
   const [activeNpcId, setActiveNpcId] = useState<string | null>(null);
   const [demoMode] = useState(!getLLMConfig());
-  const [state, setState] = useState(getState());
+  const [state, setState] = useState(() => {
+    try {
+      return getState();
+    } catch {
+      return null;
+    }
+  });
   const narrationRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToast();
 
@@ -27,8 +33,15 @@ export function CourtPage() {
 // 游戏初始化时自动触发第一个 tick，让NPC主动发言
 useEffect(() => {
   const initGame = async () => {
-    // 检查是否是新游戏（没有历史记录或叙述）
-    const currentState = getState();
+    // 检查状态是否已初始化
+    let currentState;
+    try {
+      currentState = getState();
+    } catch (error) {
+      console.log('游戏状态未初始化，跳过自动触发');
+      return;
+    }
+    
     if (!currentState.narration || currentState.narration.trim() === '') {
       // 延迟一点执行，让界面先渲染完成
       setTimeout(async () => {
