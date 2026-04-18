@@ -192,6 +192,17 @@ useEffect(() => {
     }
   };
 
+  // 如果状态未初始化，显示加载状态
+  if (!state) {
+    return (
+      <div className="court-page">
+        <div className="loading-container">
+          <p>游戏加载中...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-layout">
       <Navbar />
