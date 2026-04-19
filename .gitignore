@@ -35,6 +35,10 @@ Thumbs.db
 *.tmp
 *.temp
 
+# 备份文件
+*.backup*
+*.bak
+
 # 覆盖率报告
 coverage/
 
@@ -44,7 +48,7 @@ coverage/
 # 存档文件
 saves/
 
-# 处目录
+# 备份目录
 .backup/
 
 # 临时打包目录
