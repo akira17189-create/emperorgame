@@ -24,6 +24,10 @@ export interface IdleRates {
   commerce: number;
   military: number;
   population: number;
+  morale: number;
+  threat: number;
+  eunuch: number;
+  faction: number;
 }
 
 /**
@@ -34,43 +38,50 @@ export interface IdleRates {
 export function calcIdleRates(state: GameState): IdleRates {
   const { resources, policies } = state;
 
-  // 计算政策加成
-  let agricultureBonus = 0;
-  let taxationBonus = 0;
+  // 基础积累速率
+  let foodRate = resources.agri_pop * resources.land_fertility * BASE_FOOD_RATE;
+  let fiscalRate = resources.commerce * resources.tax_rate * BASE_FISCAL_RATE;
+  let commerceRate = resources.commerce * BASE_COMMERCE_GROWTH;
+  let militaryRate = -resources.military_cost * BASE_MILITARY_DRAIN_RATE;
+  let populationRate = resources.population * BASE_POPULATION_GROWTH;
+  let moraleRate = 0;
+  let threatRate = 0;
+  let eunuchRate = 0;
+  let factionRate = 0;
 
+  // 叠加活跃政策的tick_change
   for (const policy of policies.active) {
+    if (policy.tick_change) {
+      // 累加各种资源的每tick变化
+      if (policy.tick_change.food) foodRate += policy.tick_change.food;
+      if (policy.tick_change.fiscal) fiscalRate += policy.tick_change.fiscal;
+      if (policy.tick_change.commerce) commerceRate += policy.tick_change.commerce;
+      if (policy.tick_change.military) militaryRate += policy.tick_change.military;
+      if (policy.tick_change.morale) moraleRate += policy.tick_change.morale;
+      if (policy.tick_change.threat) threatRate += policy.tick_change.threat;
+      if (policy.tick_change.eunuch) eunuchRate += policy.tick_change.eunuch;
+      if (policy.tick_change.faction) factionRate += policy.tick_change.faction;
+    }
+
     // 检查政策标签，累加对应加成
-    if (policy.tags.includes('agriculture') || policy.tags.includes('农')) {
-      agricultureBonus += POLICY_BONUS_AGRICULTURE;
+    if (policy.tags.includes('agriculture') || policy.tags.includes('农业')) {
+      foodRate += POLICY_BONUS_AGRICULTURE;
     }
     if (policy.tags.includes('taxation') || policy.tags.includes('税')) {
-      taxationBonus += POLICY_BONUS_TAXATION;
+      fiscalRate += POLICY_BONUS_TAXATION;
     }
   }
-
-  // 粮食积累速率
-  const foodRate = resources.agri_pop * resources.land_fertility * BASE_FOOD_RATE
-                   + agricultureBonus;
-
-  // 财政积累速率
-  const fiscalRate = resources.commerce * resources.tax_rate * BASE_FISCAL_RATE
-                     + taxationBonus;
-
-  // 军费消耗速率（负值）
-  const militaryDrain = resources.military_cost * BASE_MILITARY_DRAIN_RATE;
-
-  // 商业自然增长
-  const commerceRate = resources.commerce * BASE_COMMERCE_GROWTH;
-
-  // 人口自然增长
-  const populationRate = resources.population * BASE_POPULATION_GROWTH;
 
   return {
     food: foodRate,
     fiscal: fiscalRate,
     commerce: commerceRate,
-    military: -militaryDrain,  // 负值表示消耗
-    population: populationRate
+    military: militaryRate,
+    population: populationRate,
+    morale: moraleRate,
+    threat: threatRate,
+    eunuch: eunuchRate,
+    faction: factionRate
   };
 }
 
@@ -118,6 +129,30 @@ export function applyIdleAccumulation(
     MIN_RESOURCE_VALUE,
     Math.floor(resources.population + rates.population * minutes)
   );
+
+  // 应用民心变化
+  resources.morale = Math.max(
+    0,
+    Math.min(100, resources.morale + rates.morale * minutes)
+  );
+
+  // 应用外患变化
+  resources.threat = Math.max(
+    0,
+    Math.min(100, resources.threat + rates.threat * minutes)
+  );
+
+  // 应用宦官势力变化
+  resources.eunuch = Math.max(
+    0,
+    Math.min(100, resources.eunuch + rates.eunuch * minutes)
+  );
+
+  // 应用派系变化
+  resources.faction = Math.max(
+    0,
+    Math.min(100, resources.faction + rates.faction * minutes)
+  );
 }
 
 /**
@@ -129,7 +164,17 @@ export function applyIdleAccumulation(
 export function calcOfflineEarnings(
   state: GameState,
   offlineMs: number
-): { food: number; fiscal: number; military: number; minutes: number } {
+): { 
+  food: number; 
+  fiscal: number; 
+  military: number; 
+  commerce: number;
+  morale: number;
+  threat: number;
+  eunuch: number;
+  faction: number;
+  minutes: number 
+} {
   const rates = calcIdleRates(state);
   const minutes = offlineMs / 60_000;
 
@@ -137,6 +182,24 @@ export function calcOfflineEarnings(
     food: rates.food * minutes,
     fiscal: rates.fiscal * minutes,
     military: rates.military * minutes,
+    commerce: rates.commerce * minutes,
+    morale: rates.morale * minutes,
+    threat: rates.threat * minutes,
+    eunuch: rates.eunuch * minutes,
+    faction: rates.faction * minutes,
     minutes
   };
+}
+
+/**
+ * 获取资源变化趋势描述
+ */
+export function getRateDescription(rate: number, resourceName: string): string {
+  if (rate > 0) {
+    return `${resourceName}+${rate.toFixed(1)}/分钟`;
+  } else if (rate < 0) {
+    return `${resourceName}${rate.toFixed(1)}/分钟`;
+  } else {
+    return `${resourceName}稳定`;
+  }
 }

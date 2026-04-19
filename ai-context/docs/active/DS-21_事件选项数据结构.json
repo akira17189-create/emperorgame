@@ -1,0 +1,674 @@
+{
+  "黄淮大旱": {
+    "category": "自然灾害",
+    "severity": 3,
+    "options": [
+      {
+        "id": "relief",
+        "label": "开仓赈灾",
+        "description": "立即开放太仓，调拨粮食至灾区，设立粥棚救济灾民"
+      },
+      {
+        "id": "tax_exempt",
+        "label": "免除赋税",
+        "description": "黄淮地区免税三年，减轻百姓负担，休养生息"
+      },
+      {
+        "id": "organize_labor",
+        "label": "以工代赈",
+        "description": "征调灾民疏浚河道、修整道路，以劳动换取粮食"
+      }
+    ]
+  },
+  "江南水患": {
+    "category": "自然灾害",
+    "severity": 2,
+    "options": [
+      {
+        "id": "repair_dams",
+        "label": "抢修堤坝",
+        "description": "紧急征调民夫，加固决口，防止水患扩大"
+      },
+      {
+        "id": "evacuate",
+        "label": "组织撤离",
+        "description": "将低洼地区百姓迁往高地，提供临时安置点"
+      },
+      {
+        "id": "pray_for_rain",
+        "label": "祈天止雨",
+        "description": "命国师设坛祭天，祈求雨水停歇，安定民心"
+      }
+    ]
+  },
+  "蝗灾肆虐": {
+    "category": "自然灾害",
+    "severity": 2,
+    "options": [
+      {
+        "id": "capture_locusts",
+        "label": "捕蝗换粮",
+        "description": "以粮食收购蝗虫，鼓励百姓捕蝗，减少虫害"
+      },
+      {
+        "id": "release_birds",
+        "label": "放鸟治蝗",
+        "description": "从南方征调食虫鸟类，利用天敌控制蝗灾"
+      },
+      {
+        "id": "burn_fields",
+        "label": "火烧农田",
+        "description": "果断烧毁部分农田，阻止蝗灾蔓延"
+      }
+    ]
+  },
+  "瘟疫蔓延": {
+    "category": "自然灾害",
+    "severity": 3,
+    "options": [
+      {
+        "id": "quarantine",
+        "label": "严格隔离",
+        "description": "划定疫区，严禁出入，防止瘟疫扩散"
+      },
+      {
+        "id": "send_doctors",
+        "label": "派遣太医",
+        "description": "调集全国名医，研究药方，免费救治病患"
+      },
+      {
+        "id": "clean_city",
+        "label": "全城清洁",
+        "description": "发动民众清理垃圾污物，撒石灰消毒"
+      }
+    ]
+  },
+  "连年大旱": {
+    "category": "自然灾害",
+    "severity": 3,
+    "options": [
+      {
+        "id": "dig_wells",
+        "label": "深挖水井",
+        "description": "组织民夫深挖水井，寻找深层水源"
+      },
+      {
+        "id": "south_migration",
+        "label": "移民南下",
+        "description": "组织灾民迁徙至南方有水源地区"
+      },
+      {
+        "id": "reduce_water_use",
+        "label": "限水节用",
+        "description": "颁布限水令，优先保障人畜饮水"
+      }
+    ]
+  },
+  "日食天象": {
+    "category": "仙道异变",
+    "severity": 2,
+    "options": [
+      {
+        "id": "fast_and_pray",
+        "label": "斋戒祈禳",
+        "description": "皇帝带头斋戒三日，国师设坛消灾"
+      },
+      {
+        "id": "interpret_omen",
+        "label": "解读天象",
+        "description": "命钦天监详查古籍，解读日食征兆"
+      },
+      {
+        "id": "ignore_omen",
+        "label": "置之不理",
+        "description": "日食乃自然现象，不必大惊小怪"
+      }
+    ]
+  },
+  "方外真人入朝": {
+    "category": "仙道异变",
+    "severity": 1,
+    "options": [
+      {
+        "id": "invite_to_palace",
+        "label": "延入宫中",
+        "description": "将真人迎入宫内，咨询长生之道"
+      },
+      {
+        "id": "test_ability",
+        "label": "考验真伪",
+        "description": "设下难题考验真人，分辨真假"
+      },
+      {
+        "id": "expel_from_capital",
+        "label": "逐出京城",
+        "description": "妖言惑众之辈，立刻驱逐出京"
+      }
+    ]
+  },
+  "异兽出没山林": {
+    "category": "仙道异变",
+    "severity": 2,
+    "options": [
+      {
+        "id": "hunt_monster",
+        "label": "派兵围剿",
+        "description": "调集精兵猎杀异兽，消除威胁"
+      },
+      {
+        "id": "worship_as_god",
+        "label": "供奉为神",
+        "description": "建庙祭祀，尊异兽为山神"
+      },
+      {
+        "id": "study_monster",
+        "label": "活捉研究",
+        "description": "尝试活捉异兽，研究其来历特性"
+      }
+    ]
+  },
+  "炼丹之术兴起": {
+    "category": "仙道异变",
+    "severity": 1,
+    "options": [
+      {
+        "id": "encourage_alchemy",
+        "label": "鼓励炼丹",
+        "description": "开放丹房，资助官员炼丹求仙"
+      },
+      {
+        "id": "limit_alchemy",
+        "label": "适度限制",
+        "description": "规定丹房规格，防止火灾中毒"
+      },
+      {
+        "id": "ban_alchemy",
+        "label": "严禁炼丹",
+        "description": "全面禁止炼丹术，违者严惩"
+      }
+    ]
+  },
+  "流星坠于京郊": {
+    "category": "仙道异变",
+    "severity": 2,
+    "options": [
+      {
+        "id": "collect_meteorite",
+        "label": "收集陨石",
+        "description": "派兵保护陨石坑，将陨石运入宫中研究"
+      },
+      {
+        "id": "build_temple",
+        "label": "建庙镇守",
+        "description": "在陨石坑上建天降祥瑞庙"
+      },
+      {
+        "id": "seal_off_area",
+        "label": "封锁区域",
+        "description": "禁止百姓靠近，防止妖言传播"
+      }
+    ]
+  },
+  "仙鹤衔书": {
+    "category": "仙道异变",
+    "severity": 1,
+    "options": [
+      {
+        "id": "interpret_prophecy",
+        "label": "解读预言",
+        "description": "召集文臣解读帛书预言，早做准备"
+      },
+      {
+        "id": "offer_sacrifice",
+        "label": "祭祀仙鹤",
+        "description": "在太庙设祭坛，感谢仙鹤赐书"
+      },
+      {
+        "id": "suppress_rumors",
+        "label": "压制传闻",
+        "description": "禁止传播帛书内容，违者治罪"
+      }
+    ]
+  },
+  "书坊刊印禁书": {
+    "category": "工业事故",
+    "severity": 2,
+    "options": [
+      {
+        "id": "arrest_printers",
+        "label": "逮捕印工",
+        "description": "查封书坊，逮捕所有相关人员"
+      },
+      {
+        "id": "investigate_backer",
+        "label": "追查后台",
+        "description": "暗中调查禁书作者和背后主使"
+      },
+      {
+        "id": "regulate_printing",
+        "label": "规范印刷",
+        "description": "颁布印刷许可制度，审查内容"
+      }
+    ]
+  },
+  "矿山塌方事故": {
+    "category": "工业事故",
+    "severity": 3,
+    "options": [
+      {
+        "id": "rescue_miners",
+        "label": "全力救援",
+        "description": "征调民夫，不惜代价挖掘救人"
+      },
+      {
+        "id": "compensate_families",
+        "label": "抚恤家属",
+        "description": "发放抚恤金，安抚死者家属"
+      },
+      {
+        "id": "investigate_cause",
+        "label": "调查原因",
+        "description": "彻查事故原因，追究监管责任"
+      }
+    ]
+  },
+  "匠作局技术突破": {
+    "category": "工业事故",
+    "severity": 1,
+    "options": [
+      {
+        "id": "promote_technology",
+        "label": "大力推广",
+        "description": "在全国设立水力纺机工坊"
+      },
+      {
+        "id": "protect_craftsmen",
+        "label": "保护工匠",
+        "description": "给织工转岗补贴，避免失业"
+      },
+      {
+        "id": "slow_adoption",
+        "label": "渐进采用",
+        "description": "先在几个地区试点，再推广"
+      }
+    ]
+  },
+  "工匠罢工潮": {
+    "category": "工业事故",
+    "severity": 2,
+    "options": [
+      {
+        "id": "meet_demands",
+        "label": "接受要求",
+        "description": "同意工匠的条件，换取复工"
+      },
+      {
+        "id": "negotiate",
+        "label": "协商折中",
+        "description": "与工匠代表谈判，寻找平衡点"
+      },
+      {
+        "id": "arrest_leaders",
+        "label": "抓捕首脑",
+        "description": "逮捕带头工匠，杀鸡儆猴"
+      }
+    ]
+  },
+  "蒸汽机爆炸": {
+    "category": "工业事故",
+    "severity": 3,
+    "options": [
+      {
+        "id": "compensate_victims",
+        "label": "抚恤伤亡",
+        "description": "厚葬死者，优抚伤者家属"
+      },
+      {
+        "id": "improve_design",
+        "label": "改进设计",
+        "description": "研究爆炸原因，改良蒸汽机"
+      },
+      {
+        "id": "abandon_steam",
+        "label": "放弃蒸汽",
+        "description": "宣布蒸汽机为危险技术，禁止研发"
+      }
+    ]
+  },
+  "朝堂上书大战": {
+    "category": "党争",
+    "severity": 2,
+    "options": [
+      {
+        "id": "mediate_conflict",
+        "label": "居中调解",
+        "description": "召集双方调解，达成和解协议"
+      },
+      {
+        "id": "punish_both_sides",
+        "label": "各打五十",
+        "description": "处罚带头闹事者，平息争端"
+      },
+      {
+        "id": "ignore_arguments",
+        "label": "冷处理",
+        "description": "不表态不处理，等他们吵累了"
+      }
+    ]
+  },
+  "科举舞弊大案": {
+    "category": "党争",
+    "severity": 3,
+    "options": [
+      {
+        "id": "thorough_investigation",
+        "label": "彻查到底",
+        "description": "从状元到考官全部调查，绝不姑息"
+      },
+      {
+        "id": "limited_punishment",
+        "label": "有限惩处",
+        "description": "只处罚直接责任人，避免牵连过广"
+      },
+      {
+        "id": "reshuffle_exam",
+        "label": "重开殿试",
+        "description": "宣布成绩无效，重新举行考试"
+      }
+    ]
+  },
+  "司礼监专擅朝政": {
+    "category": "党争",
+    "severity": 3,
+    "options": [
+      {
+        "id": "dismiss_eunuch",
+        "label": "罢黜太监",
+        "description": "立即罢免王福全，收回权力"
+      },
+      {
+        "id": "check_power",
+        "label": "限制权力",
+        "description": "明确司礼监权限，禁止越权"
+      },
+      {
+        "id": "reward_loyalty",
+        "label": "安抚拉拢",
+        "description": "赏赐王福全，换取其忠诚"
+      }
+    ]
+  },
+  "东林清流弹劾帝党": {
+    "category": "党争",
+    "severity": 2,
+    "options": [
+      {
+        "id": "support_emperor_party",
+        "label": "支持帝党",
+        "description": "驳回清流弹劾，维护帝党权威"
+      },
+      {
+        "id": "support_qingliu",
+        "label": "支持清流",
+        "description": "接受弹劾内容，惩处帝党官员"
+      },
+      {
+        "id": "balance_powers",
+        "label": "平衡权力",
+        "description": "双方各处罚几人，保持平衡"
+      }
+    ]
+  },
+  "后宫干政传闻": {
+    "category": "党争",
+    "severity": 2,
+    "options": [
+      {
+        "id": "respect_mother",
+        "label": "敬重母后",
+        "description": "尊重太后意见，但不给实权"
+      },
+      {
+        "id": "set_boundaries",
+        "label": "划定界限",
+        "description": "明确后宫不得干政的规定"
+      },
+      {
+        "id": "utilize_influence",
+        "label": "利用影响",
+        "description": "利用太后影响力处理棘手问题"
+      }
+    ]
+  },
+  "言官集体辞官": {
+    "category": "党争",
+    "severity": 2,
+    "options": [
+      {
+        "id": "reject_resignations",
+        "label": "不准辞官",
+        "description": "驳回辞呈，命他们继续履职"
+      },
+      {
+        "id": "accept_resignations",
+        "label": "准许辞官",
+        "description": "接受辞呈，另行选拔官员"
+      },
+      {
+        "id": "reform_censure",
+        "label": "改革言路",
+        "description": "借此机会改革都察院制度"
+      }
+    ]
+  },
+  "北疆游牧扣边": {
+    "category": "边疆",
+    "severity": 2,
+    "options": [
+      {
+        "id": "send_reinforcements",
+        "label": "增援大同",
+        "description": "立即调集援军，支援大同守军"
+      },
+      {
+        "id": "defense_in_depth",
+        "label": "纵深防御",
+        "description": "放弃部分关隘，集中兵力防守"
+      },
+      {
+        "id": "bribe_tartars",
+        "label": "贿赂议和",
+        "description": "送金银财宝，换取鞑靼退兵"
+      }
+    ]
+  },
+  "倭寇入侵沿海": {
+    "category": "边疆",
+    "severity": 2,
+    "options": [
+      {
+        "id": "rebuild_navy",
+        "label": "重建水师",
+        "description": "投入巨资重建水师，长期对抗"
+      },
+      {
+        "id": "coastal_forts",
+        "label": "修建炮台",
+        "description": "在沿海建防御工事，固守待援"
+      },
+      {
+        "id": "recruit_mercenaries",
+        "label": "招募义军",
+        "description": "允许民间组织武装自卫"
+      }
+    ]
+  },
+  "边军哗变": {
+    "category": "边疆",
+    "severity": 3,
+    "options": [
+      {
+        "id": "meet_demands_urgently",
+        "label": "紧急补发",
+        "description": "立即调拨粮饷，安抚边军"
+      },
+      {
+        "id": "military_suppression",
+        "label": "武力镇压",
+        "description": "调集其他部队，镇压哗变"
+      },
+      {
+        "id": "negotiate_terms",
+        "label": "谈判条件",
+        "description": "派人谈判，争取和平解决"
+      }
+    ]
+  },
+  "藩属国请求支援": {
+    "category": "边疆",
+    "severity": 2,
+    "options": [
+      {
+        "id": "send_troops",
+        "label": "派兵支援",
+        "description": "出兵帮助占城抵抗真腊入侵"
+      },
+      {
+        "id": "send_supplies",
+        "label": "援助物资",
+        "description": "提供粮草军械，但不派兵"
+      },
+      {
+        "id": "diplomatic_pressure",
+        "label": "外交施压",
+        "description": "遣使警告真腊，不得妄动"
+      }
+    ]
+  },
+  "西域商路断绝": {
+    "category": "边疆",
+    "severity": 2,
+    "options": [
+      {
+        "id": "clear_trade_route",
+        "label": "清剿马贼",
+        "description": "派兵清剿商路马贼，恢复畅通"
+      },
+      {
+        "id": "develop_south_route",
+        "label": "开拓南路",
+        "description": "鼓励商人走南方海路贸易"
+      },
+      {
+        "id": "negotiate_with_bandits",
+        "label": "招安贼寇",
+        "description": "招安马贼，让他们保护商路"
+      }
+    ]
+  },
+  "海盗劫掠漕运": {
+    "category": "边疆",
+    "severity": 2,
+    "options": [
+      {
+        "id": "naval_escort",
+        "label": "水师护航",
+        "description": "派遣水师船只保护粮船"
+      },
+      {
+        "id": "alternate_route",
+        "label": "改走陆路",
+        "description": "暂时改用陆路运输粮食"
+      },
+      {
+        "id": "bounty_hunters",
+        "label": "悬赏剿匪",
+        "description": "高额悬赏海盗头颅"
+      }
+    ]
+  },
+  "江南商贸繁荣": {
+    "category": "民间",
+    "severity": 1,
+    "options": [
+      {
+        "id": "encourage_trade",
+        "label": "鼓励商贸",
+        "description": "进一步降低商税，促进繁荣"
+      },
+      {
+        "id": "price_control",
+        "label": "控制物价",
+        "description": "颁布限价令，防止通货膨胀"
+      },
+      {
+        "id": "redistribute_wealth",
+        "label": "财富再分配",
+        "description": "向富商征收特别税，补贴平民"
+      }
+    ]
+  },
+  "饥民暴动": {
+    "category": "民间",
+    "severity": 3,
+    "options": [
+      {
+        "id": "military_suppression",
+        "label": "武力镇压",
+        "description": "派大军剿灭暴动，恢复秩序"
+      },
+      {
+        "id": "offer_amnesty",
+        "label": "招安赦免",
+        "description": "赦免暴动者，提供粮食土地"
+      },
+      {
+        "id": "reform_taxation",
+        "label": "改革税制",
+        "description": "减轻赋税，从根本上解决问题"
+      }
+    ]
+  },
+  "商帮势力崛起": {
+    "category": "民间",
+    "severity": 2,
+    "options": [
+      {
+        "id": "cooperate_with_guilds",
+        "label": "合作共赢",
+        "description": "承认商帮地位，合作管理市场"
+      },
+      {
+        "id": "break_up_monopoly",
+        "label": "打击垄断",
+        "description": "拆分商帮，引入竞争机制"
+      },
+      {
+        "id": "establish_official_guild",
+        "label": "成立官商",
+        "description": "成立官方商行，对抗商帮"
+      }
+    ]
+  },
+  "白莲教暗中传播": {
+    "category": "民间",
+    "severity": 3,
+    "options": [
+      {
+        "id": "crackdown_secretly",
+        "label": "秘密清剿",
+        "description": "锦衣卫暗中调查抓捕核心成员"
+      },
+      {
+        "id": "religious_tolerance",
+        "label": "宗教宽容",
+        "description": "只要不谋反，允许民间信仰"
+      },
+      {
+        "id": "infiltrate_spy",
+        "label": "安插卧底",
+        "description": "派人打入白莲教内部，掌握情报"
+      }
+    ]
+  }
+}

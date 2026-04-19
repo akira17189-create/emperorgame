@@ -48,6 +48,11 @@ export function CourtPage() {
   // 离线收益通知
   const [offlineEarnings, setOfflineEarnings] = useState<{ hours: number; minutes: number; food: number; fiscal: number; military: number } | null>(null);
 
+  // 事件弹层状态
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [currentEvent, setCurrentEvent] = useState<any>(null);
+  const [eventNarrative, setEventNarrative] = useState('');
+
   const narrationRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToast();
 
@@ -68,167 +73,119 @@ export function CourtPage() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
-  // 放置积累系统 - 把资源变化放进 setGameState 的 updater
+  // 检查是否有待处理的事件
   useEffect(() => {
-    const timer = setInterval(() => {
-      setGameState(draft => {
-        if (draft.meta.prologue_complete) {
-          const rates = calcIdleRates(draft);
-          applyIdleAccumulation(draft, rates, IDLE_INTERVAL_MS / 60_000);
-          draft.meta.last_idle_tick_at = new Date().toISOString();
-        }
+    if (state?.events?.pending?.length > 0 && !showEventModal) {
+      const pendingEvent = state.events.pending[0];
+      const template = EVENT_TEMPLATES.find(t => t.id === pendingEvent.template_id);
+
+      if (template) {
+        setCurrentEvent({
+          template,
+          pendingEvent
+        });
+        setEventNarrative(template.description);
+        setShowEventModal(true);
+      }
+    }
+  }, [state?.events?.pending, showEventModal]);
+
+  // 离线收益计算
+  useEffect(() => {
+    if (!state?.meta?.last_idle_tick_at) return;
+
+    const lastTick = new Date(state.meta.last_idle_tick_at).getTime();
+    const now = Date.now();
+    const offlineMs = Math.min(now - lastTick, MAX_OFFLINE_HOURS * 3600 * 1000);
+
+    if (offlineMs > IDLE_INTERVAL_MS) {
+      const earnings = calcIdleRates(state);
+      const hours = Math.floor(offlineMs / 3600000);
+      const minutes = Math.floor((offlineMs % 3600000) / 60000);
+
+      setOfflineEarnings({
+        hours,
+        minutes,
+        food: earnings.food * (offlineMs / 60000),
+        fiscal: earnings.fiscal * (offlineMs / 60000),
+        military: earnings.military * (offlineMs / 60000)
       });
-    }, IDLE_INTERVAL_MS);
 
-    return () => clearInterval(timer);
-  }, []);
+      // 应用离线收益
+      const newState = applyIdleAccumulation(state, earnings, offlineMs / 60000);
+      setGameState(newState);
 
-  // 离线补算逻辑
-  useEffect(() => {
-    const initOfflineEarnings = async () => {
-      try {
-        const currentState = getState();
-        if (!currentState.meta.prologue_complete) return;
+      // 更新最后放置时间
+      setGameState(draft => {
+        draft.meta.last_idle_tick_at = new Date().toISOString();
+      });
+    }
+  }, [state?.meta?.last_idle_tick_at]);
 
-        const lastTick = new Date(currentState.meta.last_idle_tick_at).getTime();
-        const now = Date.now();
-        let offlineMs = now - lastTick;
+  // 处理事件选择
+  const handleEventChoice = (choiceId: string) => {
+    if (!currentEvent) return;
 
-        // 上限截断：24小时
-        const maxOfflineMs = MAX_OFFLINE_HOURS * 60 * 60 * 1000;
-        offlineMs = Math.min(offlineMs, maxOfflineMs);
+    const { template } = currentEvent;
+    const result = resolveEventChoice(state, template.id, choiceId);
 
-        if (offlineMs > 60_000) {  // 超过1分钟才计算
-          const minutes = offlineMs / 60_000;
-
-          // 把资源变化放进 setGameState 的 updater
-          setGameState(draft => {
-            const rates = calcIdleRates(draft);
-            applyIdleAccumulation(draft, rates, minutes);
-            draft.meta.last_idle_tick_at = new Date().toISOString();
-          });
-
-          // 为通知显示预先计算收益
-          const rates = calcIdleRates(currentState);
-          const foodGained = rates.food * minutes;
-          const fiscalGained = rates.fiscal * minutes;
-          const militaryDrained = rates.military * minutes;
-
-          const hours = Math.floor(minutes / 60);
-          const mins = Math.floor(minutes % 60);
-          setOfflineEarnings({
-            hours,
-            minutes: mins,
-            food: foodGained,
-            fiscal: fiscalGained,
-            military: militaryDrained
-          });
-
-          // 5秒后自动消失
-          setTimeout(() => setOfflineEarnings(null), 5000);
-        }
-      } catch (error) {
-        console.error('离线补算失败:', error);
-      }
-    };
-
-    initOfflineEarnings();
-  }, []);
-
-  // 游戏初始化
-  useEffect(() => {
-    const initGame = async () => {
-      let currentState;
-      try {
-        currentState = getState();
-      } catch (error) {
-        console.log('游戏状态未初始化，跳过自动触发');
-        return;
-      }
-
-      // 阶段一：穿越内心戏
-      if (currentState.meta.prologue_phase === 'awakening') {
-        setTimeout(async () => {
-          try {
-            await typewriterEffect(PROLOGUE_AWAKENING);
-            // 切换到国师介绍阶段
-            setGameState(draft => {
-              draft.meta.prologue_phase = 'guoshi_intro';
-            });
-            // 显示国师出场 + 察觉台词
-            await typewriterEffect('\n\n' + PROLOGUE_GUOSHI_ENTRY);
-            await typewriterEffect('\n\n' + PROLOGUE_GUOSHI_NOTICE);
-            setShowPrologueOptions(true);
-          } catch (error) {
-            console.error('开场显示失败:', error);
-          }
-        }, 500);
-        return;
-      }
-
-      // 阶段二：国师引导对话
-      if (currentState.meta.prologue_phase === 'guoshi_intro') {
-        setShowPrologueOptions(true);
-        return;
-      }
-
-      // 阶段三：开场已完成，执行正常初始化
-      setTimeout(async () => {
-        try {
-          console.log('游戏初始化：触发第一个 tick');
-          setIsProcessing(true);
-
-          const tickResult = await executeTick(getState(), '');
-
-          if (tickResult.narration) {
-            await typewriterEffect(tickResult.narration);
-          } else if (demoMode) {
-            const fallback = renderTemplate('weather_good', { year: getState().world.year });
-            if (fallback) await typewriterEffect(fallback);
-          }
-
-          setIsProcessing(false);
-        } catch (error) {
-          console.error('游戏初始化失败:', error);
-          setIsProcessing(false);
-        }
-      }, 1000);
-    };
-
-    initGame();
-  }, []);
-
-  // 处理开场选项选择
-  const handlePrologueOption = async (option: PrologueOption) => {
-    setShowPrologueOptions(false);
-    setSelectedOption(option);
-
-    // 显示玩家选择的选项（内心独白）
-    await typewriterEffect('\n\n' + option.innerThought);
-
-    // 显示国师回应
-    await typewriterEffect('\n\n' + option.monkResponse);
-
-    // 显示过渡句
-    await typewriterEffect('\n\n' + PROLOGUE_TRANSITION);
-
-    // 标记开场完成
     setGameState(draft => {
-      draft.meta.prologue_phase = 'complete';
-      draft.meta.prologue_complete = true;
+      Object.assign(draft, result.newState);
+
+      // 从pending中移除已处理的事件
+      draft.events.pending = draft.events.pending.filter(
+        (e: any) => e.template_id !== template.id
+      );
+
+      // 添加到史册
+      draft.chronicle.official.unshift({
+        id: `event-${Date.now()}`,
+        year: draft.world.year,
+        kind: 'event',
+        title: template.name,
+        summary: result.narrative,
+        impact: template.choices.find(c => c.id === choiceId)?.effects || {}
+      });
     });
+
+    setShowEventModal(false);
+    setCurrentEvent(null);
+    setEventNarrative('');
+
+    addToast('success', `事件已处理：${template.name}`);
+
+    // 显示处理结果
+    setNarration(result.narrative);
   };
 
+  // 关闭事件弹层（不处理事件）
+  const closeEventModal = () => {
+    setShowEventModal(false);
+    setCurrentEvent(null);
+    setEventNarrative('');
+  };
+
+  // 保存游戏
   const saveGame = async () => {
     try {
       await getDefaultAdapter().save('slot-1', getState());
-      addToast('success', '已保存 ✓');
-    } catch {
+      addToast('success', '游戏已保存');
+    } catch (error) {
       addToast('error', '保存失败');
     }
   };
 
-  // submitCommand 接受可选的 override 参数
+  // 打字机效果
+  const typewriterEffect = async (text: string) => {
+    let currentText = '';
+    for (const char of text) {
+      currentText += char;
+      setNarration(currentText);
+      await new Promise(resolve => setTimeout(resolve, 30));
+    }
+  };
+
+  // 提交命令
   const submitCommand = async (overrideCommand?: string) => {
     const commandToExecute = overrideCommand ?? command;
     if (!commandToExecute.trim() || isProcessing) return;
@@ -326,70 +283,37 @@ export function CourtPage() {
     }
   };
 
-  const typewriterEffect = async (text: string) => {
-    let currentText = '';
-    for (const char of text) {
-      currentText += char;
-      setNarration(currentText);
-      if (narrationRef.current) {
-        narrationRef.current.scrollTop = narrationRef.current.scrollHeight;
-      }
-      await new Promise(resolve => setTimeout(resolve, 28));
-    }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault();
-      saveGame();
-      return;
-    }
-
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      submitCommand();
-    }
-  };
-
-  // 如果状态未初始化，显示加载状态
-  if (!state) {
-    return (
-      <div className="court-page">
-        <div className="loading-container">
-          <p>游戏加载中...</p>
-        </div>
-      </div>
-    );
-  }
-
   // 渲染开场选项
   const renderPrologueOptions = () => {
-    if (!showPrologueOptions || prologuePhase !== 'guoshi_intro') return null;
+    if (prologuePhase === 'complete' || !showPrologueOptions) return null;
+
+    const options = PROLOGUE_OPTIONS[prologuePhase] || [];
 
     return (
       <div className="prologue-options">
-        <p className="prologue-prompt">你决定：</p>
-        {PROLOGUE_OPTIONS.map(option => (
+        {options.map((option, index) => (
           <button 
-            key={option.id}
-            className="prologue-option"
-            onClick={() => handlePrologueOption(option)}
+            key={index}
+            onClick={() => {
+              setSelectedOption(option);
+              submitCommand(option.command);
+            }}
+            disabled={isProcessing}
           >
-            <span className="option-inner">{option.innerThought}</span>
-            <span className="option-text">{option.text}</span>
+            {option.text}
           </button>
         ))}
       </div>
     );
   };
 
-  // 渲染执行面板
+  // 渲染行动面板
   const renderActionDashboard = () => {
     if (prologuePhase !== 'complete') return null;
 
     return (
       <div className="action-dashboard">
-        <h3>{ACTION_PANEL_TITLE}</h3>
+        <div className="action-title">{ACTION_PANEL_TITLE}</div>
         <div className="action-buttons">
           <button 
             className="action-button"
@@ -414,12 +338,26 @@ export function CourtPage() {
             </div>
           </div>
 
-          <button 
-            className="action-button"
-            onClick={() => submitCommand('召见大臣')}
-          >
-            👤 召见
-          </button>
+          <div className="action-with-submenu">
+            <button className="action-button">👤 召见</button>
+            <div className="submenu">
+              {state?.npcs
+                ?.filter(npc => npc.status === 'active')
+                .map(npc => (
+                  <button 
+                    key={npc.id}
+                    onClick={() => submitCommand(`召见${npc.name}`)}
+                    title={`${npc.role} - ${npc.faction}派`}
+                  >
+                    {npc.name}
+                  </button>
+                ))
+              }
+              {state?.npcs?.filter(npc => npc.status === 'active').length === 0 && (
+                <button disabled>暂无可用大臣</button>
+              )}
+            </div>
+          </div>
 
           <button 
             className="action-button"
@@ -434,6 +372,79 @@ export function CourtPage() {
           >
             📋 颁布政策
           </button>
+        </div>
+      </div>
+    );
+  };
+
+  // 渲染事件弹层
+  const renderEventModal = () => {
+    if (!showEventModal || !currentEvent) return null;
+
+    const { template } = currentEvent;
+    const severityText = ['', '轻微', '中等', '严重'][template.severity] || '未知';
+    const severityColor = ['', '#4a7c59', '#b8922a', '#8b1a1a'][template.severity] || '#6b6b6b';
+
+    return (
+      <div className="event-modal-overlay">
+        <div className="event-modal">
+          <div className="event-modal-header">
+            <h2>{template.name}</h2>
+            <span 
+              className="event-severity"
+              style={{ 
+                backgroundColor: `${severityColor}22`,
+                color: severityColor,
+                border: `1px solid ${severityColor}`
+              }}
+            >
+              {severityText}
+            </span>
+          </div>
+
+          <div className="event-modal-content">
+            <p className="event-narrative">{eventNarrative}</p>
+
+            <div className="event-choices">
+              <h3>如何应对？</h3>
+              {template.choices.map((choice: any) => (
+                <button
+                  key={choice.id}
+                  className="event-choice-button"
+                  onClick={() => handleEventChoice(choice.id)}
+                  disabled={isProcessing}
+                >
+                  <div className="choice-label">{choice.label}</div>
+                  <div className="choice-description">{choice.description}</div>
+                  <div className="choice-effects">
+                    {Object.entries(choice.effects).map(([key, value]) => {
+                      const labels: Record<string, string> = {
+                        morale: '民心', fiscal: '国库', military: '军力', food: '粮食',
+                        threat: '外患', commerce: '商业', eunuch: '宦官', faction: '党争',
+                        population: '人口', land_fertility: '土地肥力', disaster_relief: '赈灾'
+                      };
+                      const label = labels[key] || key;
+                      const sign = (value as number) > 0 ? '+' : '';
+                      return (
+                        <span key={key} className="effect-tag">
+                          {label} {sign}{value as number}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="event-modal-footer">
+            <button 
+              className="event-close-button"
+              onClick={closeEventModal}
+            >
+              稍后处理
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -471,7 +482,12 @@ export function CourtPage() {
           <textarea
             value={command}
             onChange={(e) => setCommand((e.target as HTMLTextAreaElement).value)}
-            onKeyDown={handleKeyDown}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitCommand();
+              }
+            }}
             placeholder="输入你的旨意..."
             disabled={isProcessing || prologuePhase !== 'complete'}
           />
@@ -485,8 +501,17 @@ export function CourtPage() {
       </div>
 
       {showPolicyPanel && (
-        <PolicyPanel onClose={() => setShowPolicyPanel(false)} />
+        <PolicyPanel 
+          state={state}
+          onPolicyEnacted={(narrative) => {
+            setNarration(narrative);
+            setShowPolicyPanel(false);
+          }}
+          onClose={() => setShowPolicyPanel(false)}
+        />
       )}
+
+      {renderEventModal()}
     </div>
   );
 }
