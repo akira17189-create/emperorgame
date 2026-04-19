@@ -99,12 +99,7 @@ function App() {
     collective_memory: [],
     wills: [],
     weather_this_year: 0.5,
-    conflict_ratio: 0.3,
-    factions: {
-      qingliu: 50,    // 清流派势力 0~100
-      didang: 50,     // 帝党势力 0~100
-      eunuch_faction: 30  // 宦官党势力 0~100
-    }
+    conflict_ratio: 0.3
   },
   resources: {
     food: 1200,

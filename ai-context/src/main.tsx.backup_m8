@@ -8,18 +8,17 @@ import { NewGamePage } from './ui/NewGamePage';
 import { CourtPage } from './ui/CourtPage';
 import { ChroniclePage } from './ui/ChroniclePage';
 import { SavesPage } from './ui/SavesPage';
-import { EndingPage } from './ui/EndingPage';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
 import { SEED_NPCS } from './data/seed-npcs';
 
 // hash 路由
-type Route = '/settings' | '/new' | '/court' | '/chronicle' | '/saves' | '/ending' | '/';
+type Route = '/settings' | '/new' | '/court' | '/chronicle' | '/saves' | '/';
 
 function getRoute(): Route {
   const hash = location.hash.replace('#', '') || '/';
-  const valid: Route[] = ['/settings', '/new', '/court', '/chronicle', '/saves', '/ending'];
+  const valid: Route[] = ['/settings', '/new', '/court', '/chronicle', '/saves'];
   return valid.includes(hash as Route) ? (hash as Route) : '/';
 }
 
@@ -99,12 +98,7 @@ function App() {
     collective_memory: [],
     wills: [],
     weather_this_year: 0.5,
-    conflict_ratio: 0.3,
-    factions: {
-      qingliu: 50,    // 清流派势力 0~100
-      didang: 50,     // 帝党势力 0~100
-      eunuch_faction: 30  // 宦官党势力 0~100
-    }
+    conflict_ratio: 0.3
   },
   resources: {
     food: 1200,
@@ -133,7 +127,6 @@ function App() {
         return <CourtPage />;
     case '/chronicle': return <ChroniclePage />;
     case '/saves': return <SavesPage />;
-        case '/ending': return <EndingPage />;
     default: return <div style="padding:2rem">加载中…</div>;
   }
 }

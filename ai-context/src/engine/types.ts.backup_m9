@@ -60,11 +60,6 @@ export interface World {
   wills: ImperialWill[];
   weather_this_year: number;         // 0~1
   conflict_ratio: number;            // 0~1
-  factions: {
-    qingliu: number;    // 清流派势力 0~100
-    didang: number;     // 帝党势力 0~100
-    eunuch_faction: number;  // 宦官党势力 0~100（与 resources.eunuch 联动）
-  };
 }
 
 export interface NamedEvent {

@@ -142,24 +142,6 @@ export function PolicyPanel({ state, onPolicyEnacted }: PolicyPanelProps) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {policies.map(p => (
                   <button key={p} onClick={() => handlePresetPolicy(p)} disabled={isProcessing}
-                    title={(() => {
-                      const preset = (POLICY_PRESETS as any)[p];
-                      if (!preset) return '';
-                      const tickChanges = preset.tick_change || {};
-                      const duration = preset.duration ?? -1;
-                      const parts = [];
-                      for (const [key, value] of Object.entries(tickChanges)) {
-                        const labels: Record<string, string> = {
-                          morale: '民心', fiscal: '国库', military: '军力', food: '粮食',
-                          threat: '外患', commerce: '商业', eunuch: '宦官', faction: '党争'
-                        };
-                        const label = labels[key] || key;
-                        const sign = value > 0 ? '+' : '';
-                        parts.push(`${label}${sign}${value}`);
-                      }
-                      const durationText = duration === -1 ? '永久' : `持续${duration}年`;
-                      return `每年效果：${parts.join('，')} | ${durationText}`;
-                    })()}
                     style={{
                       background: 'rgba(184,146,42,0.1)', border: '1px solid rgba(184,146,42,0.3)',
                       color: 'rgba(245,239,226,0.85)', padding: '6px 14px',

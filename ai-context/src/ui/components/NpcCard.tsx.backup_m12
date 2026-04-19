@@ -1,5 +1,4 @@
 import { type NPC } from '../../engine/types';
-import { getState } from '../../engine/state';
 import { VisualSlot } from './VisualSlot';
 
 export interface NpcCardProps {
@@ -89,49 +88,6 @@ export function NpcCard({ npc, isActive = false, onClick }: NpcCardProps) {
       <div className="npc-card__faction">
         <span className="npc-card__faction-label">派系：</span>
         <span className="npc-card__faction-value">{npc.faction}</span>
-        {(() => {
-          try {
-            const state = getState();
-            if (state?.world?.factions) {
-              let factionStrength = 0;
-              let factionName = '';
-              let factionColor = 'rgba(245,239,226,0.6)';
-
-              if (npc.faction === '清流') {
-                factionStrength = state.world.factions.qingliu;
-                factionName = '清流派';
-                factionColor = factionStrength > 70 ? '#6baa7a' : factionStrength 30 ? '#c05050' : 'rgba(245,239,226,0.6)';
-              } else if (npc.faction === '帝党') {
-                factionStrength = state.world.factions.didang;
-                factionName = '帝党';
-                factionColor = factionStrength > 70 ? '#d4a93a' : factionStrength 30 ? '#c05050' : 'rgba(245,239,226,0.6)';
-              } else if (npc.faction === '宦官') {
-                factionStrength = state.world.factions.eunuch_faction;
-                factionName = '宦官党';
-                factionColor = factionStrength > 70 ? '#c05050' : factionStrength 30 ? '#6baa7a' : 'rgba(245,239,226,0.6)';
-              }
-
-              if (factionStrength > 0) {
-                return (
-                  <span style={{
-                    marginLeft: '8px',
-                    fontSize: '10px',
-                    fontFamily: 'sans-serif',
-                    color: factionColor,
-                    background: 'rgba(184,146,42,0.1)',
-                    padding: '2px 6px',
-                    borderRadius: '3px'
-                  }}>
-                    {factionName} 势力{factionStrength}
-                  </span>
-                );
-              }
-            }
-          } catch (e) {
-            // 状态未初始化时忽略
-          }
-          return null;
-        })()}
       </div>
       
       {isActive && (

@@ -72,24 +72,7 @@ export class IDBAdapter implements SaveAdapter {
   async load(slot: string): Promise<GameState | null> {
     const db = await this.dbPromise;
     const record = await db.get(STORE_NAME, slot);
-    if (!record) {
-      return null;
-    }
-
-    // 向后兼容迁移逻辑
-    const gameState = record.data as GameState;
-
-    // 迁移1: 如果world.factions字段缺失，注入默认值
-    if (!gameState.world.factions) {
-      gameState.world.factions = {
-        qingliu: 50,    // 清流派势力 0~100
-        didang: 50,     // 帝党势力 0~100
-        eunuch_faction: 30  // 宦官党势力 0~100
-      };
-      console.log('迁移: 添加了world.factions字段');
-    }
-
-    return gameState;
+    return record ? record.data : null;
   }
 
   async delete(slot: string): Promise<void> {

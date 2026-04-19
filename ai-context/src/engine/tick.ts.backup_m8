@@ -7,7 +7,6 @@ import { generateNarration, checkGameEndConditions } from './phases/narration';
 import { processCommand } from './narrator';
 import { checkEventTriggers, narrateEvent } from './event-engine';
 import { applyPolicyTickEffects } from './policy-engine';
-import { checkEndings } from './ending-engine';
 // import { updateState, applyEffects, createEffect } from './state-updater'; // 已不再使用
 
 export interface TickResult {
@@ -225,14 +224,7 @@ export async function gameTick(
     );
 
     // 5. 检查游戏结束条件
-    // 检查游戏结束条件（优先检查结局）
-    const ending = checkEndings(simulationResult.newState);
-    if (ending) {
-      // 触发结局
-      simulationResult.events.push(`游戏结局：${ending.title}`);
-      // 这里可以添加跳转到结局页面的逻辑
-      // 实际跳转会在前端处理
-    }
+    const endCheck = checkGameEndConditions(simulationResult.newState);
     if (endCheck.isEnded) {
       simulationResult.events.push(`游戏结束：${endCheck.reason}`);
     }
@@ -323,14 +315,5 @@ export function calculateResourceTrends(state: GameState): Record<string, number
  * 检查游戏结束条件（保持向后兼容）
  */
 export function checkGameEnd(state: GameState): { isEnded: boolean; reason?: string } {
-  // 优先检查结局
-  const ending = checkEndings(state);
-  if (ending) {
-    return { isEnded: true, reason: ending.title };
-  }
-
-  // 保持原有逻辑
-  return checkGameEndConditions(state);
-} {
   return checkGameEndConditions(state);
 }

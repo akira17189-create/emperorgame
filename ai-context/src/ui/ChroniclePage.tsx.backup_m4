@@ -7,10 +7,6 @@ export function ChroniclePage() {
   const [state, setState] = useState(getState());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKind, setSelectedKind] = useState<string>('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 20;
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedKind, setSelectedKind] = useState<string>('all');
   
   // 订阅状态变化
   useEffect(() => {
@@ -53,13 +49,6 @@ export function ChroniclePage() {
       return true;
     });
   }, [sortedEntries, selectedKind, searchTerm]);
-
-  // 分页计算
-  const totalPages = Math.ceil(filteredEntries.length / ITEMS_PER_PAGE);
-  const paginatedEntries = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredEntries.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredEntries, currentPage]);
   
   // 获取所有类型
   const allKinds = useMemo(() => {
@@ -108,7 +97,7 @@ export function ChroniclePage() {
         {/* 史册条目列表 */}
         <div className="chronicle-page__entries">
           {filteredEntries.length > 0 ? (
-            paginatedEntries.map(entry => (
+            filteredEntries.map(entry => (
               <ChronicleEntry
                 key={entry.id}
                 entry={entry}
@@ -125,61 +114,6 @@ export function ChroniclePage() {
                   }
                 </p>
               </div>
-
-        {/* 分页控件 */}
-        {totalPages > 1 && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '16px',
-            marginTop: '20px',
-            padding: '16px',
-            background: 'rgba(184,146,42,0.05)',
-            border: '1px solid rgba(184,146,42,0.2)'
-          }}>
-            <button 
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              style={{
-                background: currentPage === 1 ? 'rgba(184,146,42,0.1)' : 'rgba(184,146,42,0.2)',
-                border: '1px solid rgba(184,146,42,0.3)',
-                color: currentPage === 1 ? 'rgba(245,239,226,0.3)' : 'rgba(245,239,226,0.8)',
-                padding: '8px 16px',
-                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                fontFamily: 'sans-serif',
-                fontSize: '12px'
-              }}
-            >
-              ← 上一页
-            </button>
-
-            <span style={{
-              color: 'rgba(245,239,226,0.7)',
-              fontFamily: 'sans-serif',
-              fontSize: '12px'
-            }}>
-              第 {currentPage} 页 / 共 {totalPages} 页
-            </span>
-
-            <button 
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              style={{
-                background: currentPage === totalPages ? 'rgba(184,146,42,0.1)' : 'rgba(184,146,42,0.2)',
-                border: '1px solid rgba(184,146,42,0.3)',
-                color: currentPage === totalPages ? 'rgba(245,239,226,0.3)' : 'rgba(245,239,226,0.8)',
-                padding: '8px 16px',
-                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                fontFamily: 'sans-serif',
-                fontSize: '12px'
-              }}
-            >
-              下一页 →
-            </button>
-          </div>
-        )}
-      </div>
             </div>
           )}
         </div>

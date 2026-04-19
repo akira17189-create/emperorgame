@@ -47,16 +47,6 @@ export const POLICY_PRESETS = {
   "召仙炼丹":     { tags: ["仙道"], tick_change: { morale: -1, eunuch: +5, fiscal: -100 }, duration: 3 },
   // 工业/现代类（TODO: DeepSeek补充5个）
   "推广活字印刷": { tags: ["工业", "穿越"], tick_change: { morale: +1, commerce: +30 }, duration: -1 },
-  // 仙道类新增政策（4个）
-  "观星问天":     { tags: ["仙道", "天文"], tick_change: { morale: +2, fiscal: -80, commerce: +10 }, duration: 4 },
-  "敕封龙虎":     { tags: ["仙道", "宗教"], tick_change: { morale: -1, eunuch: -3, faction: -5, threat: -2 }, duration: -1 },
-  "禁绝方术":     { tags: ["仙道", "内政"], tick_change: { morale: +1, eunuch: -8, fiscal: +30, faction: +5 }, duration: 3 },
-  "丹药普赐":     { tags: ["仙道", "民生"], tick_change: { morale: +4, fiscal: -150, food: -50, eunuch: +5 }, duration: 2 },
-  // 工业/现代类新增政策（4个）
-  "官道驿路":     { tags: ["工业", "基建"], tick_change: { fiscal: -120, commerce: +40, food: +30, threat: -1 }, duration: 6 },
-  "火器营制":     { tags: ["工业", "军事"], tick_change: { military: +70, fiscal: -200, threat: -6, morale: +1 }, duration: -1 },
-  "开海通商":     { tags: ["工业", "外交", "商业"], tick_change: { commerce: +90, fiscal: +100, threat: +3, morale: -1 }, duration: -1 },
-  "蒸汽奇器":     { tags: ["工业", "穿越"], tick_change: { commerce: +120, fiscal: -300, morale: +2, military: +20 }, duration: 5 },
   "开设钱庄":     { tags: ["工业", "商业"], tick_change: { commerce: +60, fiscal: +80 }, duration: -1 },
 } as const;
 

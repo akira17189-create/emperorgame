@@ -13,101 +13,6 @@ import { renderTemplate } from '../engine/templates';
 import { PolicyPanel } from './PolicyPanel';
 import { EVENT_TEMPLATES, resolveEventChoice } from '../engine/event-engine';
 
-// 新手引导文案
-const NEWBIE_GUIDE_NARRATIVE = `乾清宫的早晨，安静得能听见自己的心跳。
-
-你坐在那张宽大的龙椅上，手指摩挲着扶手上的雕龙。阳光从雕花窗棂斜射进来，在青砖地上画出一道道明暗相间的格子。
-
-殿门外，司礼监太监垂手站着，等着你的第一道旨意。
-
-你知道，从今天起，你就是靖朝的皇帝了。这个国家有三千七百万人口，一百二十万军队，还有一堆等着你去填的窟窿——国库的银子，粮仓的米，边境的烽火，朝堂的争吵。
-
-但你不知道的是，该怎么开始。
-
-（史官注：新帝登基，年号未定，史称靖朝元年。以下为新手引导，请陛下御览。）
-
----
-
-**第一件事：如何下达旨意**
-
-殿里没有键盘，没有鼠标，只有一张嘴。
-
-你想做什么，就说出来。
-
-比如，你觉得百姓的税太重了，就说："减税惠民。"你觉得边境不太平，就说："和亲邦交。"你觉得某个官员看着不顺眼，就说："罢免他。"
-
-说出来的话，会变成旨意。旨意会传到六部，传到地方，传到该去的地方。
-
-但记住：说出去的话，泼出去的水。旨意下了，就不能收回了。
-
-（小提示：试试说"查看国库"，看看现在有多少家底。）
-
----
-
-**第二件事：如何颁布政策**
-
-治国不是靠一句话两句话，是靠一套一套的规矩。
-
-这些规矩，叫"政策"。
-
-在右手边的面板上，你能看到一堆政策的名字："减税惠民"、"兴建水利"、"整顿吏治"……每个政策都有它的用处，也有它的代价。
-
-点一下，政策就颁布了。它会持续几年，每年都会影响国家的方方面面。
-
-但政策不能乱用。一个政策占一个位置，位置满了，就得等旧政策失效才能颁布新的。
-
-（小提示：先试试"减税惠民"，让百姓喘口气。）
-
----
-
-**第三件事：什么是Tick**
-
-皇帝也是要睡觉的。
-
-你下了旨，颁布了政策，然后呢？然后就是等。等时间自己往前走，等事情自己发生。
-
-这个"等"的过程，游戏里叫"Tick"。
-
-你可以主动说"等待一年"，让时间快进。也可以什么都不说，让时间慢慢流。在Tick的过程中，政策会生效，事件会发生，历史会自己写下新的篇章。
-
-但Tick不是无脑等。在Tick之前，最好想清楚：接下来这一年，国家会变成什么样？
-
-（小提示：颁布政策后，说"等待一年"，看看效果。）
-
----
-
-**第四件事：如何查看史册**
-
-你做的每一件事，说的每一句话，都会被记下来。
-
-记在哪里？记在史册里。
-
-在左手边的面板上，有个"史册"按钮。点进去，你能看到从登基到现在，发生的所有大事：颁布了什么政策，处置了什么事件，见了什么人，说了什么话。
-
-史册不只是记录，还是镜子。照一照，就知道自己这皇帝当得怎么样。
-
-但史册很诚实。好的记，坏的也记。想青史留名，就得做出点真正的好事。
-
-（小提示：做完一件事，就去史册看看，史官是怎么评价的。）
-
----
-
-**最后几句话**
-
-当皇帝，听起来很威风，实际上很累。
-
-你要管钱，管粮，管兵，管人。要平衡清流、帝党、宦官三派势力。要应对天灾，要防范外敌。要在无数个"应该"和"能够"之间，找到那条细细的线。
-
-但这也是当皇帝有意思的地方。
-
-因为历史这本书，现在握在你手里。下一页写什么，由你决定。
-
-好了，话说完了。
-
-司礼监太监还在殿门外等着。阳光又移动了一寸。
-
-陛下，请下旨吧。`
-
 export function CourtPage() {
   const [command, setCommand] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -154,20 +59,7 @@ useEffect(() => {
       console.log('游戏状态未初始化，跳过自动触发');
       return;
     }
-
-    // 新手引导检查：游戏第一年且史册无记录时显示引导
-    if (currentState.meta.game_year === 1 && currentState.chronicle.official.length === 0) {
-      // 显示新手引导
-      setTimeout(async () => {
-        try {
-          await typewriterEffect(NEWBIE_GUIDE_NARRATIVE);
-        } catch (error) {
-          console.error('新手引导显示失败:', error);
-        }
-      }, 500);
-      return; // 显示引导后不执行自动tick
-    }
-
+    
     if (!currentState.narration || currentState.narration.trim() === '') {
       // 延迟一点执行，让界面先渲染完成
       setTimeout(async () => {
@@ -632,62 +524,6 @@ function DynastyHeader({ state }: { state: any }) {
   const tone       = state.world?.tone   || DYNASTY_CONFIG.current_tone;
   const r          = state.resources     || {};
 
-  // 资源变化动画状态
-  const prevResourcesRef = useRef(r);
-  const [changedResources, setChangedResources] = useState<Record<string, 'up' | 'down'>>({});
-
-  useEffect(() => {
-    const prev = prevResourcesRef.current;
-    const changes: Record<string, 'up' | 'down'> = {};
-
-    // 检查每个资源的变化
-    const resourceKeys = ['morale', 'fiscal', 'military', 'food', 'population', 'commerce', 'eunuch', 'threat', 'faction'];
-    resourceKeys.forEach(key => {
-      const prevValue = prev[key] ?? 0;
-      const currentValue = r[key] ?? 0;
-
-      if (currentValue !== prevValue) {
-        changes[key] = currentValue > prevValue ? 'up' : 'down';
-      }
-    });
-
-    // 更新变化状态
-    if (Object.keys(changes).length > 0) {
-      setChangedResources(changes);
-
-      // 1.5秒后清除变化状态
-      const timer = setTimeout(() => {
-        setChangedResources({});
-      }, 1500);
-
-      // 更新前一次资源引用
-      prevResourcesRef.current = r;
-
-      return () => clearTimeout(timer);
-    }
-
-    // 更新前一次资源引用
-    prevResourcesRef.current = r;
-  }, [r]);
-
-  // 获取资源变化动画样式
-  const getResourceStyle = (key: string, baseColor: string) => {
-    const change = changedResources[key];
-    if (!change) {
-      return { color: baseColor };
-    }
-
-    return {
-      color: change === 'up' ? '#6baa7a' : '#c05050',
-      animation: 'resourceChange 1.5s ease-out',
-      '@keyframes resourceChange': {
-        '0%': { opacity: 0.5 },
-        '50%': { opacity: 1 },
-        '100%': { opacity: 1 }
-      }
-    };
-  };
-
   return (
     <div style={{
       background: '#1a1208',
@@ -712,39 +548,40 @@ function DynastyHeader({ state }: { state: any }) {
       </div>
 
       {/* 关键资源快览（使用正确字段名）*/}
+      {/* 关键资源快览（使用正确字段名）*/}
       <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '12px', fontFamily: 'sans-serif', flexWrap: 'wrap' }}>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          民心 <span style={getResourceStyle('morale', (r.morale ?? 0) > 60 ? '#6baa7a' : '#c05050')}>
+          民心 <span style={{ color: (r.morale ?? 0) > 60 ? '#6baa7a' : '#c05050' }}>
             {r.morale ?? 0}
           </span>
         </span>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          国库 <span style={getResourceStyle('fiscal', '#d4a93a')}>{r.fiscal ?? 0}</span>
+          国库 <span style={{ color: '#d4a93a' }}>{r.fiscal ?? 0}</span>
         </span>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          军力 <span style={getResourceStyle('military', '#7ab5cc')}>{r.military ?? 0}</span>
+          军力 <span style={{ color: '#7ab5cc' }}>{r.military ?? 0}</span>
         </span>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          粮食 <span style={getResourceStyle('food', '#6baa7a')}>{r.food ?? 0}</span>
+          粮食 <span style={{ color: '#6baa7a' }}>{r.food ?? 0}</span>
         </span>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          人口 <span style={getResourceStyle('population', '#d4a93a')}>{r.population ?? 0}</span>
+          人口 <span style={{ color: '#d4a93a' }}>{r.population ?? 0}</span>
         </span>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          商税 <span style={getResourceStyle('commerce', '#d4a93a')}>{r.commerce ?? 0}</span>
+          商税 <span style={{ color: '#d4a93a' }}>{r.commerce ?? 0}</span>
         </span>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          宦官 <span style={getResourceStyle('eunuch', (r.eunuch ?? 0) > 50 ? '#c05050' : 'rgba(245,239,226,0.5)')}>
+          宦官 <span style={{ color: (r.eunuch ?? 0) > 50 ? '#c05050' : 'rgba(245,239,226,0.5)' }}>
             {r.eunuch ?? 0}
           </span>
         </span>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          外患 <span style={getResourceStyle('threat', (r.threat ?? 0) > 50 ? '#c05050' : 'rgba(245,239,226,0.5)')}>
+          外患 <span style={{ color: (r.threat ?? 0) > 50 ? '#c05050' : 'rgba(245,239,226,0.5)' }}>
             {r.threat ?? 0}
           </span>
         </span>
         <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          派系 <span style={getResourceStyle('faction', (r.faction ?? 0) > 60 ? '#c05050' : 'rgba(245,239,226,0.5)')}>
+          派系 <span style={{ color: (r.faction ?? 0) > 60 ? '#c05050' : 'rgba(245,239,226,0.5)' }}>
             {r.faction ?? 0}
           </span>
         </span>

@@ -438,31 +438,8 @@ export function resolveEventChoice(
   const memory = `${state.world.year}年${template.name}（${choice.label}）`;
   newState.world = {
     ...state.world,
-    collective_memory: [...state.world.world.collective_memory.slice(-19), memory]
+    collective_memory: [...state.world.collective_memory.slice(-19), memory]
   };
-
-  // 党争类事件派系联动
-  if (template.category === '党争') {
-    // 确保factions对象存在
-    if (!newState.world.factions) {
-      newState.world.factions = { qingliu: 50, didang: 50, eunuch_faction: 30 };
-    }
-
-    // 根据玩家选择修改派系势力
-    if (choiceId.includes('qingliu') || choice.label.includes('清流')) {
-      // 支持清流
-      newState.world.factions.qingliu = Math.max(0, Math.min(100, newState.world.factions.qingliu + 10));
-      newState.world.factions.didang = Math.max(0, Math.min(100, newState.world.factions.didang - 8));
-    } else if (choiceId.includes('didang') || choice.label.includes('帝党')) {
-      // 支持帝党
-      newState.world.factions.didang = Math.max(0, Math.min(100, newState.world.factions.didang + 10));
-      newState.world.factions.qingliu = Math.max(0, Math.min(100, newState.world.factions.qingliu - 8));
-    } else if (choiceId.includes('neutral') || choice.label.includes('各打五十大板') || choice.label.includes('中立')) {
-      // 各打五十大板
-      newState.world.factions.qingliu = Math.max(0, Math.min(100, newState.world.factions.qingliu - 5));
-      newState.world.factions.didang = Math.max(0, Math.min(100, newState.world.factions.didang - 5));
-    }
-  }
 
   return {
     newState,

@@ -20,7 +20,7 @@ export interface Effect {
 
 export function updateState(currentState: GameState, updates: StateUpdate): GameState {
   const newState = JSON.parse(JSON.stringify(currentState)) as GameState;
-
+  
   // 应用资源更新
   if (updates.resources) {
     for (const [key, delta] of Object.entries(updates.resources)) {
@@ -30,28 +30,12 @@ export function updateState(currentState: GameState, updates: StateUpdate): Game
       }
     }
   }
-
-  // 派系数值联动逻辑
-  // 1. 宦官势力联动：resources.eunuch 变化时，同步更新 world.factions.eunuch_faction
-  if (updates.resources && 'eunuch' in updates.resources) {
-    const newEunuch = newState.resources.eunuch;
-    newState.world.factions.eunuch_faction = Math.round(newEunuch * 0.8);
-  }
-
-  // 2. 党争强度联动：resources.faction 变化时，等量分配给 qingliu 和 didang
-  // 反向关联：faction 高 → 双方势力均高，代表党争激烈
-  if (updates.resources && 'faction' in updates.resources) {
-    const factionChange = updates.resources.faction;
-    // 等量分配给双方，但保持势力值在 0-100 范围内
-    newState.world.factions.qingliu = Math.max(0, Math.min(100, newState.world.factions.qingliu + factionChange));
-    newState.world.factions.didang = Math.max(0, Math.min(100, newState.world.factions.didang + factionChange));
-  }
-
+  
   // 应用世界更新
   if (updates.world) {
     Object.assign(newState.world, updates.world);
   }
-
+  
   // 应用NPC更新
   if (updates.npcs) {
     for (const npcUpdate of updates.npcs) {
@@ -61,7 +45,7 @@ export function updateState(currentState: GameState, updates: StateUpdate): Game
       }
     }
   }
-
+  
   // 添加事件
   if (updates.events && updates.events.length > 0) {
     newState.events.pending.push(...updates.events.map((e, i) => ({
@@ -74,7 +58,7 @@ export function updateState(currentState: GameState, updates: StateUpdate): Game
       narrated: false,
     })));
   }
-
+  
   // 添加集体记忆
   if (updates.collective_memory && updates.collective_memory.length > 0) {
     newState.world.collective_memory.push(...updates.collective_memory);
@@ -83,9 +67,8 @@ export function updateState(currentState: GameState, updates: StateUpdate): Game
       newState.world.collective_memory = newState.world.collective_memory.slice(-20);
     }
   }
-
+  
   return newState;
-}
 }
 
 export function applyEffects(state: GameState, effects: Effect[]): GameState {
