@@ -1,4 +1,5 @@
 // 顶层
+import { DYNASTY_CONFIG } from '../data/lore-bridge';
 export interface GameState {
   meta: Meta;
   emperor: Emperor;
@@ -277,12 +278,12 @@ export function createEmptyGameState(): GameState {
       visual: { image: null, image_prompt: null }
     },
     world: {
-      dynasty: '靖朝',
-      era: '永德',
+      dynasty: DYNASTY_CONFIG.name,      // "靖朝",
+      era:     DYNASTY_CONFIG.era_name,  // 由DeepSeek确认后填入lore-bridge.ts,
       year: 1,
-      tone: '猜忌',
+      tone: DYNASTY_CONFIG.current_tone as any,
       named_events: [],
-      collective_memory: [],
+      collective_memory: [DYNASTY_CONFIG.background_summary],
       wills: [],
       weather_this_year: 0.5,
       conflict_ratio: 0.3

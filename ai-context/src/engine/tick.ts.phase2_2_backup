@@ -1,0 +1,310 @@
+import type { GameState } from './types';
+
+/**
+ * 将值限制在指定范围内
+ * @param value 要限制的值
+ * @param min 最小值
+ * @param max 最大值
+ * @returns 限制后的值
+ */
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+/**
+ * 离线演算引擎
+ * 处理游戏状态更新，包括资源变化、NPC行为、事件触发等
+ */
+
+export interface TickResult {
+  success: boolean;
+  newState: GameState;
+  events: string[];
+  warnings: string[];
+}
+
+export interface TickOptions {
+  yearsToAdvance?: number;
+  includeRandomEvents?: boolean;
+  includeNPCActions?: boolean;
+}
+
+/**
+ * 执行一个时间刻度的演算
+ * @param state 当前游戏状态
+ * @param options 演算选项
+ * @returns 演算结果
+ */
+
+/**
+ * 执行一个时间刻度的演算
+ * @param state 当前游戏状态
+ * @param options 演算选项
+ * @returns 演算结果
+ */
+export function executeTick(state: GameState, options: TickOptions = {}): TickResult {
+  const newState = JSON.parse(JSON.stringify(state)) as GameState;
+  const events: string[] = [];
+  const warnings: string[] = [];
+
+  try {
+    // 1. 时间推进
+    applyTimeEvolution(newState);
+
+    // 2. 核心资源规则（只处理6个核心资源）
+    applyCoreResourceRules(newState.resources);
+
+    // 3. NPC行为（从外部读取规则）
+    // 注意：这里需要导入npcBehaviorRules，将在core-characters.ts中定义
+    // applyNpcBehaviors(newState.npcs, newState, npcBehaviorRules);
+
+    // 4. 收集日志
+    // const logs = collectChangeLogs();
+
+    // 5. 检查游戏结束条件
+    const endCondition = checkGameEndConditions(newState);
+    if (endCondition.isEnded) {
+      warnings.push(`游戏结束: ${endCondition.reason}`);
+    }
+
+    return {
+      success: true,
+      newState,
+      events,
+      warnings
+    };
+
+  } catch (error) {
+    console.error('Tick执行错误:', error);
+    return {
+      success: false,
+      newState: state,
+      events: [],
+      warnings: [`Tick执行失败: ${error}`]
+    };
+  }
+}
+
+): TickResult {
+  // TODO: 实现离线演算逻辑
+  // 1. 推进时间
+  // 2. 更新资源
+  // 3. 处理NPC行为
+  // 4. 触发随机事件
+  // 5. 更新世界状态
+  
+  const newState = JSON.parse(JSON.stringify(state)) as GameState;
+  const events: string[] = [];
+  const warnings: string[] = [];
+  
+  // 推进时间
+  const yearsToAdvance = options.yearsToAdvance || 1;
+  newState.world.year += yearsToAdvance;
+  newState.meta.game_year += yearsToAdvance;
+  
+  // TODO: 实现具体演算逻辑
+  // 示例：简单资源更新
+  if (options.includeRandomEvents !== false) {
+    // 随机事件占位
+    const randomEvent = Math.random();
+    if (randomEvent < 0.1) {
+      events.push('发生自然灾害');
+      newState.resources.food = Math.max(0, newState.resources.food - 100);
+    }
+  }
+  
+  // TODO: 实现NPC行为演算
+  if (options.includeNPCActions !== false) {
+    // NPC行为占位
+    newState.npcs.forEach(npc => {
+      npc.state.pressure = Math.min(100, npc.state.pressure + Math.random() * 10);
+      npc.state.satisfaction = Math.max(0, npc.state.satisfaction - Math.random() * 5);
+    });
+  }
+  
+  return {
+    success: true,
+    newState,
+    events,
+    warnings
+  };
+}
+
+/**
+ * 批量演算多个时间刻度
+ * @param state 初始游戏状态
+ * @param ticks 刻度数量
+ * @param options 演算选项
+ * @returns 最终状态和所有事件
+ */
+export function executeMultipleTicks(
+  state: GameState,
+  ticks: number,
+  options: TickOptions = {}
+): { finalState: GameState; allEvents: string[] } {
+  // TODO: 实现批量演算
+  let currentState = state;
+  const allEvents: string[] = [];
+  
+  for (let i = 0; i < ticks; i++) {
+    const result = executeTick(currentState, options);
+    currentState = result.newState;
+    allEvents.push(...result.events);
+  }
+  
+  return {
+    finalState: currentState,
+    allEvents
+  };
+}
+
+/**
+ * 计算资源变化趋势
+ * @param state 游戏状态
+ * @returns 资源变化预测
+ */
+export function calculateResourceTrends(state: GameState): Record<string, number> {
+  // TODO: 实现资源趋势计算
+  return {
+    food: state.resources.food * 0.95,
+    population: state.resources.population * 1.02,
+    fiscal: state.resources.fiscal * 0.98,
+    military: state.resources.military * 0.99,
+    morale: state.resources.morale * 0.97
+  };
+}
+
+/**
+ * 检查游戏结束条件
+ * @param state 游戏状态
+ * @returns 游戏是否结束及原因
+ */
+export function checkGameEndConditions(state: GameState): { isEnded: boolean; reason?: string } {
+  // TODO: 实现游戏结束条件检查
+  if (state.resources.food <= 0) {
+    return { isEnded: true, reason: '粮食耗尽，饥荒爆发' };
+  }
+  
+  if (state.resources.morale <= 0) {
+    return { isEnded: true, reason: '民心尽失，爆发起义' };
+  }
+  
+  if (state.resources.military <= 0) {
+    return { isEnded: true, reason: '兵力耗尽，外敌入侵' };
+  }
+  
+  return { isEnded: false };
+}
+
+// Phase 2.1 核心实现
+
+/**
+ * 应用时间推进
+ * @param state 游戏状态
+ */
+function applyTimeEvolution(state: GameState): void {
+  state.world.year += 1;
+  state.emperor.age += 1;
+  state.world.weather_this_year = Math.random();
+
+  // 每25年增加一代
+  if (state.world.year % 25 === 0) {
+    state.emperor.generation += 1;
+  }
+}
+
+/**
+ * 应用核心资源规则（只处理6个核心资源）
+ * @param resources 资源对象
+ */
+function applyCoreResourceRules(resources: Resources): void {
+  // 只处理6个核心资源：food, population, fiscal, military, morale, threat
+
+  // 粮食生产与消耗
+  resources.food = clamp(
+    resources.food + (resources.agri_pop * resources.land_fertility * 0.2 - resources.population * 0.05),
+    0, 10000
+  );
+
+  // 人口自然变化
+  resources.population = clamp(
+    resources.population + (resources.morale - 50) * 0.1,
+    0, 100000
+  );
+
+  // 财政收入与支出
+  resources.fiscal = clamp(
+    resources.fiscal + (resources.tax_rate * resources.population * 0.12 - resources.military_cost - resources.disaster_relief),
+    0, 100000
+  );
+
+  // 军事变化
+  resources.military = clamp(
+    resources.military - (resources.threat * 0.5),
+    0, 10000
+  );
+
+  // 民心变化
+  resources.morale = clamp(
+    resources.morale + (100 - resources.tax_rate * 200 - resources.faction * 0.5) * 0.1,
+    0, 100
+  );
+
+  // 威胁演变
+  resources.threat = clamp(
+    resources.threat + 2 + (100 - resources.military) * 0.05,
+    0, 100
+  );
+
+  // 军事成本计算
+  resources.military_cost = clamp(
+    resources.military * 0.02,
+    0, 1000
+  );
+
+  // 经济变化
+  resources.commerce = clamp(
+    resources.commerce + (100 - resources.threat) * 0.5,
+    0, 10000
+  );
+
+  // 土地肥力变化
+  resources.land_fertility = clamp(
+    resources.land_fertility * (0.95 + resources.weather_this_year * 0.1),
+    0, 1
+  );
+
+  // 宦官影响派系
+  resources.eunuch = clamp(
+    resources.eunuch + resources.faction * 0.2,
+    0, 100
+  );
+
+  // 派系受宦官影响
+  resources.faction = clamp(
+    resources.faction + resources.eunuch * 0.2,
+    0, 100
+  );
+}
+
+/**
+ * 应用NPC行为（从外部读取规则）
+ * @param npcs NPC数组
+ * @param state 游戏状态
+ * @param rules NPC行为规则数组
+ */
+function applyNpcBehaviors(npcs: NPC[], state: GameState, rules: any[]): void {
+  rules.forEach(rule => {
+    npcs.forEach(npc => {
+      if (rule.condition(npc, state)) {
+        const changes = rule.effect(npc, state);
+        // 应用changes到state
+        applyChanges(state, changes);
+      }
+    });
+  });
+}
+
+// 导入applyChanges函数
+import { applyChanges } from './state';
+

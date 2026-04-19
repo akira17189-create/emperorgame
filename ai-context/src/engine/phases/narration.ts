@@ -100,7 +100,8 @@ async function generateNormalNarration(state: GameState, events: string[], targe
 1. text字段必须包含完整的叙事文本
 2. events数组包含本回合的关键事件（最多3个）
 3. mood字段描述当前氛围（只能是：紧张、平静、压抑、欢快之一）
-4. 只返回JSON，不要其他内容`;
+4. 只返回JSON，不要其他内容
+5. 叙事文本中禁止直接提及具体数值（如'民心七十''国库六千万两'等），应该用描述性语言代替（如'民心尚可''国库充盈'等）`;
 
   try {
     const result = await callLLM({

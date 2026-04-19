@@ -1,0 +1,177 @@
+import type { GameState } from './types';
+import { handlePlayerInput } from './phases/input';
+import { simulateWorld } from './phases/simulation';
+import { arbitrateEvents } from './phases/arbitration';
+import { generateNarration, checkGameEndConditions } from './phases/narration';
+
+export interface TickResult {
+  success: boolean;
+  newState: GameState;
+  events: string[];
+  warnings: string[];
+  narration?: string;
+  chronicle_entry?: any;
+  error?: string;
+}
+
+export interface TickOptions {
+  yearsToAdvance?: number;
+  includeRandomEvents?: boolean;
+  includeNPCActions?: boolean;
+}
+
+/**
+ * 执行一个时间刻度的演算（流程编排版本）
+ * 注意：此函数只做流程编排，不包含任何业务逻辑
+ */
+export async function gameTick(state: GameState, command?: string): Promise<TickResult> {
+  try {
+    // 1. 处理玩家输入（如果有）
+    let processedCommand = command;
+    if (command) {
+      const inputResult = handlePlayerInput(state, command);
+      if (!inputResult.success) {
+        return {
+          success: false,
+          newState: state,
+          events: [],
+          warnings: [],
+          error: inputResult.error
+        };
+      }
+      processedCommand = inputResult.processedCommand;
+    }
+
+    // 2. 模拟世界状态变化
+    const simulationResult = simulateWorld(state);
+    if (!simulationResult.success) {
+      return {
+        success: false,
+        newState: state,
+        events: [],
+        warnings: [],
+        error: '世界模拟失败'
+      };
+    }
+
+    // 3. 仲裁事件（如果有）
+    let arbitrationResult = null;
+    if (simulationResult.events.length > 0) {
+      arbitrationResult = await arbitrateEvents(simulationResult.newState, simulationResult.events);
+      
+      // 如果仲裁成功，更新游戏状态
+      if (arbitrationResult.success && arbitrationResult.needsArbitration && arbitrationResult.game_state_updates) {
+        const updates = arbitrationResult.game_state_updates;
+        
+        // 应用资源变化
+        if (updates.resource_change) {
+          for (const [key, delta] of Object.entries(updates.resource_change)) {
+            if (key in simulationResult.newState.resources) {
+              (simulationResult.newState.resources as Record<string, number>)[key] =
+                Math.max(0, ((simulationResult.newState.resources as Record<string, number>)[key] ?? 0) + delta);
+            }
+          }
+        }
+        
+        // 添加集体记忆
+        if (updates.collective_memory_added && updates.collective_memory_added.length > 0) {
+          simulationResult.newState.world.collective_memory.push(...updates.collective_memory_added);
+          if (simulationResult.newState.world.collective_memory.length > 20) {
+            simulationResult.newState.world.collective_memory = simulationResult.newState.world.collective_memory.slice(-20);
+          }
+        }
+      }
+    }
+
+    // 4. 生成叙事
+    const narrationResult = await generateNarration(
+      simulationResult.newState,
+      simulationResult.events,
+      arbitrationResult
+    );
+
+    // 5. 检查游戏结束条件
+    const endCheck = checkGameEndConditions(simulationResult.newState);
+    if (endCheck.isEnded) {
+      simulationResult.events.push(`游戏结束：${endCheck.reason}`);
+    }
+
+    return {
+      success: true,
+      newState: simulationResult.newState,
+      events: simulationResult.events,
+      warnings: simulationResult.warnings,
+      narration: narrationResult.narration,
+      chronicle_entry: narrationResult.chronicle_entry
+    };
+  } catch (error) {
+    return {
+      success: false,
+      newState: state,
+      events: [],
+      warnings: [],
+      error: `游戏演算失败: ${error instanceof Error ? error.message : '未知错误'}`
+    };
+  }
+}
+
+/**
+ * 批量演算多个时间刻度（保持向后兼容）
+ */
+export function executeMultipleTicks(
+  state: GameState,
+  ticks: number,
+  options: TickOptions = {}
+): { finalState: GameState; allEvents: string[] } {
+  let currentState = state;
+  const allEvents: string[] = [];
+
+  for (let i = 0; i < ticks; i++) {
+    // 同步版本，只做基本模拟
+    const result = simulateWorld(currentState);
+    currentState = result.newState;
+    allEvents.push(...result.events);
+  }
+
+  return { finalState: currentState, allEvents };
+}
+
+/**
+ * 执行一个时间刻度的演算（同步版本，保持向后兼容）
+ */
+export function executeTick(state: GameState, options: TickOptions = {}): TickResult {
+  const simulationResult = simulateWorld(state);
+  
+  return {
+    success: simulationResult.success,
+    newState: simulationResult.newState,
+    events: simulationResult.events,
+    warnings: simulationResult.warnings
+  };
+}
+
+/**
+ * 计算资源变化趋势（当前年的预期增减量，用于 UI 提示）
+ */
+export function calculateResourceTrends(state: GameState): Record<string, number> {
+  const r = state.resources;
+  const weather = state.world.weather_this_year;
+  const agriYield = Math.round(r.agri_pop * r.land_fertility * (0.6 + weather * 0.8));
+  const foodConsumed = Math.round(r.population * 0.12);
+  const taxIncome = Math.round(r.population * r.tax_rate * (r.commerce / 300));
+
+  return {
+    food: agriYield - foodConsumed,
+    population: Math.round(r.population * (r.food > foodConsumed * 2 ? 0.015 : 0.005)),
+    fiscal: taxIncome - r.military_cost - r.disaster_relief,
+    military: 0,
+    morale: r.food <= 0 ? -15 : (r.morale < 30 ? -3 : 1),
+  };
+}
+
+/**
+ * 检查游戏结束条件（保持向后兼容）
+ */
+export function checkGameEnd(state: GameState): { isEnded: boolean; reason?: string } {
+  return checkGameEndConditions(state);
+}

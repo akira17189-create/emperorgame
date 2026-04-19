@@ -5,6 +5,8 @@ import { simulateWorld } from './phases/simulation';
 import { arbitrateEvents } from './phases/arbitration';
 import { generateNarration, checkGameEndConditions } from './phases/narration';
 import { processCommand } from './narrator';
+import { checkEventTriggers, narrateEvent } from './event-engine';
+import { applyPolicyTickEffects } from './policy-engine';
 // import { updateState, applyEffects, createEffect } from './state-updater'; // 已不再使用
 
 export interface TickResult {
@@ -133,6 +135,34 @@ export async function gameTick(
     let simulationResult;
     try {
       simulationResult = simulateWorld(currentState);
+
+    // 2.5 应用政策持续效果
+    currentState = applyPolicyTickEffects(currentState);
+
+    // 2.6 检查世界事件触发
+    const triggeredTemplates = checkEventTriggers(currentState);
+    if (triggeredTemplates.length > 0) {
+      for (const template of triggeredTemplates.slice(0, 1)) { // 每次最多触发1个事件
+        const eventNarrative = await narrateEvent(template, currentState).catch(() => template.name);
+        const pending = {
+          id: `event_${template.id}_${Date.now()}`,
+          triggered_year: currentState.world.year,
+          template_id: template.id,
+          severity: template.severity,
+          raw_payload: template,
+          seal: template.severity === 3 ? 'bloody' as const : 'urgent' as const,
+          narrated: true,
+          narration: eventNarrative
+        };
+        currentState = {
+          ...currentState,
+          events: {
+            ...currentState.events,
+            pending: [...currentState.events.pending, pending]
+          }
+        };
+      }
+    }
       console.log('[TICK] 世界模拟完成', { success: simulationResult.success, eventsCount: simulationResult.events?.length });
     } catch (simulationError) {
       console.error('[TICK] 世界模拟异常:', simulationError);

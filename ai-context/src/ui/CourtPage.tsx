@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { getState, subscribe, setState as setGameState } from '../engine/state';
+import { DYNASTY_CONFIG } from '../data/lore-bridge';
 import { executeTick } from '../engine/tick';
 import { checkGameEndConditions } from '../engine/phases/narration';
 import { NpcCard } from './components/NpcCard';
@@ -221,6 +222,9 @@ useEffect(() => {
     <div className="page-layout">
       <Navbar />
 
+      {/* 朝代年号Header */}
+      <DynastyHeader state={state} />
+
       <main className="court-page">
         <div className="container">
           {demoMode && (
@@ -340,4 +344,80 @@ useEffect(() => {
       </main>
     </div>
   );
+
+
+// 新增：朝代Header组件
+function DynastyHeader({ state }: { state: any }) {
+  if (!state) return null;
+  const dynastyName = state.world?.dynasty || DYNASTY_CONFIG.name;
+  const eraName    = state.world?.era    || DYNASTY_CONFIG.era_name;
+  const year       = state.world?.year   || 1;
+  const tone       = state.world?.tone   || DYNASTY_CONFIG.current_tone;
+  const r          = state.resources     || {};
+
+  return (
+    <div style={{
+      background: '#1a1208',
+      borderBottom: '2px solid #b8922a',
+      padding: '10px 20px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '16px',
+      flexWrap: 'wrap'
+    }}>
+      {/* 朝代年号 */}
+      <div style={{ color: '#d4a93a', fontFamily: 'serif', fontSize: '18px', letterSpacing: '3px' }}>
+        {dynastyName}·{eraName}{year}年
+      </div>
+
+      {/* 分隔线 */}
+      <div style={{ width: '1px', height: '20px', background: 'rgba(184,146,42,0.3)' }} />
+
+      {/* 时代基调 */}
+      <div style={{ color: 'rgba(245,239,226,0.6)', fontSize: '12px', fontFamily: 'sans-serif' }}>
+        时代基调：<span style={{ color: '#d4875a' }}>{tone}</span>
+      </div>
+
+      {/* 关键资源快览（使用正确字段名）*/}
+      {/* 关键资源快览（使用正确字段名）*/}
+      <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '12px', fontFamily: 'sans-serif', flexWrap: 'wrap' }}>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          民心 <span style={{ color: (r.morale ?? 0) > 60 ? '#6baa7a' : '#c05050' }}>
+            {r.morale ?? 0}
+          </span>
+        </span>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          国库 <span style={{ color: '#d4a93a' }}>{r.fiscal ?? 0}</span>
+        </span>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          军力 <span style={{ color: '#7ab5cc' }}>{r.military ?? 0}</span>
+        </span>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          粮食 <span style={{ color: '#6baa7a' }}>{r.food ?? 0}</span>
+        </span>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          人口 <span style={{ color: '#d4a93a' }}>{r.population ?? 0}</span>
+        </span>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          商税 <span style={{ color: '#d4a93a' }}>{r.commerce ?? 0}</span>
+        </span>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          宦官 <span style={{ color: (r.eunuch ?? 0) > 50 ? '#c05050' : 'rgba(245,239,226,0.5)' }}>
+            {r.eunuch ?? 0}
+          </span>
+        </span>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          外患 <span style={{ color: (r.threat ?? 0) > 50 ? '#c05050' : 'rgba(245,239,226,0.5)' }}>
+            {r.threat ?? 0}
+          </span>
+        </span>
+        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
+          派系 <span style={{ color: (r.faction ?? 0) > 60 ? '#c05050' : 'rgba(245,239,226,0.5)' }}>
+            {r.faction ?? 0}
+          </span>
+        </span>
+      </div>
+    </div>
+  );
+}
 }

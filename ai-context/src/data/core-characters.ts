@@ -886,7 +886,7 @@ export const EMPRESS_DOWAGER: Character = {
     'player': '婆媳（太后与皇帝）',
     'wang-fuquan': '政治盟友'
   },
-  description: '太后萧氏，35岁，先帝正宫皇后。外表端庄贤淑，实则精明强干，善于在后宫与朝堂之间周旋。'
+  description: '太后萧氏，35岁，先帝正宫太后。外表端庄贤淑，实则精明强干，善于在后宫与朝堂之间周旋。'
 };
 
 export const WANG_FUQUAN: Character = {
