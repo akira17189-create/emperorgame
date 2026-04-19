@@ -22,6 +22,13 @@ export interface Meta {
   save_slot: string;
   game_year: number;        // 从开局起计的总年数
   real_time_played_ms: number;
+
+  // 新增：开场阶段追踪
+  prologue_phase: 'awakening' | 'guoshi_intro' | 'complete';
+  prologue_complete: boolean;
+
+  // 新增：放置系统时间戳
+  last_idle_tick_at: string;   // ISO8601，上次放置积累的时间点
 }
 
 // emperor
@@ -265,7 +272,10 @@ export function createEmptyGameState(): GameState {
       last_saved_at: now,
       save_slot: 'slot_1',
       game_year: 1,
-      real_time_played_ms: 0
+      real_time_played_ms: 0,
+      prologue_phase: 'awakening',
+      prologue_complete: false,
+      last_idle_tick_at: now
     },
     emperor: {
       id: 'emperor_1',

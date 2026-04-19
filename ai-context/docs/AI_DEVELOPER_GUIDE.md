@@ -1,4 +1,4 @@
-**最后更新**: 2026-04-18
+**最后更新**: 2026-04-19
 
 
 ## 项目快速了解
@@ -34,6 +34,11 @@ npm run dev
 2. ✅ 完整资源系统（Phase 2.2）
 3. ✅ NPC自主行为系统（Phase 2.3）
 
+**开场改造 + 放置系统完成 ✅**（2026-04-19）
+1. ✅ 三阶段开场系统（穿越内心戏 → 国师登场 → 执行面板解锁）
+2. ✅ 放置积累系统（实时资源积累、离线补算、政策加成）
+3. ✅ 旧存档兼容（自动跳过开场，正常离线补算）
+
 **下一阶段规划 📋**
 1. 📋 政策系统实现（Phase 3.1）- 预估3天
 2. 📋 世界事件系统（Phase 3.2）- 预估2天
@@ -52,6 +57,20 @@ npm run dev
 - ✅ `src\engine\narrator.ts` - 集成仲裁系统，支持多NPC决策
 - ✅ `src\ui\CourtPage.tsx` - 添加仲裁结果展示UI
 - ✅ `src\styles\components.css` - 添加仲裁面板样式
+
+### 已完成项目（开场改造 + 放置系统 - 2026-04-19）
+- ✅ `src\engine\types.ts` - Meta接口新增开场阶段和放置系统字段
+- ✅ `src\engine\save.ts` - 添加旧存档兼容patch
+- ✅ `src\engine\idle-config.ts` - 新建放置系统配置常量文件
+- ✅ `src\engine\idle-engine.ts` - 新建放置系统引擎（计算和应用积累）
+- ✅ `src\ui\CourtPage.tsx` - 重写实现三阶段开场、放置积累、离线补算、执行面板
+- ✅ `src\styles\components.css` - 添加开场选项、执行面板、离线通知样式
+- ✅ 代码评审修复 - 修复P0/P1/P2共6个问题
+
+### 已完成项目（开场文案集成 - 2026-04-19）
+- ✅ `src\data\prologue.ts` - 新建开场文案模块（DS-01~08）
+- ✅ `src\ui\CourtPage.tsx` - 导入并使用开场文案模块
+- ✅ DeepSeek文案 - 穿越内心戏398字、国师出场198字、三个选项设计
 
 ### TODO项目
 - `src\engine\save.ts:85` - 实装时需要 @supabase/supabase-js 依赖 + 用户登录流程

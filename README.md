@@ -170,6 +170,9 @@ npm run build
 | **Phase 2.1** | 多Agent仲裁系统 | 2026-04-18 | ✅ |
 | **Phase 2.2** | 完整资源系统 | 2026-04-18 | ✅ |
 | **Phase 2.3** | NPC自主行为系统 | 2026-04-18 | ✅ |
+| **开场改造** | 三阶段开场系统 | 2026-04-19 | ✅ |
+| **放置系统** | 实时资源积累与离线补算 | 2026-04-19 | ✅ |
+| **开场文案** | DeepSeek文案集成 (DS-01~08) | 2026-04-19 | ✅ |
 
 ### 下一阶段规划 📋
 
@@ -191,6 +194,9 @@ npm run build
 - ✅ 防数值爆炸算法：确保游戏平衡性
 - ✅ 可配置行为规则：NPC行为规则支持动态配置
 - ✅ 变化日志系统：详细记录所有状态变化
+- ✅ 三阶段开场系统：穿越内心戏 → 国师登场 → 执行面板解锁
+- ✅ 放置积累系统：资源实时被动积累，离线补算，政策加成
+- ✅ 开场文案系统：DeepSeek创作的正式开场文案（现代白话，无游戏机制词）
 
 ---
 
@@ -263,6 +269,8 @@ npm run build
 <div style="background: #f7f4ed; border: 1px solid #eceae4; border-radius: 12px; padding: 20px;">
 
 ### 📊 项目进度
+- [开场文案集成报告](ai-context/reports/prologue_integration_report.md)
+- [开场改造+放置系统实现报告](ai-context/reports/prologue_and_idle_system_report.md)
 - [Phase 2.1 实现报告](ai-context/reports/phase2_1_implementation_report.md)
 - [Phase 2.2 实现报告](ai-context/reports/phase2_2_implementation_report.md)
 - [Phase 2.3 实现报告](ai-context/reports/phase2_3_implementation_report.md)

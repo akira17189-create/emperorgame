@@ -89,6 +89,17 @@ export class IDBAdapter implements SaveAdapter {
       console.log('迁移: 添加了world.factions字段');
     }
 
+    // 迁移2: 旧存档兼容patch - 开场阶段和放置系统字段
+    if (!gameState.meta.prologue_phase) {
+      gameState.meta.prologue_phase = 'complete';      // 旧档直接跳过开场
+      gameState.meta.prologue_complete = true;
+      console.log('迁移: 添加了prologue_phase和prologue_complete字段（旧存档跳过开场）');
+    }
+    if (!gameState.meta.last_idle_tick_at) {
+      gameState.meta.last_idle_tick_at = gameState.meta.last_saved_at;
+      console.log('迁移: 添加了last_idle_tick_at字段');
+    }
+
     return gameState;
   }
 

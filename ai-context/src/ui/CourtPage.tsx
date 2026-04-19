@@ -12,101 +12,18 @@ import { NoLLMConfigError, getLLMConfig } from '../engine/llm';
 import { renderTemplate } from '../engine/templates';
 import { PolicyPanel } from './PolicyPanel';
 import { EVENT_TEMPLATES, resolveEventChoice } from '../engine/event-engine';
-
-// 新手引导文案
-const NEWBIE_GUIDE_NARRATIVE = `乾清宫的早晨，安静得能听见自己的心跳。
-
-你坐在那张宽大的龙椅上，手指摩挲着扶手上的雕龙。阳光从雕花窗棂斜射进来，在青砖地上画出一道道明暗相间的格子。
-
-殿门外，司礼监太监垂手站着，等着你的第一道旨意。
-
-你知道，从今天起，你就是靖朝的皇帝了。这个国家有三千七百万人口，一百二十万军队，还有一堆等着你去填的窟窿——国库的银子，粮仓的米，边境的烽火，朝堂的争吵。
-
-但你不知道的是，该怎么开始。
-
-（史官注：新帝登基，年号未定，史称靖朝元年。以下为新手引导，请陛下御览。）
-
----
-
-**第一件事：如何下达旨意**
-
-殿里没有键盘，没有鼠标，只有一张嘴。
-
-你想做什么，就说出来。
-
-比如，你觉得百姓的税太重了，就说："减税惠民。"你觉得边境不太平，就说："和亲邦交。"你觉得某个官员看着不顺眼，就说："罢免他。"
-
-说出来的话，会变成旨意。旨意会传到六部，传到地方，传到该去的地方。
-
-但记住：说出去的话，泼出去的水。旨意下了，就不能收回了。
-
-（小提示：试试说"查看国库"，看看现在有多少家底。）
-
----
-
-**第二件事：如何颁布政策**
-
-治国不是靠一句话两句话，是靠一套一套的规矩。
-
-这些规矩，叫"政策"。
-
-在右手边的面板上，你能看到一堆政策的名字："减税惠民"、"兴建水利"、"整顿吏治"……每个政策都有它的用处，也有它的代价。
-
-点一下，政策就颁布了。它会持续几年，每年都会影响国家的方方面面。
-
-但政策不能乱用。一个政策占一个位置，位置满了，就得等旧政策失效才能颁布新的。
-
-（小提示：先试试"减税惠民"，让百姓喘口气。）
-
----
-
-**第三件事：什么是Tick**
-
-皇帝也是要睡觉的。
-
-你下了旨，颁布了政策，然后呢？然后就是等。等时间自己往前走，等事情自己发生。
-
-这个"等"的过程，游戏里叫"Tick"。
-
-你可以主动说"等待一年"，让时间快进。也可以什么都不说，让时间慢慢流。在Tick的过程中，政策会生效，事件会发生，历史会自己写下新的篇章。
-
-但Tick不是无脑等。在Tick之前，最好想清楚：接下来这一年，国家会变成什么样？
-
-（小提示：颁布政策后，说"等待一年"，看看效果。）
-
----
-
-**第四件事：如何查看史册**
-
-你做的每一件事，说的每一句话，都会被记下来。
-
-记在哪里？记在史册里。
-
-在左手边的面板上，有个"史册"按钮。点进去，你能看到从登基到现在，发生的所有大事：颁布了什么政策，处置了什么事件，见了什么人，说了什么话。
-
-史册不只是记录，还是镜子。照一照，就知道自己这皇帝当得怎么样。
-
-但史册很诚实。好的记，坏的也记。想青史留名，就得做出点真正的好事。
-
-（小提示：做完一件事，就去史册看看，史官是怎么评价的。）
-
----
-
-**最后几句话**
-
-当皇帝，听起来很威风，实际上很累。
-
-你要管钱，管粮，管兵，管人。要平衡清流、帝党、宦官三派势力。要应对天灾，要防范外敌。要在无数个"应该"和"能够"之间，找到那条细细的线。
-
-但这也是当皇帝有意思的地方。
-
-因为历史这本书，现在握在你手里。下一页写什么，由你决定。
-
-好了，话说完了。
-
-司礼监太监还在殿门外等着。阳光又移动了一寸。
-
-陛下，请下旨吧。`
+import { calcIdleRates, applyIdleAccumulation } from '../engine/idle-engine';
+import { IDLE_INTERVAL_MS, MAX_OFFLINE_HOURS } from '../engine/idle-config';
+import { 
+  PROLOGUE_AWAKENING, 
+  PROLOGUE_GUOSHI_ENTRY, 
+  PROLOGUE_GUOSHI_NOTICE,
+  PROLOGUE_OPTIONS,
+  PROLOGUE_TRANSITION,
+  ACTION_PANEL_TITLE,
+  LOCATION_OPTIONS,
+  PrologueOption
+} from '../data/prologue';
 
 export function CourtPage() {
   const [command, setCommand] = useState('');
@@ -122,17 +39,25 @@ export function CourtPage() {
       return null;
     }
   });
+
+  // 从 state.meta.prologue_phase 读取，不单独维护 React state
+  const prologuePhase = state?.meta?.prologue_phase ?? 'awakening';
+  const [showPrologueOptions, setShowPrologueOptions] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<PrologueOption | null>(null);
+
+  // 离线收益通知
+  const [offlineEarnings, setOfflineEarnings] = useState<{ hours: number; minutes: number; food: number; fiscal: number; military: number } | null>(null);
+
   const narrationRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToast();
 
   useEffect(() => {
     return subscribe((newState) => setState(newState));
-  }, [])
+  }, []);
 
   // 添加全局键盘事件监听
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+S 或 Cmd+S 保存游戏
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         saveGame();
@@ -141,35 +66,113 @@ export function CourtPage() {
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);;
+  }, []);
 
-// 游戏初始化时自动触发第一个 tick，让NPC主动发言
-useEffect(() => {
-  const initGame = async () => {
-    // 检查状态是否已初始化
-    let currentState;
-    try {
-      currentState = getState();
-    } catch (error) {
-      console.log('游戏状态未初始化，跳过自动触发');
-      return;
-    }
-
-    // 新手引导检查：游戏第一年且史册无记录时显示引导
-    if (currentState.meta.game_year === 1 && currentState.chronicle.official.length === 0) {
-      // 显示新手引导
-      setTimeout(async () => {
-        try {
-          await typewriterEffect(NEWBIE_GUIDE_NARRATIVE);
-        } catch (error) {
-          console.error('新手引导显示失败:', error);
+  // 放置积累系统 - 把资源变化放进 setGameState 的 updater
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setGameState(draft => {
+        if (draft.meta.prologue_complete) {
+          const rates = calcIdleRates(draft);
+          applyIdleAccumulation(draft, rates, IDLE_INTERVAL_MS / 60_000);
+          draft.meta.last_idle_tick_at = new Date().toISOString();
         }
-      }, 500);
-      return; // 显示引导后不执行自动tick
-    }
+      });
+    }, IDLE_INTERVAL_MS);
 
-    if (!currentState.narration || currentState.narration.trim() === '') {
-      // 延迟一点执行，让界面先渲染完成
+    return () => clearInterval(timer);
+  }, []);
+
+  // 离线补算逻辑
+  useEffect(() => {
+    const initOfflineEarnings = async () => {
+      try {
+        const currentState = getState();
+        if (!currentState.meta.prologue_complete) return;
+
+        const lastTick = new Date(currentState.meta.last_idle_tick_at).getTime();
+        const now = Date.now();
+        let offlineMs = now - lastTick;
+
+        // 上限截断：24小时
+        const maxOfflineMs = MAX_OFFLINE_HOURS * 60 * 60 * 1000;
+        offlineMs = Math.min(offlineMs, maxOfflineMs);
+
+        if (offlineMs > 60_000) {  // 超过1分钟才计算
+          const minutes = offlineMs / 60_000;
+
+          // 把资源变化放进 setGameState 的 updater
+          setGameState(draft => {
+            const rates = calcIdleRates(draft);
+            applyIdleAccumulation(draft, rates, minutes);
+            draft.meta.last_idle_tick_at = new Date().toISOString();
+          });
+
+          // 为通知显示预先计算收益
+          const rates = calcIdleRates(currentState);
+          const foodGained = rates.food * minutes;
+          const fiscalGained = rates.fiscal * minutes;
+          const militaryDrained = rates.military * minutes;
+
+          const hours = Math.floor(minutes / 60);
+          const mins = Math.floor(minutes % 60);
+          setOfflineEarnings({
+            hours,
+            minutes: mins,
+            food: foodGained,
+            fiscal: fiscalGained,
+            military: militaryDrained
+          });
+
+          // 5秒后自动消失
+          setTimeout(() => setOfflineEarnings(null), 5000);
+        }
+      } catch (error) {
+        console.error('离线补算失败:', error);
+      }
+    };
+
+    initOfflineEarnings();
+  }, []);
+
+  // 游戏初始化
+  useEffect(() => {
+    const initGame = async () => {
+      let currentState;
+      try {
+        currentState = getState();
+      } catch (error) {
+        console.log('游戏状态未初始化，跳过自动触发');
+        return;
+      }
+
+      // 阶段一：穿越内心戏
+      if (currentState.meta.prologue_phase === 'awakening') {
+        setTimeout(async () => {
+          try {
+            await typewriterEffect(PROLOGUE_AWAKENING);
+            // 切换到国师介绍阶段
+            setGameState(draft => {
+              draft.meta.prologue_phase = 'guoshi_intro';
+            });
+            // 显示国师出场 + 察觉台词
+            await typewriterEffect('\n\n' + PROLOGUE_GUOSHI_ENTRY);
+            await typewriterEffect('\n\n' + PROLOGUE_GUOSHI_NOTICE);
+            setShowPrologueOptions(true);
+          } catch (error) {
+            console.error('开场显示失败:', error);
+          }
+        }, 500);
+        return;
+      }
+
+      // 阶段二：国师引导对话
+      if (currentState.meta.prologue_phase === 'guoshi_intro') {
+        setShowPrologueOptions(true);
+        return;
+      }
+
+      // 阶段三：开场已完成，执行正常初始化
       setTimeout(async () => {
         try {
           console.log('游戏初始化：触发第一个 tick');
@@ -177,11 +180,9 @@ useEffect(() => {
 
           const tickResult = await executeTick(getState(), '');
 
-          // 显示叙事文本
           if (tickResult.narration) {
             await typewriterEffect(tickResult.narration);
           } else if (demoMode) {
-            // 演示模式使用模板
             const fallback = renderTemplate('weather_good', { year: getState().world.year });
             if (fallback) await typewriterEffect(fallback);
           }
@@ -192,11 +193,31 @@ useEffect(() => {
           setIsProcessing(false);
         }
       }, 1000);
-    }
+    };
+
+    initGame();
+  }, []);
+
+  // 处理开场选项选择
+  const handlePrologueOption = async (option: PrologueOption) => {
+    setShowPrologueOptions(false);
+    setSelectedOption(option);
+
+    // 显示玩家选择的选项（内心独白）
+    await typewriterEffect('\n\n' + option.innerThought);
+
+    // 显示国师回应
+    await typewriterEffect('\n\n' + option.monkResponse);
+
+    // 显示过渡句
+    await typewriterEffect('\n\n' + PROLOGUE_TRANSITION);
+
+    // 标记开场完成
+    setGameState(draft => {
+      draft.meta.prologue_phase = 'complete';
+      draft.meta.prologue_complete = true;
+    });
   };
-  
-  initGame();
-}, []); // 空依赖数组，只在组件挂载时执行一次
 
   const saveGame = async () => {
     try {
@@ -207,8 +228,10 @@ useEffect(() => {
     }
   };
 
-  const submitCommand = async () => {
-    if (!command.trim() || isProcessing) return;
+  // submitCommand 接受可选的 override 参数
+  const submitCommand = async (overrideCommand?: string) => {
+    const commandToExecute = overrideCommand ?? command;
+    if (!commandToExecute.trim() || isProcessing) return;
 
     setIsProcessing(true);
     setNarration('');
@@ -222,7 +245,6 @@ useEffect(() => {
         return;
       }
 
-      // 优先使用已选中的 NPC，否则取第一个活跃 NPC
       const targetNpc =
         (activeNpcId ? state.npcs.find(n => n.id === activeNpcId && n.status === 'active') : null)
         ?? state.npcs.find(n => n.status === 'active');
@@ -233,32 +255,26 @@ useEffect(() => {
       }
       setActiveNpcId(targetNpc.id);
 
-      // 使用统一的入口调用gameTick
-      const tickResult = await executeTick(state, command, { 
+      const tickResult = await executeTick(state, commandToExecute, { 
         targetNpcId: targetNpc.id 
       });
 
-      // 应用游戏状态更新
       setGameState(draft => {
-        // 1. 更新游戏状态
         Object.assign(draft, tickResult.newState);
 
-        // 2. 写入chronicle（如果有）
         if (tickResult.chronicle_entry) {
           const entry = { ...tickResult.chronicle_entry, id: `entry-${Date.now()}` };
           draft.chronicle.official.unshift(entry);
         }
 
-        // 3. 写入原始日志
         if (tickResult.decision) {
           draft.events.raw_logs.push({
             year: draft.world.year,
             kind: 'command',
-            payload: { command, decision: tickResult.decision }
+            payload: { command: commandToExecute, decision: tickResult.decision }
           });
         }
 
-        // 4. 将 tick 事件追加进待叙述队列
         if (tickResult.events.length > 0) {
           draft.events.pending.push(
             ...tickResult.events.map((e, i) => ({
@@ -273,7 +289,6 @@ useEffect(() => {
           );
         }
 
-        // 5. 检查游戏结束
         const endCheck = checkGameEndConditions(draft);
         if (endCheck.isEnded) {
           draft.events.pending.push({
@@ -288,16 +303,14 @@ useEffect(() => {
         }
       });
 
-      // 自动保存
       try {
         await getDefaultAdapter().save('slot-1', getState());
       } catch { /* auto-save best-effort */ }
 
-      // 显示叙事文本
       if (tickResult.narration) {
         await typewriterEffect(tickResult.narration);
       }
-      
+
       setCommand('');
       addToast('success', '指令已处理');
     } catch (error) {
@@ -326,14 +339,12 @@ useEffect(() => {
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    // Ctrl+S 或 Cmd+S 保存游戏
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
       e.preventDefault();
       saveGame();
       return;
     }
 
-    // Enter 发送指令
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       submitCommand();
@@ -351,405 +362,131 @@ useEffect(() => {
     );
   }
 
+  // 渲染开场选项
+  const renderPrologueOptions = () => {
+    if (!showPrologueOptions || prologuePhase !== 'guoshi_intro') return null;
+
+    return (
+      <div className="prologue-options">
+        <p className="prologue-prompt">你决定：</p>
+        {PROLOGUE_OPTIONS.map(option => (
+          <button 
+            key={option.id}
+            className="prologue-option"
+            onClick={() => handlePrologueOption(option)}
+          >
+            <span className="option-inner">{option.innerThought}</span>
+            <span className="option-text">{option.text}</span>
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // 渲染执行面板
+  const renderActionDashboard = () => {
+    if (prologuePhase !== 'complete') return null;
+
+    return (
+      <div className="action-dashboard">
+        <h3>{ACTION_PANEL_TITLE}</h3>
+        <div className="action-buttons">
+          <button 
+            className="action-button"
+            onClick={() => submitCommand('临朝听政')}
+            disabled={isProcessing}
+          >
+            📋 临朝听政
+          </button>
+
+          <div className="action-with-submenu">
+            <button className="action-button">🏯 前往</button>
+            <div className="submenu">
+              {LOCATION_OPTIONS.map(loc => (
+                <button 
+                  key={loc.id}
+                  onClick={() => submitCommand(loc.command)}
+                  title={loc.description}
+                >
+                  {loc.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button 
+            className="action-button"
+            onClick={() => submitCommand('召见大臣')}
+          >
+            👤 召见
+          </button>
+
+          <button 
+            className="action-button"
+            onClick={() => location.hash = '/chronicle'}
+          >
+            📜 查阅史册
+          </button>
+
+          <button 
+            className="action-button"
+            onClick={() => setShowPolicyPanel(true)}
+          >
+            📋 颁布政策
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // 渲染离线收益通知
+  const renderOfflineEarnings = () => {
+    if (!offlineEarnings) return null;
+
+    return (
+      <div className="offline-earnings">
+        离开期间（{offlineEarnings.hours}小时{offlineEarnings.minutes}分钟），帝国持续运转——
+        粮仓：+{offlineEarnings.food.toFixed(1)} 石　国库：+{offlineEarnings.fiscal.toFixed(1)} 两
+        {offlineEarnings.military < 0 && `　军费消耗：${Math.abs(offlineEarnings.military).toFixed(1)} 两`}
+      </div>
+    );
+  };
+
   return (
     <div className="page-layout">
       <Navbar />
 
-      {/* 朝代年号Header */}
-      <DynastyHeader state={state} />
+      {renderOfflineEarnings()}
 
-      {/* ── 事件决策弹窗 ── */}
-      <EventModal state={state} onResolve={(templateId, choiceId) => {
-        const { newState, narrative } = resolveEventChoice(state, templateId, choiceId);
-        setGameState(newState);
-        typewriterEffect(`【朝廷处置】${narrative}`);
-      }} />
+      <div className="court-content">
+        <div className="narration-area" ref={narrationRef}>
+          {narration || <LoadingShimmer />}
+        </div>
 
-      {/* ── 政策面板悬浮层 ── */}
+        {renderPrologueOptions()}
+
+        {renderActionDashboard()}
+
+        <div className="command-area">
+          <textarea
+            value={command}
+            onChange={(e) => setCommand((e.target as HTMLTextAreaElement).value)}
+            onKeyDown={handleKeyDown}
+            placeholder="输入你的旨意..."
+            disabled={isProcessing || prologuePhase !== 'complete'}
+          />
+          <button 
+            onClick={() => submitCommand()}
+            disabled={isProcessing || !command.trim() || prologuePhase !== 'complete'}
+          >
+            {isProcessing ? '处理中...' : '下旨'}
+          </button>
+        </div>
+      </div>
+
       {showPolicyPanel && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          background: 'rgba(0,0,0,0.65)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }} onClick={() => setShowPolicyPanel(false)}>
-          <div onClick={e => e.stopPropagation()} style={{
-            width: 'min(640px, 95vw)', maxHeight: '85vh',
-            overflowY: 'auto',
-            background: '#1a130a',
-            border: '2px solid #b8922a',
-            borderRadius: '6px',
-            padding: '24px',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ color: '#d4a93a', fontFamily: 'serif', margin: 0, letterSpacing: '2px' }}>颁布政策</h2>
-              <button onClick={() => setShowPolicyPanel(false)} style={{
-                background: 'none', border: 'none', color: '#b8922a',
-                fontSize: '20px', cursor: 'pointer', lineHeight: 1,
-              }}>✕</button>
-            </div>
-            <PolicyPanel state={state} onPolicyEnacted={(narrative) => {
-              setShowPolicyPanel(false);
-              typewriterEffect(`【政策颁布】${narrative}`);
-            }} />
-          </div>
-        </div>
+        <PolicyPanel onClose={() => setShowPolicyPanel(false)} />
       )}
-
-      <main className="court-page">
-        <div className="container">
-          {demoMode && (
-            <div className="banner banner--warning">
-              演示模式 — 未配置 LLM，叙事将使用模板文案。
-              <a href="#/settings" className="banner__link">立即配置 →</a>
-            </div>
-          )}
-
-          {/* 场景描述 */}
-          <div className="scene-card">
-            <div className="scene-card__ornament" />
-            <p className="scene-card__text">
-              {state.world.dynasty}·{state.world.era}{state.world.year}年，金銮殿上，皇帝端坐龙椅，目光扫过殿下群臣。空气中弥漫着<em>{state.world.tone}</em>的气息。
-            </p>
-            <div className="scene-card__ornament scene-card__ornament--right" />
-          </div>
-
-          {/* NPC 卡片 */}
-          <div className="court-page__npcs">
-            {state.npcs.filter(npc => npc.status === 'active').slice(0, 3).map(npc => (
-              <NpcCard
-                key={npc.id}
-                npc={npc}
-                isActive={activeNpcId === npc.id}
-                onClick={async () => {
-                // 切换选中状态
-                setActiveNpcId(npc.id === activeNpcId ? null : npc.id);
-
-                // 如果点击的是未激活的NPC，触发该NPC发言
-                if (npc.id !== activeNpcId && npc.status === 'active' && !isProcessing) {
-                  try {
-                    setIsProcessing(true);
-                    setNarration('');
-
-                    const currentState = getState();
-                    const tickResult = await executeTick(currentState, '', {
-                      targetNpcId: npc.id
-                    });
-
-                    // 更新全局状态
-                    const { setState: updateGlobalState } = await import('../engine/state');
-                    updateGlobalState(draft => {
-                      Object.assign(draft, tickResult.newState);
-                    });
-
-                    // 显示叙事文本
-                    console.log('[NPC发言] 检查叙述文本', { 
-                      narration: tickResult.narration?.substring(0, 50),
-                      narrationLength: tickResult.narration?.length,
-                      narrationType: typeof tickResult.narration
-                    });
-                    if (tickResult.narration) {
-                      console.log('[NPC发言] 开始显示叙述文本', { narration: tickResult.narration?.substring(0, 100) });
-                      await typewriterEffect(tickResult.narration);
-                      console.log('[NPC发言] 叙述文本显示完成');
-                    } else {
-                      console.warn('[NPC发言] 叙述文本为空', { tickResult });
-                    }
-
-                    setIsProcessing(false);
-                  } catch (error) {
-                    console.error('[NPC发言] 失败:', error);
-                    console.error('[NPC发言] 错误详情:', error instanceof Error ? error.message : String(error));
-                    console.error('[NPC发言] 错误堆栈:', error instanceof Error ? error.stack : '无堆栈');
-                    addToast('error', `NPC发言失败: ${error instanceof Error ? error.message : '未知错误'}`);
-                    setIsProcessing(false);
-                  }
-                }
-              }}
-              />
-            ))}
-          </div>
-
-          {/* 叙事卷轴 */}
-          <div className="scroll-panel" ref={narrationRef}>
-            <div className="scroll-panel__inner">
-              {isProcessing && !narration ? (
-                <LoadingShimmer lines={5} />
-              ) : narration ? (
-                <p className="scroll-panel__text">{narration}</p>
-              ) : (
-                <p className="scroll-panel__placeholder">请下达您的旨意……</p>
-              )}
-            </div>
-          </div>
-
-          {/* 指令输入 */}
-          <div className="command-bar">
-            <textarea
-              className="input command-bar__input"
-              value={command}
-              onChange={(e) => setCommand((e.target as HTMLTextAreaElement).value)}
-              onKeyDown={handleKeyDown}
-              placeholder="请示陛下……（Enter 发送，Shift+Enter 换行）"
-              disabled={isProcessing}
-              rows={3}
-            />
-            <div className="command-bar__actions">
-              <button
-                className="btn btn-primary"
-                onClick={submitCommand}
-                disabled={isProcessing || !command.trim()}
-              >
-                {isProcessing ? '处理中…' : '下达旨意'}
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => setShowPolicyPanel(true)}
-                disabled={isProcessing}
-                title="颁布政策"
-              >
-                颁布政策
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={saveGame}
-                disabled={isProcessing}
-              >
-                存档
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
     </div>
   );
-
-
-
-// ── 事件决策弹窗组件 ────────────────────────────────────────────────────────
-function EventModal({ state, onResolve }: {
-  state: any;
-  onResolve: (templateId: string, choiceId: string) => void;
-}) {
-  // 找出第一个有真实模板的 pending 事件（排除 tick_event / game_end 这两种内部标记）
-  const realPending = state?.events?.pending?.find(
-    (p: any) => p.template_id !== 'tick_event' && p.template_id !== 'game_end' && !p.narrated
-  );
-  if (!realPending) return null;
-
-  const template = EVENT_TEMPLATES.find(t => t.id === realPending.template_id);
-  if (!template) return null;
-
-  const severityColor: Record<number, string> = { 1: '#6baa7a', 2: '#d4a93a', 3: '#c05050' };
-  const severityLabel: Record<number, string> = { 1: '轻微', 2: '中等', 3: '紧急' };
-
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 300,
-      background: 'rgba(0,0,0,0.78)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        width: 'min(580px, 94vw)',
-        background: '#120d06',
-        border: `2px solid ${severityColor[template.severity]}`,
-        borderRadius: '6px',
-        padding: '28px',
-        boxShadow: `0 0 40px ${severityColor[template.severity]}44`,
-      }}>
-        {/* 事件标题栏 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <span style={{
-            background: severityColor[template.severity],
-            color: '#fff',
-            fontSize: '11px',
-            padding: '2px 8px',
-            borderRadius: '3px',
-            fontFamily: 'sans-serif',
-          }}>{severityLabel[template.severity]}事件</span>
-          <h2 style={{ color: '#f5efe2', fontFamily: 'serif', margin: 0, fontSize: '20px', letterSpacing: '2px' }}>
-            {template.name}
-          </h2>
-        </div>
-
-        {/* 事件叙事 */}
-        <p style={{
-          color: 'rgba(245,239,226,0.85)',
-          fontFamily: 'serif',
-          lineHeight: 1.8,
-          marginBottom: 24,
-          borderLeft: `3px solid ${severityColor[template.severity]}`,
-          paddingLeft: 14,
-        }}>
-          {realPending.narration || template.description}
-        </p>
-
-        {/* 决策选项 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ color: '#b8922a', fontFamily: 'serif', fontSize: '13px', marginBottom: 4 }}>── 请圣裁 ──</div>
-          {template.choices.map((choice: any) => (
-            <button
-              key={choice.id}
-              onClick={() => onResolve(template.id, choice.id)}
-              style={{
-                background: '#1e1508',
-                border: '1px solid #b8922a',
-                borderRadius: '4px',
-                padding: '12px 16px',
-                color: '#f5efe2',
-                textAlign: 'left',
-                cursor: 'pointer',
-                transition: 'background 0.15s',
-                fontFamily: 'serif',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#2d200a')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#1e1508')}
-            >
-              <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#d4a93a' }}>
-                【{choice.label}】
-              </div>
-              <div style={{ fontSize: '13px', color: 'rgba(245,239,226,0.7)', marginBottom: 6 }}>
-                {choice.description}
-              </div>
-              <div style={{ fontSize: '11px', color: '#7a9a7a', fontFamily: 'sans-serif' }}>
-                {Object.entries(choice.effects as Record<string, number>)
-                  .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${v}`)
-                  .join('　')}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 新增：朝代Header组件
-function DynastyHeader({ state }: { state: any }) {
-  if (!state) return null;
-  const dynastyName = state.world?.dynasty || DYNASTY_CONFIG.name;
-  const eraName    = state.world?.era    || DYNASTY_CONFIG.era_name;
-  const year       = state.world?.year   || 1;
-  const tone       = state.world?.tone   || DYNASTY_CONFIG.current_tone;
-  const r          = state.resources     || {};
-
-  // 资源变化动画状态
-  const prevResourcesRef = useRef(r);
-  const [changedResources, setChangedResources] = useState<Record<string, 'up' | 'down'>>({});
-
-  useEffect(() => {
-    const prev = prevResourcesRef.current;
-    const changes: Record<string, 'up' | 'down'> = {};
-
-    // 检查每个资源的变化
-    const resourceKeys = ['morale', 'fiscal', 'military', 'food', 'population', 'commerce', 'eunuch', 'threat', 'faction'];
-    resourceKeys.forEach(key => {
-      const prevValue = prev[key] ?? 0;
-      const currentValue = r[key] ?? 0;
-
-      if (currentValue !== prevValue) {
-        changes[key] = currentValue > prevValue ? 'up' : 'down';
-      }
-    });
-
-    // 更新变化状态
-    if (Object.keys(changes).length > 0) {
-      setChangedResources(changes);
-
-      // 1.5秒后清除变化状态
-      const timer = setTimeout(() => {
-        setChangedResources({});
-      }, 1500);
-
-      // 更新前一次资源引用
-      prevResourcesRef.current = r;
-
-      return () => clearTimeout(timer);
-    }
-
-    // 更新前一次资源引用
-    prevResourcesRef.current = r;
-  }, [r]);
-
-  // 获取资源变化动画样式
-  const getResourceStyle = (key: string, baseColor: string) => {
-    const change = changedResources[key];
-    if (!change) {
-      return { color: baseColor };
-    }
-
-    return {
-      color: change === 'up' ? '#6baa7a' : '#c05050',
-      animation: 'resourceChange 1.5s ease-out',
-      '@keyframes resourceChange': {
-        '0%': { opacity: 0.5 },
-        '50%': { opacity: 1 },
-        '100%': { opacity: 1 }
-      }
-    };
-  };
-
-  return (
-    <div style={{
-      background: '#1a1208',
-      borderBottom: '2px solid #b8922a',
-      padding: '10px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '16px',
-      flexWrap: 'wrap'
-    }}>
-      {/* 朝代年号 */}
-      <div style={{ color: '#d4a93a', fontFamily: 'serif', fontSize: '18px', letterSpacing: '3px' }}>
-        {dynastyName}·{eraName}{year}年
-      </div>
-
-      {/* 分隔线 */}
-      <div style={{ width: '1px', height: '20px', background: 'rgba(184,146,42,0.3)' }} />
-
-      {/* 时代基调 */}
-      <div style={{ color: 'rgba(245,239,226,0.6)', fontSize: '12px', fontFamily: 'sans-serif' }}>
-        时代基调：<span style={{ color: '#d4875a' }}>{tone}</span>
-      </div>
-
-      {/* 关键资源快览（使用正确字段名）*/}
-      <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '12px', fontFamily: 'sans-serif', flexWrap: 'wrap' }}>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          民心 <span style={getResourceStyle('morale', (r.morale ?? 0) > 60 ? '#6baa7a' : '#c05050')}>
-            {r.morale ?? 0}
-          </span>
-        </span>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          国库 <span style={getResourceStyle('fiscal', '#d4a93a')}>{r.fiscal ?? 0}</span>
-        </span>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          军力 <span style={getResourceStyle('military', '#7ab5cc')}>{r.military ?? 0}</span>
-        </span>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          粮食 <span style={getResourceStyle('food', '#6baa7a')}>{r.food ?? 0}</span>
-        </span>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          人口 <span style={getResourceStyle('population', '#d4a93a')}>{r.population ?? 0}</span>
-        </span>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          商税 <span style={getResourceStyle('commerce', '#d4a93a')}>{r.commerce ?? 0}</span>
-        </span>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          宦官 <span style={getResourceStyle('eunuch', (r.eunuch ?? 0) > 50 ? '#c05050' : 'rgba(245,239,226,0.5)')}>
-            {r.eunuch ?? 0}
-          </span>
-        </span>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          外患 <span style={getResourceStyle('threat', (r.threat ?? 0) > 50 ? '#c05050' : 'rgba(245,239,226,0.5)')}>
-            {r.threat ?? 0}
-          </span>
-        </span>
-        <span style={{ color: 'rgba(245,239,226,0.5)' }}>
-          派系 <span style={getResourceStyle('faction', (r.faction ?? 0) > 60 ? '#c05050' : 'rgba(245,239,226,0.5)')}>
-            {r.faction ?? 0}
-          </span>
-        </span>
-      </div>
-    </div>
-  );
-}
 }
