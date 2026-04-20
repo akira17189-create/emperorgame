@@ -291,7 +291,7 @@ npm run build
 - [架构设计](ai-context/docs/01_architecture.md)
 - [MVP范围](ai-context/docs/06_mvp_scope.md)
 - [AI开发指南](ai-context/docs/AI_DEVELOPER_GUIDE.md)
-- [Phase 3 开发计划](ai-context/docs/11_phase3_development_plan.md)
+- [Phase 4 开发计划](ai-context/docs/active/14_phase4_development_plan.md)
 
 </div>
 
