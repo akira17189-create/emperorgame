@@ -311,20 +311,23 @@ npm run build
 
 **快速上手指南**：
 1. **首先阅读**：[架构设计](ai-context/docs/01_architecture.md) - 了解系统架构
-2. **然后查看**：[Phase 3 开发计划](ai-context/docs/11_phase3_development_plan.md) - 了解下一步开发方向
+2. **然后查看**：[Phase 4 开发计划](ai-context/docs/active/14_phase4_development_plan.md) - 了解下一步开发方向
 3. **参考实现**：查看 `ai-context/reports/` 目录下的实现报告
 4. **了解设定**：阅读 `ai-context/lore/` 目录下的世界观文档
 
 **当前系统能力**：
-- 多Agent决策仲裁系统
-- 完整资源管理系统
-- NPC自主行为系统
-- 动态叙事生成系统
-- 离线演算引擎
+- ✅ 多Agent决策仲裁系统
+- ✅ 完整资源管理系统
+- ✅ NPC自主行为系统
+- ✅ 动态叙事生成系统
+- ✅ 离线演算引擎
+- ✅ 政策系统（22个政策）
+- ✅ 世界事件系统（32个事件）
+- ✅ 深度叙事集成（15万字内容）
+- ✅ 派系态度矩阵
+- ✅ 结局系统框架
 
----
-
-## 🛠️ 技术栈
+---## 🛠️ 技术栈
 
 <div style="display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0;">
 

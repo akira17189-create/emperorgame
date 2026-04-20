@@ -58,7 +58,7 @@
 - **阅读顺序**: `ai-context/docs/README.md` → `00_overview.md` → `01_architecture.md`
 - **核心文档**: `ai-context/docs/03_fixes_p1.md`（问题修复记录）
 - **进度跟踪**: `ai-context/docs/06_mvp_scope.md`（MVP范围与进度）
-- **Phase 3计划**: `ai-context/docs/11_phase3_development_plan.md`
+- **Phase 4计划**: `ai-context/docs/active/14_phase4_development_plan.md`
 - **开场系统**: `ai-context/docs/12_prologue_and_idle_system.md`
 
 ### 实现报告（`ai-context/reports/`）
