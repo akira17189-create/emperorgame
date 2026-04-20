@@ -11,6 +11,7 @@ import { getDefaultAdapter } from '../engine/save';
 import { NoLLMConfigError, getLLMConfig } from '../engine/llm';
 import { renderTemplate } from '../engine/templates';
 import { PolicyPanel } from './PolicyPanel';
+import { EmperorPanel } from './EmperorPanel';
 import { EVENT_TEMPLATES, resolveEventChoice } from '../engine/event-engine';
 import { calcIdleRates, applyIdleAccumulation } from '../engine/idle-engine';
 import { IDLE_INTERVAL_MS, MAX_OFFLINE_HOURS } from '../engine/idle-config';
@@ -126,6 +127,7 @@ export function CourtPage() {
   } | null>(null);
 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [showEmperorPanel, setShowEmperorPanel] = useState(false);
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<any>(null);
@@ -407,6 +409,19 @@ export function CourtPage() {
         {state?.world?.tone && (
           <div style={{ fontSize: '12px', color: C.muted, marginTop: '5px' }}>{state.world.tone}</div>
         )}
+        <button
+          onClick={() => setShowEmperorPanel(true)}
+          style={{
+            marginTop: '10px', width: '100%', padding: '7px 0',
+            background: 'transparent', border: `1px solid ${C.border}`,
+            borderRadius: '6px', cursor: 'pointer', fontFamily: FONT,
+            fontSize: '12px', color: C.muted, transition: 'border-color 0.15s',
+          }}
+          onMouseOver={e => (e.currentTarget.style.borderColor = C.borderI)}
+          onMouseOut={e => (e.currentTarget.style.borderColor = C.border)}
+        >
+          皇帝修为 ›
+        </button>
       </div>
 
       <div style={{ height: '1px', background: C.border, marginBottom: '18px' }} />
@@ -796,6 +811,11 @@ export function CourtPage() {
           onPolicyEnacted={(narrative) => { setNarration(narrative); setShowPolicyPanel(false); }}
           onClose={() => setShowPolicyPanel(false)}
         />
+      )}
+
+      {/* Emperor panel */}
+      {showEmperorPanel && state && (
+        <EmperorPanel state={state} onClose={() => setShowEmperorPanel(false)} />
       )}
 
       {/* Event modal */}
