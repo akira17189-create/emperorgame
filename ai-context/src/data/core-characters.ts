@@ -59,7 +59,7 @@ export interface ZhangMengHiddenState {
   trustThreshold: number;       // 信任阈值
   grudgeCount: number;          // 积怨次数
   lastHumiliationTurn: number;  // 上次受辱回合
-  betrayalTriggers: Set<string>; // 已触发的背叛条件
+  betrayalTriggers: string[]; // 已触发的背叛条件
   redemptionAttempts: number;   // 挽回尝试次数
   externalContacts: string[];   // 外部联系人
 }
@@ -91,7 +91,7 @@ export interface ZhangMengData {
   hidden: ZhangMengHiddenState;
   
   // 状态标志
-  flags: Set<string>;
+  flags: string[];
   
   // 记忆系统
   memories: Memory[];
@@ -138,8 +138,8 @@ export interface XieYuanCalculations {
 export interface XieYuanHiddenState {
   trueLoyalty: number;         // 真实忠诚度（计算后）
   personalAgenda: string[];    // 个人议程
-  influenceNetwork: Set<string>; // 影响力网络
-  secretCalculations: Map<string, number>; // 秘密计算
+  influenceNetwork: string[]; // 影响力网络
+  secretCalculations: Record<string, number>; // 秘密计算
 }
 
 export interface XieYuanData {
@@ -157,7 +157,7 @@ export interface XieYuanData {
   
   relationships: Record<string, Relationship>;
   hidden: XieYuanHiddenState;
-  flags: Set<string>;
+  flags: string[];
   memories: Memory[];
   
   // 建议历史
@@ -230,7 +230,7 @@ export interface LiJingzhaiData {
   
   characterArc: CharacterArc;
   hidden: LiJingzhaiHiddenState;
-  flags: Set<string>;
+  flags: string[];
   memories: Memory[];
   
   // 谏言历史
@@ -351,7 +351,7 @@ export interface GuoshiData {
   hidden: GuoshiHiddenState;
 
   // 状态标志
-  flags: Set<string>;
+  flags: string[];
 
   // 记忆系统
   memories: Memory[];
@@ -876,11 +876,11 @@ export const EMPRESS_DOWAGER: Character = {
   traits: {
     loyalty: 90,
     ambition: 75,
+    greed: 60,
     courage: 65,
     rationality: 80,
-    curiosity: 60,
+    stability: 85,
     compassion: 55,
-    cunning: 85
   },
   relationships: {
     'player': '婆媳（太后与皇帝）',
@@ -899,11 +899,11 @@ export const WANG_FUQUAN: Character = {
   traits: {
     loyalty: 60,
     ambition: 80,
+    greed: 50,
     courage: 70,
     rationality: 85,
-    curiosity: 50,
+    stability: 95,
     compassion: 30,
-    cunning: 95
   },
   relationships: {
     'player': '表面上恭敬，暗中观察',
@@ -922,11 +922,11 @@ export const ZHOU_WENYUAN: Character = {
   traits: {
     loyalty: 85,
     ambition: 40,
+    greed: 55,
     courage: 60,
     rationality: 90,
-    curiosity: 55,
+    stability: 65,
     compassion: 70,
-    cunning: 65
   },
   relationships: {
     'player': '老臣，持观望态度',
@@ -945,11 +945,11 @@ export const LIN_WANER: Character = {
   traits: {
     loyalty: 80,
     ambition: 55,
+    greed: 90,
     courage: 85,
     rationality: 75,
-    curiosity: 90,
+    stability: 70,
     compassion: 80,
-    cunning: 70
   },
   relationships: {
     'player': '同事，暗中欣赏',
@@ -968,11 +968,11 @@ export const ZHAO_HUCHEN: Character = {
   traits: {
     loyalty: 95,
     ambition: 50,
+    greed: 40,
     courage: 90,
     rationality: 70,
-    curiosity: 40,
+    stability: 60,
     compassion: 75,
-    cunning: 60
   },
   relationships: {
     'player': '武将，忠诚但愚直',
@@ -991,11 +991,11 @@ export const CHEN_SIHAI: Character = {
   traits: {
     loyalty: 70,
     ambition: 75,
+    greed: 60,
     courage: 65,
     rationality: 90,
-    curiosity: 60,
+    stability: 80,
     compassion: 55,
-    cunning: 80
   },
   relationships: {
     'player': '务实派，可用之人',
@@ -1014,11 +1014,11 @@ export const XIAO_DEZI: Character = {
   traits: {
     loyalty: 95,
     ambition: 30,
+    greed: 65,
     courage: 40,
     rationality: 50,
-    curiosity: 65,
+    stability: 45,
     compassion: 70,
-    cunning: 45
   },
   relationships: {
     'player': '忠心侍奉',
@@ -1037,11 +1037,11 @@ export const QIU_YUE: Character = {
   traits: {
     loyalty: 90,
     ambition: 25,
+    greed: 50,
     courage: 35,
     rationality: 55,
-    curiosity: 50,
+    stability: 40,
     compassion: 80,
-    cunning: 40
   },
   relationships: {
     'player': '贴身侍奉，暗中爱慕'
@@ -1059,11 +1059,11 @@ export const XU_DA: Character = {
   traits: {
     loyalty: 95,
     ambition: 45,
+    greed: 35,
     courage: 95,
     rationality: 65,
-    curiosity: 35,
+    stability: 50,
     compassion: 60,
-    cunning: 50
   },
   relationships: {
     'player': '边将，重义轻利',
@@ -1082,11 +1082,11 @@ export const LIU_ZHANG: Character = {
   traits: {
     loyalty: 60,
     ambition: 80,
+    greed: 70,
     courage: 55,
     rationality: 85,
-    curiosity: 70,
+    stability: 90,
     compassion: 50,
-    cunning: 90
   },
   relationships: {
     'player': '可利用的商人',
@@ -1105,11 +1105,11 @@ export const SUN_SIDE: Character = {
   traits: {
     loyalty: 55,
     ambition: 65,
+    greed: 75,
     courage: 45,
     rationality: 80,
-    curiosity: 75,
+    stability: 85,
     compassion: 40,
-    cunning: 85
   },
   relationships: {
     'player': '医官，不可轻信',
@@ -1132,3 +1132,54 @@ export const NEW_NPCS = {
   LIU_ZHANG,
   SUN_SIDE
 };
+
+
+// Character到NPC的转换函数
+export function characterToNPC(c: Character, extra: Partial<NPC> = {}): NPC {
+  // 基础映射
+  const npc: NPC = {
+    id: c.id,
+    slug: c.id.toLowerCase().replace(/\s+/g, '_'),
+    name: c.name,
+    role: c.role,
+    faction: c.faction,
+    status: 'active',
+    traits: {
+      loyalty: c.traits.loyalty,
+      ambition: c.traits.ambition,
+      greed: c.traits.greed || 50,  // 默认值
+      courage: c.traits.courage,
+      rationality: c.traits.rationality,
+      stability: c.traits.stability || 50,  // 默认值
+      honor: c.traits.honor,
+      compassion: c.traits.compassion
+    },
+    state: {
+      pressure: 30,
+      satisfaction: 60,
+      recent_events: [],
+      behavior_modifier: c.personality || '正常',
+      loyalty_to_emperor: c.traits.loyalty
+    },
+    memory: {
+      trauma: [],
+      key_events: [],
+      summary: c.description || ''
+    },
+    bias: {},
+    relations: {},
+    voice: {
+      features: [],
+      syntax_rules: [],
+      forbidden_phrases: []
+    },
+    visual: {
+      image: null,
+      image_prompt: null
+    },
+    goals: []
+  };
+
+  // 合并额外属性
+  return { ...npc, ...extra };
+}

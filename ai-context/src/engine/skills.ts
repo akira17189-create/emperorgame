@@ -1,7 +1,7 @@
 import { SKILLS_BUNDLE } from '../data/skills-bundle';
 import type { GameState } from './types';
 
-// SKILL_ROUTES 常量 - 基于 knowledge-base/skill_routing_supplement.md 生成
+// SKILL_ROUTES 常量 - 基于 ../../../knowledge-base/skill_routing_supplement.md 生成
 export const SKILL_ROUTES: Record<string, string[]> = {
   // 意图类型: [技能ID列表] - 每个意图最多3个技能，避免token超限
   '加税': ['political_communication_strategy', 'personnel_management_principles', 'ming_tax_allocation_analysis'],

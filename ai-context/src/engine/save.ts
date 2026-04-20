@@ -84,9 +84,21 @@ export class IDBAdapter implements SaveAdapter {
       gameState.world.factions = {
         qingliu: 50,    // 清流派势力 0~100
         didang: 50,     // 帝党势力 0~100
-        eunuch_faction: 30  // 宦官党势力 0~100
+        eunuch_faction: 30,  // 宦官党势力 0~100
+        military: 50,       // 军队派势力 0~100
+        pragmatists: 40     // 务实派势力 0~100
       };
-      console.log('迁移: 添加了world.factions字段');
+      console.log('迁移: 添加了world.factions字段（含military和pragmatists）');
+    }
+
+    // 迁移1b: 如果旧存档缺少military或pragmatists字段，补充默认值
+    if (!gameState.world.factions.military) {
+      gameState.world.factions.military = 50;
+      console.log('迁移: 补充了world.factions.military字段');
+    }
+    if (!gameState.world.factions.pragmatists) {
+      gameState.world.factions.pragmatists = 40;
+      console.log('迁移: 补充了world.factions.pragmatists字段');
     }
 
     // 迁移2: 旧存档兼容patch - 开场阶段和放置系统字段

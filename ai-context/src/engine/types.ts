@@ -52,6 +52,8 @@ export interface TraitWeights {
   courage: number;
   rationality: number;
   stability: number;
+  honor?: number;        // 0~100，荣誉感（可选）
+  compassion?: number;    // 0~100，同情心（可选）
 }
 
 // world
@@ -71,7 +73,9 @@ export interface World {
     qingliu: number;    // 清流派势力 0~100
     didang: number;     // 帝党势力 0~100
     eunuch_faction: number;  // 宦官党势力 0~100（与 resources.eunuch 联动）
-  };
+    military: number;      // 军队派势力 0~100
+    pragmatists: number;   // 务实派势力 0~100
+};
 }
 
 export interface NamedEvent {
@@ -169,6 +173,7 @@ export interface VoiceProfile {
   features: string[];
   syntax_rules: string[];
   forbidden_phrases: string[];
+  mode_voices?: Record<string, Pick<VoiceProfile, "features"|"syntax_rules"|"forbidden_phrases">>; // 用于玄明等多模式角色
 }
 
 export interface Visual {
@@ -305,7 +310,14 @@ export function createEmptyGameState(): GameState {
       collective_memory: [DYNASTY_CONFIG.background_summary],
       wills: [],
       weather_this_year: 0.5,
-      conflict_ratio: 0.3
+      conflict_ratio: 0.3,
+      factions: {
+        qingliu: 60,    // 清流派势力
+        didang: 50,     // 帝党势力
+        eunuch_faction: 30,  // 宦官党势力
+        military: 50,      // 军队派势力
+        pragmatists: 40    // 务实派势力
+      }
     },
     resources: {
       food: 1200,
