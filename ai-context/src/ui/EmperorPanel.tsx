@@ -138,6 +138,10 @@ export function EmperorPanel({ state, onClose }: EmperorPanelProps) {
                     {tier.description}
                   </div>
                   <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '10px' }}>
+                    <div style={{ fontSize: '11px', color: C.muted, marginBottom: '6px' }}>
+                      当前效果倍率：<span style={{ color: fillColor, fontWeight: 600 }}>×{tier.multiplier}</span>
+                      {tier.multiplier < 1 && <span style={{ color: C.muted }}> （效果受限）</span>}
+                    </div>
                     {def.effects.map((eff, i) => (
                       <div key={i} style={{ fontSize: '12px', color: C.muted, marginBottom: '4px' }}>
                         · {eff.narrative}

@@ -60,16 +60,17 @@ export function initState(initial: GameState): void {
 
 // 快照（用于 Prompt 上下文，≤500 token）
 export function getSnapshot(state: GameState): string {
+  const r = (n: number) => Math.round(n);
   const snapshot = {
     year: state.world.year,
     tone: state.world.tone,
     resources: {
-      food: state.resources.food,
-      population: state.resources.population,
-      fiscal: state.resources.fiscal,
-      military: state.resources.military,
-      morale: state.resources.morale,
-      threat: state.resources.threat
+      food: r(state.resources.food),
+      population: r(state.resources.population),
+      fiscal: r(state.resources.fiscal),
+      military: r(state.resources.military),
+      morale: r(state.resources.morale),
+      threat: r(state.resources.threat)
     },
     active_policies: state.policies.active.map(p => p.tags.join(',')),
     npc_summary: state.npcs.map(npc => ({

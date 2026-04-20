@@ -215,14 +215,20 @@ export async function gameTick(
       }
     }
 
-    // 4. 生成世界叙事
-    console.log('[TICK] 准备调用 generateNarration', { targetNpcId, eventsCount: simulationResult.events.length });
-    const narrationResult = await generateNarration(
-      simulationResult.newState,
-      simulationResult.events,
-      arbitrationResult,
-      targetNpcId
-    );
+    // 4. 生成世界叙事（如果 NPC 交互已生成叙事且无额外事件，跳过此调用节省一次 LLM 往返）
+    let narrationResult: Awaited<ReturnType<typeof generateNarration>>;
+    const needsWorldNarration = !npcNarration || simulationResult.events.length > 0 || !!arbitrationResult?.narrative;
+    console.log('[TICK] 世界叙事决策', { needsWorldNarration, hasNpcNarration: !!npcNarration, eventsCount: simulationResult.events.length });
+    if (needsWorldNarration) {
+      narrationResult = await generateNarration(
+        simulationResult.newState,
+        simulationResult.events,
+        arbitrationResult,
+        targetNpcId
+      );
+    } else {
+      narrationResult = { success: true, narration: npcNarration!, chronicle_entry: npcChronicleEntry ?? undefined };
+    }
 
     // 5. 检查游戏结束条件
     // 检查游戏结束条件（优先检查结局）

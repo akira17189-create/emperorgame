@@ -525,7 +525,7 @@ export function CourtPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
       {/* Narration scroll */}
-      <div className="court-scroll" ref={narrationRef} style={{ cursor: isPrologueRunning ? 'pointer' : 'default' }}>
+      <div className="court-scroll" ref={narrationRef} style={{ cursor: isPrologueRunning ? 'pointer' : 'default', maxHeight: '60vh', overflowY: 'auto' }}>
         <div className="narration-text">
           {narration
             ? narration
@@ -553,7 +553,7 @@ export function CourtPage() {
               onClick={async () => {
                 setShowPrologueOptions(false);
                 setSelectedOption(option);
-                const response = option.innerThought + '\n\n' + option.monkResponse + '\n\n' + PROLOGUE_TRANSITION;
+                const response = option.innerThought + '\n\n【国师玄明】\n' + option.monkResponse;
                 await typewriterEffect(response);
                 setGameState((draft: any) => {
                   draft.meta.prologue_phase = 'complete';
