@@ -77,10 +77,11 @@ body{background:${C.cream};font-family:${FONT};color:${C.ink}}
 
 .submenu-wrap{position:relative;display:inline-block}
 .submenu{position:absolute;top:calc(100% + 6px);left:0;z-index:50;background:${C.cream};border:1px solid ${C.border};border-radius:8px;padding:6px;min-width:140px;box-shadow:0 4px 16px rgba(0,0,0,0.07);display:none;flex-direction:column;gap:2px}
-.submenu-wrap:hover .submenu{display:flex}
+.submenu.open{display:flex}
 .submenu button{width:100%;text-align:left;padding:8px 12px;background:none;border:none;border-radius:6px;cursor:pointer;font-family:${FONT};font-size:13px;color:${C.ink};transition:background 0.12s}
 .submenu button:hover{background:${C.ink04}}
 .submenu button:disabled{opacity:0.4;cursor:not-allowed}
+.rate-badge{font-size:10px;color:${C.safe};margin-left:4px}
 
 .court-input{width:100%;padding:12px 16px;border:1px solid ${C.border};border-radius:6px;background:${C.cream};font-family:${FONT};font-size:15px;color:${C.ink};resize:none;outline:none;line-height:1.7;transition:border-color 0.15s,box-shadow 0.15s}
 .court-input:focus{border-color:${C.borderI};box-shadow:${SHADOW_FOCUS}}
@@ -124,6 +125,8 @@ export function CourtPage() {
     hours: number; minutes: number; food: number; fiscal: number; military: number;
   } | null>(null);
 
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
   const [showEventModal, setShowEventModal] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<any>(null);
   const [eventNarrative, setEventNarrative] = useState('');
@@ -143,7 +146,8 @@ export function CourtPage() {
     setIsPrologueRunning(true);
     setShowPrologueOptions(false);
 
-    const fullText = PROLOGUE_AWAKENING + '\n\n' + PROLOGUE_GUOSHI_ENTRY + '\n\n' + PROLOGUE_GUOSHI_NOTICE;
+    const DIVIDER = '\n\n──── 【国师玄明】 ────\n\n';
+    const fullText = PROLOGUE_AWAKENING + DIVIDER + PROLOGUE_GUOSHI_ENTRY + '\n\n' + PROLOGUE_GUOSHI_NOTICE;
     let i = 0;
     let currentText = '';
     let timerId: ReturnType<typeof setTimeout> | null = null;
@@ -186,6 +190,14 @@ export function CourtPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 点外部关闭下拉菜单
+  useEffect(() => {
+    if (!openMenu) return;
+    const handler = () => setOpenMenu(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [openMenu]);
+
   // Ctrl+S 快速保存
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -208,26 +220,40 @@ export function CourtPage() {
     }
   }, [state?.events?.pending, showEventModal]);
 
-  // 离线收益
+  // 离线收益（仅挂载时计算一次）
   useEffect(() => {
     if (!state?.meta?.last_idle_tick_at) return;
     const lastTick = new Date(state.meta.last_idle_tick_at).getTime();
     const now = Date.now();
     const offlineMs = Math.min(now - lastTick, MAX_OFFLINE_HOURS * 3600 * 1000);
-    if (offlineMs > IDLE_INTERVAL_MS) {
-      const earnings = calcIdleRates(state);
+    if (offlineMs > IDLE_INTERVAL_MS * 2) {
+      const rates = calcIdleRates(getState());
       setOfflineEarnings({
         hours:    Math.floor(offlineMs / 3600000),
         minutes:  Math.floor((offlineMs % 3600000) / 60000),
-        food:     earnings.food    * (offlineMs / 60000),
-        fiscal:   earnings.fiscal  * (offlineMs / 60000),
-        military: earnings.military * (offlineMs / 60000),
+        food:     rates.food    * (offlineMs / 60000),
+        fiscal:   rates.fiscal  * (offlineMs / 60000),
+        military: rates.military * (offlineMs / 60000),
       });
-      const newState = applyIdleAccumulation(state, earnings, offlineMs / 60000);
-      setGameState(newState);
-      setGameState(draft => { draft.meta.last_idle_tick_at = new Date().toISOString(); });
+      setGameState(draft => {
+        applyIdleAccumulation(draft, rates, offlineMs / 60000);
+        draft.meta.last_idle_tick_at = new Date().toISOString();
+      });
     }
-  }, [state?.meta?.last_idle_tick_at]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 实时放置积累（每10秒）
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setGameState(draft => {
+        const rates = calcIdleRates(draft);
+        applyIdleAccumulation(draft, rates, IDLE_INTERVAL_MS / 60000);
+        draft.meta.last_idle_tick_at = new Date().toISOString();
+      });
+    }, IDLE_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, []);
 
   // ─── Handlers ──────────────────────────────────────────────────────────────────
   const handleEventChoice = (choiceId: string) => {
@@ -359,6 +385,10 @@ export function CourtPage() {
   const SEV_LABELS = ['', '轻微', '中等', '严重'];
   const SEV_COLORS = [C.muted, C.safe, C.warn, C.danger];
 
+  // 计算实时积累速率（每分钟）
+  const idleRates = state ? calcIdleRates(state) : null;
+  const fmtRate = (r: number) => r > 0 ? `+${r.toFixed(1)}/分` : r < 0 ? `${r.toFixed(1)}/分` : '';
+
   // ─── Sidebar ───────────────────────────────────────────────────────────────────
   const sidebar = (
     <aside style={{
@@ -416,20 +446,27 @@ export function CourtPage() {
 
       {/* Numeric resources */}
       {([
-        { label: '国库',   key: 'fiscal',     unit: '万两' },
-        { label: '粮食',   key: 'food',       unit: '石' },
-        { label: '军力',   key: 'military',   unit: '' },
-        { label: '人口',   key: 'population', unit: '' },
-        { label: '商税',   key: 'commerce',   unit: '两/年' },
-      ]).map(({ label, key, unit }) => (
+        { label: '国库',   key: 'fiscal',     unit: '万两',  rateKey: 'fiscal' },
+        { label: '粮食',   key: 'food',       unit: '石',    rateKey: 'food' },
+        { label: '军力',   key: 'military',   unit: '',      rateKey: 'military' },
+        { label: '人口',   key: 'population', unit: '',      rateKey: 'population' },
+        { label: '商税',   key: 'commerce',   unit: '两/年', rateKey: 'commerce' },
+      ]).map(({ label, key, unit, rateKey }) => {
+        const rate = idleRates ? (idleRates as any)[rateKey] : 0;
+        const rateStr = fmtRate(rate);
+        return (
         <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '9px' }}>
-          <span style={{ fontSize: '12px', color: C.muted }}>{label}</span>
+          <span style={{ fontSize: '12px', color: C.muted }}>
+            {label}
+            {rateStr && <span className="rate-badge">{rateStr}</span>}
+          </span>
           <span style={{ fontSize: '13px', fontWeight: 600, color: C.ink }}>
             {fmt(r[key])}
             {unit && <span style={{ fontSize: '11px', color: C.muted, marginLeft: '2px' }}>{unit}</span>}
           </span>
         </div>
-      ))}
+        );
+      })}
 
       {/* Active NPCs */}
       {prologuePhase === 'complete' && (state?.npcs?.filter((n: any) => n.status === 'active')?.length ?? 0) > 0 && (
@@ -540,20 +577,24 @@ export function CourtPage() {
 
             {/* 前往 submenu */}
             <div className="submenu-wrap">
-              <button className="btn-ghost">🏯 前往 ▾</button>
-              <div className="submenu">
+              <button className="btn-ghost" onClick={e => { e.stopPropagation(); setOpenMenu(openMenu === 'location' ? null : 'location'); }}>
+                🏯 前往 ▾
+              </button>
+              <div className={`submenu${openMenu === 'location' ? ' open' : ''}`}>
                 {LOCATION_OPTIONS.map(loc => (
-                  <button key={loc.id} onClick={() => submitCommand(loc.command)} title={loc.description}>
+                  <button key={loc.id} onClick={() => { submitCommand(loc.command); setOpenMenu(null); }} title={loc.description}>
                     {loc.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* 召见 submenu — Bug 2 fix: pass npc.id as second arg */}
+            {/* 召见 submenu */}
             <div className="submenu-wrap">
-              <button className="btn-ghost">👤 召见 ▾</button>
-              <div className="submenu">
+              <button className="btn-ghost" onClick={e => { e.stopPropagation(); setOpenMenu(openMenu === 'summon' ? null : 'summon'); }}>
+                👤 召见 ▾
+              </button>
+              <div className={`submenu${openMenu === 'summon' ? ' open' : ''}`}>
                 {(state?.npcs?.filter((n: any) => n.status === 'active') ?? []).length > 0
                   ? state.npcs
                       .filter((n: any) => n.status === 'active')
@@ -561,7 +602,7 @@ export function CourtPage() {
                         <button
                           key={npc.id}
                           title={`${npc.role} · ${npc.faction}派`}
-                          onClick={() => submitCommand(`召见${npc.name}`, npc.id)}
+                          onClick={() => { submitCommand(`召见${npc.name}`, npc.id); setOpenMenu(null); }}
                         >
                           {npc.name}
                         </button>
