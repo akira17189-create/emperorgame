@@ -387,9 +387,3 @@ npm run build
 [![GitHub issues](https://img.shields.io/github/issues/akira17189-create/emperorgame?style=social)](https://github.com/akira17189-create/emperorgame/issues)
 
 </div>
-
-</parameter>
-<function=end_write_file>
-<parameter=brief>完成README.md文件更新</parameter>
-</function>
-</tool_call>

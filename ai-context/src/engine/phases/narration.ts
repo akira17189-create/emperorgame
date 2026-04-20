@@ -116,9 +116,13 @@ async function generateNormalNarration(state: GameState, events: string[], targe
     console.log('[NARRATION PROMPT USER]', user);
     console.log('[NARRATION RESULT]', result);
 
-    // 尝试解析JSON
+    // 尝试解析JSON（兼容LLM用markdown代码块包裹的情况）
     try {
-      const parsed = JSON.parse(result);
+      const cleaned = result
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
+      const parsed = JSON.parse(cleaned);
 
       // 验证必需字段
       console.log('[NARRATION] JSON解析成功', { 

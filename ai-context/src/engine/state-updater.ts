@@ -86,7 +86,6 @@ export function updateState(currentState: GameState, updates: StateUpdate): Game
 
   return newState;
 }
-}
 
 export function applyEffects(state: GameState, effects: Effect[]): GameState {
   // 按优先级排序效果

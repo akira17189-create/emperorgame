@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { GameState } from '../engine/types';
-import { interpretPolicy, POLICY_PRESETS, checkPolicyConflicts, applyPresetPolicy, registerActivePolicy, getPolicyDescription, getPolicyNarrative, NPCReaction } from '../engine/policy-engine';
+import { interpretPolicy, POLICY_PRESETS, checkPolicyConflicts, applyPresetPolicy, registerActivePolicy, getPolicyDescription, getPolicyNarrative, NPCReaction, isPolicyUnlocked, PRESET_POLICY_GROUPS } from '../engine/policy-engine';
 import { setState as setGameState, getState } from '../engine/state';
 
 interface PolicyPanelProps {
@@ -18,12 +18,7 @@ export function PolicyPanel({ state, onPolicyEnacted }: PolicyPanelProps) {
   const [errors, setErrors] = useState<string[]>([]);
   const [selectedPolicy, setSelectedPolicy] = useState<string | null>(null);
 
-  const presetGroups = {
-    '内政': ['减税惠民', '加征赋税', '整顿吏治', '广开言路', '兴建水利', '开仓赈灾'],
-    '军事': ['扩充禁军', '裁汰冗兵', '边疆屯田', '和亲邦交', '御驾亲征'],
-    '仙道': ['祭天祈福', '召仙炼丹', '观星问天', '敕封龙虎', '禁绝方术', '丹药普赐'],
-    '工业': ['推广活字印刷', '开设钱庄', '官道驿路', '火器营制', '开海通商', '蒸汽奇器']
-  };
+  const presetGroups = PRESET_POLICY_GROUPS;
 
   async function handlePresetPolicy(name: string) {
     const conflicts = checkPolicyConflicts(
@@ -270,27 +265,30 @@ export function PolicyPanel({ state, onPolicyEnacted }: PolicyPanelProps) {
                 {group}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {policies.map(p => (
-                  <button 
-                    key={p} 
-                    onClick={() => handlePresetPolicy(p)} 
-                    disabled={isProcessing}
-                    title={getPolicyTooltip(p)}
+                {policies.map(p => {
+                  const { unlocked, hint } = isPolicyUnlocked(p, state);
+                  return (
+                  <button
+                    key={p}
+                    onClick={() => unlocked && handlePresetPolicy(p)}
+                    disabled={isProcessing || !unlocked}
+                    title={unlocked ? getPolicyTooltip(p) : hint}
                     style={{
-                      background: selectedPolicy === p ? 'rgba(184,146,42,0.25)' : 'rgba(184,146,42,0.1)', 
-                      border: selectedPolicy === p ? '1px solid #b8922a' : '1px solid rgba(184,146,42,0.3)',
-                      color: 'rgba(245,239,226,0.85)', 
+                      background: !unlocked ? 'rgba(100,100,100,0.1)' : selectedPolicy === p ? 'rgba(184,146,42,0.25)' : 'rgba(184,146,42,0.1)',
+                      border: !unlocked ? '1px solid rgba(100,100,100,0.3)' : selectedPolicy === p ? '1px solid #b8922a' : '1px solid rgba(184,146,42,0.3)',
+                      color: !unlocked ? 'rgba(245,239,226,0.3)' : 'rgba(245,239,226,0.85)',
                       padding: '6px 14px',
-                      cursor: isProcessing ? 'not-allowed' : 'pointer',
-                      fontFamily: 'sans-serif', 
+                      cursor: isProcessing || !unlocked ? 'not-allowed' : 'pointer',
+                      fontFamily: 'sans-serif',
                       fontSize: '12px',
                       opacity: isProcessing ? 0.5 : 1,
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    {p}
+                    {!unlocked ? `🔒 ${p}` : p}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}

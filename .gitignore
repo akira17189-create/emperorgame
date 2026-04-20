@@ -53,3 +53,7 @@ saves/
 
 # 临时打包目录
 _temp_package/
+
+# 本地打包存档
+成品.zip
+*.zip

@@ -37,7 +37,10 @@ export interface Emperor {
   name: string;
   age: number;
   generation: number;
-  prestige: number;         // 0~100
+  prestige: number;         // 威望 0~100
+  virtue: number;           // 德行 0~100
+  subtlety: number;         // 心性 0~100
+  statecraft: number;       // 手腕 0~100
   traits: TraitWeights;
   knowledge: string[];
   memory: { trauma: TraumaEntry[]; key_events: KeyEvent[] };
@@ -287,7 +290,10 @@ export function createEmptyGameState(): GameState {
       name: '新帝',
       age: 18,
       generation: 1,
-      prestige: 50,
+      prestige: 10,
+      virtue: 10,
+      subtlety: 10,
+      statecraft: 10,
       traits: {
         loyalty: 50,
         ambition: 50,

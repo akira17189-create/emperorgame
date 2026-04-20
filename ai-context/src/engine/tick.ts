@@ -331,6 +331,4 @@ export function checkGameEnd(state: GameState): { isEnded: boolean; reason?: str
 
   // 保持原有逻辑
   return checkGameEndConditions(state);
-} {
-  return checkGameEndConditions(state);
 }

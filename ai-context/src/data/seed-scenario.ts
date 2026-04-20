@@ -1,7 +1,6 @@
 import type { Resources, World, GameState } from '../engine/types';
 import { createEmptyGameState } from '../engine/types';
-import { SEED_NPCS } from './seed-npcs';
-
+import { seedNpcs as SEED_NPCS } from './seed-npcs';
 export const SEED_WORLD: Partial<World> = {
   dynasty: '靖朝',
   era: '永德',

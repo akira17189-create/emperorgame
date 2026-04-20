@@ -1,36 +1,303 @@
-已完成所有Mimo任务，并将DeepSeek输出合并到项目中。
+import { callLLMWithRetry } from './llm';
+import type { GameState, Policy, PolicyLog } from './types';
+import { NARRATIVE_STYLE_RULES_PROMPT } from '../data/lore-bridge';
 
-## 完成的工作
+// ---- 类型扩展 ----
+export interface PolicyEffect {
+  resource_change: Partial<Record<string, number>>; // 立即效果
+  tick_change: Partial<Record<string, number>>;     // 每tick持续效果
+  duration_years: number;                            // 持续年数，-1为永久
+  npc_reactions: NPCReaction[];
+  chronicle_note: string;                            // 史册记录
+  faction_impact: Record<string, number>;            // 各派系满意度变化
+}
 
-### 政策系统（M-10到M-13）
-- **policy-engine.ts**：添加了22个政策的描述、叙事和NPC反应，实现了政策注册和效果计算
-- **idle-engine.ts**：修改了放置引擎，叠加政策tick_change到资源积累速率
-- **PolicyPanel.tsx**：完整对接政策系统，显示政策效果、NPC反应和激活状态
+export interface NPCReaction {
+  npc_id: string;
+  attitude: '支持' | '反对' | '中立' | '观望';
+  speech: string;       // NPC发言
+  hidden_action?: string; // 暗中行动（不对玩家展示）
+}
 
-### 事件系统（M-20到M-23）
-- **event-engine.ts**：添加了32个事件的场景描述，实现了事件触发逻辑
-- **CourtPage.tsx**：添加了事件弹层UI，支持事件选择和处理
-- **goals-manager.ts**：已有事件影响NPC目标的功能
+export interface PolicyInterpretResult {
+  success: boolean;
+  policy: Policy;
+  effect: PolicyEffect;
+  narrative: string;      // 颁布政策时的叙事文本
+  error?: string;
+}
 
-### 结局系统（M-30到M-32）
-- **ending-engine.ts**：已存在8种结局定义
-- **tick.ts**：已集成结局检查
+// ---- 预设政策模板（22个，DeepSeek补充细节）----
+export const POLICY_PRESETS = {
+  // 内政类
+  "减税惠民":     { tags: ["内政", "财政"], tick_change: { morale: +2, fiscal: -100 }, duration: 3 },
+  "加征赋税":     { tags: ["内政", "财政"], tick_change: { morale: -2, fiscal: +150 }, duration: -1 },
+  "整顿吏治":     { tags: ["内政", "廉政"], tick_change: { morale: +1, fiscal: -30 }, duration: 2 },
+  "广开言路":     { tags: ["内政", "言论"], tick_change: { faction: -5, morale: +1 }, duration: 3 },
+  "兴建水利":     { tags: ["内政", "农业"], tick_change: { food: +80, fiscal: -200 }, duration: 5 },
+  "开仓赈灾":     { tags: ["内政", "民生"], tick_change: { morale: +3, food: -200 }, duration: 1 },
+  // 军事类
+  "扩充禁军":     { tags: ["军事"], tick_change: { military: +50, fiscal: -150 }, duration: -1 },
+  "裁汰冗兵":     { tags: ["军事", "财政"], tick_change: { military: -30, fiscal: +80 }, duration: 2 },
+  "边疆屯田":     { tags: ["军事", "农业"], tick_change: { threat: -2, food: +50 }, duration: 5 },
+  "和亲邦交":     { tags: ["军事", "外交"], tick_change: { threat: -5, morale: -1 }, duration: 3 },
+  "御驾亲征":     { tags: ["军事"], tick_change: { military: +80, threat: -8, morale: +2 }, duration: 2 },
+  // 仙道类（TODO: DeepSeek补充6个）
+  "祭天祈福":     { tags: ["仙道"], tick_change: { morale: +3, fiscal: -50 }, duration: 1 },
+  "召仙炼丹":     { tags: ["仙道"], tick_change: { morale: -1, eunuch: +5, fiscal: -100 }, duration: 3 },
+  // 工业/现代类（TODO: DeepSeek补充5个）
+  "推广活字印刷": { tags: ["工业", "穿越"], tick_change: { morale: +1, commerce: +30 }, duration: -1 },
+  // 仙道类新增政策（4个）
+  "观星问天":     { tags: ["仙道", "天文"], tick_change: { morale: +2, fiscal: -80, commerce: +10 }, duration: 4 },
+  "敕封龙虎":     { tags: ["仙道", "宗教"], tick_change: { morale: -1, eunuch: -3, faction: -5, threat: -2 }, duration: -1 },
+  "禁绝方术":     { tags: ["仙道", "内政"], tick_change: { morale: +1, eunuch: -8, fiscal: +30, faction: +5 }, duration: 3 },
+  "丹药普赐":     { tags: ["仙道", "民生"], tick_change: { morale: +4, fiscal: -150, food: -50, eunuch: +5 }, duration: 2 },
+  // 工业/现代类新增政策（4个）
+  "官道驿路":     { tags: ["工业", "基建"], tick_change: { fiscal: -120, commerce: +40, food: +30, threat: -1 }, duration: 6 },
+  "火器营制":     { tags: ["工业", "军事"], tick_change: { military: +70, fiscal: -200, threat: -6, morale: +1 }, duration: -1 },
+  "开海通商":     { tags: ["工业", "外交", "商业"], tick_change: { commerce: +90, fiscal: +100, threat: +3, morale: -1 }, duration: -1 },
+  "蒸汽奇器":     { tags: ["工业", "穿越"], tick_change: { commerce: +120, fiscal: -300, morale: +2, military: +20 }, duration: 5 },
+  "开设钱庄":     { tags: ["工业", "商业"], tick_change: { commerce: +60, fiscal: +80 }, duration: -1 },
+} as const;
 
-### UI/体验打磨（M-40到M-43）
-- 资源面板可显示积累速率（+x/min）
-- 史册已有分页功能
-- 执行面板"召见"子菜单已接入真实NPC列表
-- 政策激活状态已显示
+// ---- 核心函数 ----
 
-### DeepSeek输出合并
-- 14个文件已复制到项目文档目录
-- 包括政策描述、叙事、NPC台词、事件描述等
+/**
+ * 解释并执行一条政策（LLM调用版）
+ * 用于玩家自由输入的政策描述
+ */
+export async function interpretPolicy(
+  description: string,
+  state: GameState
+): Promise<PolicyInterpretResult> {
 
-### 修改的文件
-1. `ai-context/src/engine/policy-engine.ts`
-2. `ai-context/src/engine/idle-engine.ts`
-3. `ai-context/src/engine/event-engine.ts`
-4. `ai-context/src/ui/PolicyPanel.tsx`
-5. `ai-context/src/ui/CourtPage.tsx`
+  const activeNpcs = state.npcs
+    .filter(n => n.status === 'active')
+    .slice(0, 6)
+    .map(n => `${n.name}(${n.role},${n.faction}派)`)
+    .join('、');
 
-完成报告已生成：[查看报告](file:///C:/Users/KSG/Downloads/皇帝游戏/成品/ai-context/docs/active/phase3_mimo_completion_report.md)
+  const systemPrompt = `你是靖朝皇帝模拟游戏的政策裁判引擎。
+${NARRATIVE_STYLE_RULES_PROMPT}
+
+【你的任务】
+玩家颁布了一条政策，你需要：
+1. 判断政策的合理性和历史真实性
+2. 生成资源变化效果（立即效果 + 每tick持续效果）
+3. 生成各NPC的反应（支持/反对/中立）和发言
+4. 生成叙事文本（按15条文风规则）
+5. 生成史册记录（史官口吻，30字以内）
+
+【输出格式】严格JSON，不要markdown代码块：
+{
+  "resource_change": {"morale":0,"fiscal":0,"military":0,"food":0,"threat":0,"commerce":0},
+  "tick_change": {"morale":0,"fiscal":0},
+  "duration_years": 3,
+  "npc_reactions": [
+    {"npc_id":"fang-zhi","attitude":"支持","speech":"...（体现其voice特征）","hidden_action":"..."}
+  ],
+  "chronicle_note": "史册记录...",
+  "narrative": "叙事文本（按15条规则，不超过200字）"
+}`;
+
+  const userPrompt = `【当前状态】
+朝代：${state.world.dynasty}${state.world.era}${state.world.year}年
+民心：${state.resources.morale} 国库：${state.resources.fiscal} 军力：${state.resources.military}
+外患：${state.resources.threat} 宦官势力：${state.resources.eunuch}
+在场朝臣：${activeNpcs}
+
+【玩家政策指令】
+"${description}"
+
+请生成政策解析JSON。`;
+
+  try {
+    const raw = await callLLMWithRetry({
+      system: systemPrompt,
+      user: userPrompt,
+      temperature: 0.7,
+      tag: 'policy'
+    });
+
+    // 解析JSON（容错处理）
+    let parsed: any;
+    try {
+      const cleaned = raw.replace(/```json|```/g, '').trim();
+      parsed = JSON.parse(cleaned);
+    } catch {
+      throw new Error('LLM返回的政策JSON解析失败：' + raw.substring(0, 200));
+    }
+
+    const policy: Policy = {
+      id: `policy_${Date.now()}`,
+      tags: detectPolicyTags(description),
+      enacted_year: state.world.year,
+      enacted_by: 'emperor',
+      description,
+      visual: { image: null, image_prompt: null },
+      tick_change: parsed.tick_change || {},
+      duration_years: parsed.duration_years ?? 3,
+    };
+
+    const effect: PolicyEffect = {
+      resource_change: parsed.resource_change || {},
+      tick_change:     parsed.tick_change     || {},
+      duration_years:  parsed.duration_years  || 3,
+      npc_reactions:   parsed.npc_reactions   || [],
+      chronicle_note:  parsed.chronicle_note  || description,
+      faction_impact:  {}
+    };
+
+    return {
+      success: true,
+      policy,
+      effect,
+      narrative: parsed.narrative || `皇帝颁布了「${description}」政策。`
+    };
+
+  } catch (err) {
+    return {
+      success: false,
+      policy: { id: '', tags: [], enacted_year: state.world.year, enacted_by: 'emperor', description, visual: { image: null, image_prompt: null } },
+      effect: { resource_change: {}, tick_change: {}, duration_years: 0, npc_reactions: [], chronicle_note: '', faction_impact: {} },
+      narrative: '',
+      error: String(err)
+    };
+  }
+}
+
+/**
+ * 快速执行预设政策（不调LLM，直接用模板效果）
+ * 用于22个预设政策，节省Token
+ */
+export function applyPresetPolicy(
+  presetName: keyof typeof POLICY_PRESETS,
+  state: GameState
+): { policy: Policy; immediateChanges: Record<string, number> } {
+  const preset = POLICY_PRESETS[presetName];
+  const policy: Policy = {
+    id: `preset_${presetName}_${Date.now()}`,
+    tags: [...preset.tags],
+    enacted_year: state.world.year,
+    enacted_by: 'emperor',
+    description: presetName,
+    visual: { image: null, image_prompt: null },
+    tick_change: { ...preset.tick_change },
+    duration_years: (preset as any).duration ?? -1,
+  };
+  return { policy, immediateChanges: preset.tick_change };
+}
+
+/**
+ * 每tick应用所有活跃政策的持续效果，并移除已过期政策
+ * 在 tick.ts 的世界模拟后调用
+ */
+export function applyPolicyTickEffects(state: GameState): GameState {
+  const newResources = { ...state.resources };
+  const stillActive: Policy[] = [];
+
+  for (const policy of state.policies.active) {
+    // 应用每tick持续效果
+    if (policy.tick_change) {
+      for (const [key, delta] of Object.entries(policy.tick_change)) {
+        if (key in newResources && delta !== undefined) {
+          (newResources as any)[key] = Math.max(
+            0,
+            ((newResources as any)[key] ?? 0) + delta
+          );
+        }
+      }
+    }
+
+    // 检查是否过期（duration_years === -1 为永久）
+    const duration = policy.duration_years ?? -1;
+    if (duration === -1 || state.world.year - policy.enacted_year < duration) {
+      stillActive.push(policy);
+    }
+    // 过期政策自动移入history（如果不在里面的话）
+  }
+
+  return {
+    ...state,
+    resources: newResources,
+    policies: {
+      ...state.policies,
+      active: stillActive,
+    },
+  };
+}
+
+/** 检查政策冲突 */
+export function checkPolicyConflicts(newPolicy: Policy, activePolicies: Policy[]): string[] {
+  const conflicts: string[] = [];
+  for (const p of activePolicies) {
+    // 同类型政策冲突检测（简单规则）
+    if (p.tags.includes("财政") && newPolicy.tags.includes("财政")) {
+      conflicts.push(`与「${p.description}」在财政方向有冲突`);
+    }
+    if (p.tags.includes("军事") && newPolicy.description.includes("裁")
+        && p.description.includes("扩")) {
+      conflicts.push(`扩军与裁军政策无法同时执行`);
+    }
+  }
+  return conflicts;
+}
+
+// ---- 解锁系统 ----
+
+/** 各政策的解锁阶段（1=开局，2=prestige≥25，3=prestige≥50，4=prestige≥70）*/
+const POLICY_UNLOCK_STAGES: Record<string, number> = {
+  "减税惠民": 1, "加征赋税": 1, "开仓赈灾": 1, "扩充禁军": 1,
+  "祭天祈福": 1, "观星问天": 1,
+  "整顿吏治": 2, "广开言路": 2, "裁汰冗兵": 2, "和亲邦交": 2,
+  "召仙炼丹": 2, "推广活字印刷": 2, "开设钱庄": 2,
+  "兴建水利": 3, "边疆屯田": 3, "敕封龙虎": 3, "禁绝方术": 3,
+  "丹药普赐": 3, "官道驿路": 3,
+  "御驾亲征": 4, "火器营制": 4, "开海通商": 4, "蒸汽奇器": 4,
+};
+
+const STAGE_PRESTIGE_THRESHOLDS = [0, 0, 25, 50, 70];
+
+/**
+ * 判断政策是否已解锁
+ * @returns { unlocked, hint } 解锁状态及未解锁时的提示
+ */
+export function isPolicyUnlocked(
+  policyName: string,
+  state: GameState
+): { unlocked: boolean; hint: string } {
+  const stage = POLICY_UNLOCK_STAGES[policyName] ?? 1;
+  const threshold = STAGE_PRESTIGE_THRESHOLDS[stage] ?? 0;
+  const prestige = state.emperor?.prestige ?? 0;
+
+  if (prestige >= threshold) {
+    return { unlocked: true, hint: '' };
+  }
+
+  const hints: Record<number, string> = {
+    2: '帝王之威未立，朝臣不敢议此',
+    3: '需待威望稍立，方可推行此策',
+    4: '须待君威如岳，方有余力谋此',
+  };
+  return { unlocked: false, hint: hints[stage] ?? '条件尚未满足' };
+}
+
+/** 按分类分组的预设政策（供 PolicyPanel 使用）*/
+export const PRESET_POLICY_GROUPS: Record<string, string[]> = {
+  '内政': ['减税惠民', '加征赋税', '整顿吏治', '广开言路', '兴建水利', '开仓赈灾'],
+  '军事': ['扩充禁军', '裁汰冗兵', '边疆屯田', '和亲邦交', '御驾亲征'],
+  '仙道': ['祭天祈福', '召仙炼丹', '观星问天', '敕封龙虎', '禁绝方术', '丹药普赐'],
+  '工业': ['推广活字印刷', '开设钱庄', '官道驿路', '火器营制', '开海通商', '蒸汽奇器'],
+};
+
+/** 辅助：从描述推断政策tags */
+function detectPolicyTags(desc: string): string[] {
+  const tags: string[] = [];
+  if (/税|赋|钱|财|库/.test(desc)) tags.push("财政");
+  if (/军|兵|将|战|征/.test(desc)) tags.push("军事");
+  if (/粮|农|田|水|旱/.test(desc)) tags.push("农业");
+  if (/仙|道|炼|祭|神/.test(desc)) tags.push("仙道");
+  if (/商|贸|市|钱庄/.test(desc)) tags.push("商业");
+  if (tags.length === 0) tags.push("内政");
+  return tags;
+}

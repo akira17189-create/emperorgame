@@ -5,7 +5,7 @@ import { initState } from '../engine/state';
 import { getDefaultAdapter } from '../engine/save';
 import { useToast } from './components/Toast';
 import { SEED_SCENARIO_DESCRIPTION } from '../data/seed-scenario';
-import { SEED_NPCS } from '../data/seed-npcs';
+import { seedNpcs as SEED_NPCS } from '../data/seed-npcs';
 
 export function NewGamePage() {
   const [isStarting, setIsStarting] = useState(false);
