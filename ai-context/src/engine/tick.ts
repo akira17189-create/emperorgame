@@ -239,10 +239,6 @@ export async function gameTick(
       // 这里可以添加跳转到结局页面的逻辑
       // 实际跳转会在前端处理
     }
-    if (endCheck.isEnded) {
-      simulationResult.events.push(`游戏结束：${endCheck.reason}`);
-    }
-
     // 6. 组装最终结果
     const finalNarration = npcNarration || narrationResult.narration;
     console.log('[TICK] 组装最终结果', { 
