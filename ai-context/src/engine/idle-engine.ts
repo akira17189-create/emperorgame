@@ -153,28 +153,28 @@ export function applyIdleAccumulation(
     0,
     Math.min(100, resources.faction + rates.faction * minutes)
   );
+
+  // 更新 world.factions 字段
+  // 根据 resources.faction 的变化来更新各个派系
+  // 这里简化处理：根据 resources.faction 的变化来调整各个派系
+  const factionDelta = rates.faction * minutes;
+  state.world.factions.qingliu = Math.max(0, Math.min(100, state.world.factions.qingliu + factionDelta * 0.5));
+  state.world.factions.didang = Math.max(0, Math.min(100, state.world.factions.didang + factionDelta * 0.3));
+  state.world.factions.eunuch_faction = Math.max(0, Math.min(100, state.world.factions.eunuch_faction + state.resources.eunuch * 0.1));
+  state.world.factions.military = Math.max(0, Math.min(100, state.world.factions.military + state.resources.military * 0.05));
+  state.world.factions.pragmatists = Math.max(0, Math.min(100, state.world.factions.pragmatists + state.resources.commerce * 0.01));
 }
 
 /**
  * 计算离线收益
  * @param state 游戏状态
  * @param offlineMs 离线毫秒数
- * @returns 离线收益详情
+ * @returns 各资源的离线收益
  */
-export function calcOfflineEarnings(
+export function calcOfflineGains(
   state: GameState,
   offlineMs: number
-): { 
-  food: number; 
-  fiscal: number; 
-  military: number; 
-  commerce: number;
-  morale: number;
-  threat: number;
-  eunuch: number;
-  faction: number;
-  minutes: number 
-} {
+): Record<string, number> {
   const rates = calcIdleRates(state);
   const minutes = offlineMs / 60_000;
 
@@ -187,19 +187,5 @@ export function calcOfflineEarnings(
     threat: rates.threat * minutes,
     eunuch: rates.eunuch * minutes,
     faction: rates.faction * minutes,
-    minutes
   };
-}
-
-/**
- * 获取资源变化趋势描述
- */
-export function getRateDescription(rate: number, resourceName: string): string {
-  if (rate > 0) {
-    return `${resourceName}+${rate.toFixed(1)}/分钟`;
-  } else if (rate < 0) {
-    return `${resourceName}${rate.toFixed(1)}/分钟`;
-  } else {
-    return `${resourceName}稳定`;
-  }
 }

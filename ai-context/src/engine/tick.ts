@@ -28,6 +28,10 @@ export interface TickResult {
     };
   };
   error?: string;
+  ending?: {
+    id: string;
+    title: string;
+  };
 }
 
 export interface TickOptions {
@@ -251,9 +255,28 @@ export async function gameTick(
     }
 
     // ── 5. 结局检查 ──────────────────────────────────────────────────────────
+    // ── 5. 结局检查 ──────────────────────────────────────────────────────────
     const ending = checkEndings(simulationResult.newState);
     if (ending) {
       simulationResult.events.push(`游戏结局：${ending.title}`);
+      // 返回结局信息，供 UI 层处理
+      return {
+        success: true,
+        newState: simulationResult.newState,
+        events: simulationResult.events,
+        warnings: simulationResult.warnings,
+        narration: finalNarration,
+        chronicle_entry: npcChronicleEntry || narrationResult.chronicle_entry,
+        decision: npcDecision,
+        ending: {
+          id: ending.id,
+          title: ending.title
+        },
+        arbitration: arbitrationResult ? {
+          narrative: arbitrationResult.narrative,
+          game_state_updates: arbitrationResult.game_state_updates
+        } : undefined
+      };
     }
 
     // ── 6. 组装结果 ──────────────────────────────────────────────────────────

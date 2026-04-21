@@ -322,11 +322,11 @@ export function createEmptyGameState(): GameState {
       weather_this_year: 0.5,
       conflict_ratio: 0.3,
       factions: {
-        qingliu: 60,    // 清流派势力
-        didang: 50,     // 帝党势力
-        eunuch_faction: 30,  // 宦官党势力
-        military: 50,      // 军队派势力
-        pragmatists: 40    // 务实派势力
+        qingliu: 60,    // 清流派势力 - 维持，文官集团主流
+        didang: 38,     // 帝党势力 - 从50下调，新帝基础薄弱
+        eunuch_faction: 30,  // 宦官党势力 - 维持，与resources.eunuch联动
+        military: 45,      // 军队派势力 - 从50微调，反映常态地位
+        pragmatists: 45    // 务实派势力 - 从40上调，预留工业政策增长空间
       }
     },
     resources: {

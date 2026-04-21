@@ -3,6 +3,7 @@ import { getState, subscribe, setState as setGameState } from '../engine/state';
 import { DYNASTY_CONFIG } from '../data/lore-bridge';
 import { executeTick } from '../engine/tick';
 import { checkGameEndConditions } from '../engine/phases/narration';
+import { checkEndings } from '../engine/ending-engine';
 import { NpcCard } from './components/NpcCard';
 import { LoadingShimmer } from './components/LoadingShimmer';
 import { Navbar } from './components/Navbar';
@@ -403,6 +404,20 @@ const triggerEncounter = () => {
       });
 
       try { await getDefaultAdapter().save('slot-1', getState()); } catch { /* best-effort */ }
+
+      // 检查是否触发叙事结局
+      const ending = checkEndings(getState());
+      if (ending) {
+        // 保存结局信息到 localStorage，供结局页面读取
+        localStorage.setItem('current_ending', JSON.stringify({
+          id: ending.id,
+          title: ending.title,
+          year: getState().world.year
+        }));
+        // 跳转到结局页面
+        location.hash = '/ending';
+        return;
+      }
 
       if (tickResult.narration) {
         await typewriterEffect(tickResult.narration);

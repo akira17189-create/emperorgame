@@ -104,7 +104,9 @@ export const ENDINGS: Ending[] = [
     title: '祸起萧墙',
     narrative: `叛乱是从一碗粥开始的。
 
-更准确地说，是从一碗掺了沙子的粥开始的。{{event_1}} 那年大旱，朝廷拨了赈灾粮，但经过层层"打点"，到灾民手里时，米变成了糠，糠变成了沙。有个叫王二的农民端着那碗粥，看了很久，然后说了一句话：
+更准确地说，是从一碗掺了沙子的粥开始的。那年大旱，朝堂上的党争已经到了水火不容的地步——清流派指责宦官党中饱私囊，宦官党反咬清流派赈灾不力，两边在朝堂上吵了整整三天，最后什么实质性的赈灾方案都没定下来。朝廷拨了赈灾粮，但经过层层"打点"，到灾民手里时，米变成了糠，糠变成了沙。
+
+有个叫王二的农民端着那碗粥，看了很久，然后说了一句话：
 
 "这世道，不反不行了。"
 
@@ -120,33 +122,32 @@ export const ENDINGS: Ending[] = [
 
 不是去镇压，是去接父母。
 
-这成了压垮骆驼的最后一根稻草。各地的驻军纷纷效仿，朝廷的政令出了京城就没人听了。{{event_2}} 事件发生后，连京营也开始动摇。太监们收拾细软准备跑路，大臣们在家写请罪折子，皇帝坐在龙椅上，看着空空荡荡的大殿。
+这成了压垮骆驼的最后一根稻草。各地的驻军纷纷效仿，朝廷的政令出了京城就没人听了。当叛军的旗帜插到京城脚下时，皇帝才惊觉，原来这些年他只顾着在清流派和宦官党之间玩平衡，却忘了党争的代价最终要由百姓来承担。
 
-他在想一个问题：这一切是怎么发生的？
-
-是从什么时候开始的？是从他为了平衡朝局，故意纵容党争开始的？是从他为了充实国库，默许官员加征赋税开始的？还是从他觉得"一碗粥而已，能有多大事"开始的？
-
-他不知道。
-
-他只知道，现在说什么都晚了。
-
-叛军攻破城门那天，皇帝换上了便服，想从密道逃走。但密道早就被太监卖给了叛军头目。他被堵在密道口，手里拿着一把镶满宝石的短剑——那是他登基时西域进贡的礼物。
-
-他最后看了一眼这座他住了一辈子的皇宫，然后把剑横在了脖子上。
-
-剑很锋利，一下就割开了喉咙。血喷出来的时候，他想起了王二说的那句话：
-
-"这世道，不反不行了。"
+连京营也开始动摇。太监们收拾细软准备跑路，大臣们在家写请罪折子，皇帝坐在龙椅上，看着空空荡荡的大殿。
 
 原来，真的不行了。`,
     epilogue: '史曰：大厦之倾，非一日之寒。当百姓端起掺沙的粥碗时，龙椅下已经堆满了干柴。',
     trigger: (state) => {
-      const { resources, events } = state;
-      // 党争≥80持续3年，或饥民暴动事件处置失败2次以上
+      const { resources, policies, world } = state;
+      // 条件1: 党争≥80持续3年
+      // 需要检查 world.factions.didang 或 resources.faction
+      // 这里简化：党争≥80即可触发（原逻辑保留）
       const factionHigh = resources.faction >= 80;
-      // 这里需要检查是否有饥民暴动事件处置失败的记录
-      // 暂时简化处理：党争≥80即可触发
-      return factionHigh;
+
+      // 条件2: 检查是否有饥民暴动事件处置失败的记录
+      // 检查 events 中是否有饥民暴动相关事件
+      const hasFamineEvent = state.events.raw_logs.some(log => 
+        log.kind === 'event' && 
+        log.payload && 
+        typeof log.payload === 'object' && 
+        'text' in log.payload && 
+        typeof log.payload.text === 'string' &&
+        (log.payload.text.includes('饥民') || log.payload.text.includes('暴动'))
+      );
+
+      // 如果党争高或有饥民暴动事件，触发结局
+      return factionHigh || hasFamineEvent;
     },
     priority: 8
   },
@@ -269,7 +270,9 @@ export const ENDINGS: Ending[] = [
 
 这个说法最荒诞，但也最解释得通。
 
-因为皇帝做的事，实在不像这个时代的人能想出来的。{{event_1}} 那年，他力排众议，在全国推广一种叫"活字印刷"的技术，让书籍的价格降到了原来的十分之一。{{event_2}} 那次，他顶着"有违祖制"的骂名，解除了实行两百年的海禁，让商船可以自由出海贸易。
+因为皇帝拿出来的图纸太详细了——不仅有蒸汽机的构造图，还有火器营的膛线设计、印刷术的活字排版法，这些技术单独看已经超越时代，组合在一起更是一个完整的"知识体系"。工部的老师傅们私下嘀咕："这些东西，不像是一个人能想出来的，倒像是……从另一个世界抄来的。"
+
+因为皇帝做的事，实在不像这个时代的人能想出来的。那年，他力排众议，在全国推广一种叫"活字印刷"的技术，让书籍的价格降到了原来的十分之一。那次，他顶着"有违祖制"的骂名，解除了实行两百年的海禁，让商船可以自由出海贸易。更关键的是，他坚持要建立"火器营"，用流水线的方式生产火铳，让靖朝的军队装备领先周边诸国整整一代。
 
 现在，他又造出了这个"蒸汽机"。
 
@@ -296,10 +299,26 @@ export const ENDINGS: Ending[] = [
 "我们……可能真的错了。"`,
     epilogue: '史曰：时代的车轮碾过时，从不在意轨道上铺的是鲜花还是荆棘。能看见远方的人，注定要承受当下的非议。',
     trigger: (state) => {
-      const { resources } = state;
-      // 商业≥1000，火器营政策生效，穿越者知识≥5条
-      // 暀化处理：商业≥1000即可触发
-      return resources.commerce >= 1000;
+      const { resources, policies } = state;
+      // 条件1: 商业≥1000
+      const commerceHigh = resources.commerce >= 1000;
+
+      // 条件2: 火器营政策生效
+      const hasFirearmsPolicy = policies.active.some(policy => 
+        policy.tags && policy.tags.includes('军事') && 
+        (policy.description.includes('火器') || policy.description.includes('军'))
+      );
+
+      // 条件3: 穿越者知识≥5条（检查 collective_memory 中是否有科技相关记忆）
+      const techMemories = state.world.collective_memory.filter(memory => 
+        memory.includes('技术') || memory.includes('科技') || 
+        memory.includes('发明') || memory.includes('创新') ||
+        memory.includes('蒸汽') || memory.includes('印刷')
+      );
+      const hasEnoughTech = techMemories.length >= 3;  // 简化：至少3条科技相关记忆
+
+      // 三个条件都满足才触发结局
+      return commerceHigh && hasFirearmsPolicy && hasEnoughTech;
     },
     priority: 5
   },
@@ -314,17 +333,19 @@ export const ENDINGS: Ending[] = [
 
 这一切，都是从一颗丹药开始的。
 
-{{event_1}} 那年，有个道士献给皇帝一颗"长生丹"，说是用七七四十九种仙草炼制，服之可延寿一甲子。皇帝试了，感觉"神清气爽"，于是重赏道士，并下令修建"登仙台"，专门用来炼丹。
+那年，有个道士献给皇帝一颗"长生丹"，说是用七七四十九种仙草炼制，服之可延寿一甲子。皇帝试了，感觉"神清气爽"，于是重赏道士，并下令修建"登仙台"，专门用来炼丹。这只是开始。
 
 从那以后，事情就一发不可收拾。
 
-第二个道士献上了"飞升散"，说是服用后可以在梦中与仙人对话。第三个道士献上了"避灾符"，说是可以保佑国家风调雨顺。第四个道士献上了"招财炉"，说是放在国库里，银子会自己长出来。
+第二个道士献上了"飞升散"，说是服用后可以在梦中与仙人对话。第三个道士献上了"避灾符"，说是可以保佑国家风调雨顺。第四个道士献上了"招财炉"，说是放在国库里，银子会自己长出来。紧接着又是"观星问天"的祭坛、"敕封龙虎"的法会、"丹药普赐"的恩典……一套套仙道仪式轮番上演，国库的钱像流水一样花出去。
 
 皇帝都信了。
 
 他不仅信，还把这些道士封为国师，把国库的钱大把大把地拨给他们炼丹。朝臣们劝谏，他说："尔等凡夫俗子，岂知仙家奥妙？"百姓们挨饿，他说："忍一忍，等朕炼成仙丹，带你们一起飞升。"
 
-{{event_2}} 那年大旱，赤地千里，饿殍遍野。地方官请求开仓赈灾，皇帝批了两个字："不准。"理由是，赈灾粮要留着给道士们买炼丹的材料。
+到了后来，朝堂上没人敢提政事了——提了也没用，皇帝的心思全在炼丹炉里。有官员上奏说边境吃紧，需要军费，皇帝批了两个字："没钱。"转头却拨了十万两银子给道士建"观星台"。有御史弹劾国师贪腐，皇帝直接把奏折扔进了炼丹炉："正好，给朕的仙丹添点火候。"
+
+那年大旱，赤地千里，饿殍遍野。地方官请求开仓赈灾，皇帝批了两个字："不准。"理由是，赈灾粮要留着给道士们买炼丹的材料。
 
 "等朕成了仙，"皇帝在奏折上批注，"挥挥手就能让天下风调雨顺，何必现在浪费粮食？"
 
@@ -353,10 +374,21 @@ export const ENDINGS: Ending[] = [
 "原来，"他轻声说，"仙丹救不了国啊。"`,
     epilogue: '史曰：当皇帝的眼睛只盯着丹炉里的火时，就看不见城墙外的烽火了。仙丹或许能延寿，但延不了国祚。',
     trigger: (state) => {
-      const { resources } = state;
-      // 仙道类政策≥4条同时生效，财政≤1000，士气≤40
-      // 暀化处理：士气≤40且财政≤1000即可触发
-      return resources.morale <= 40 && resources.fiscal <= 1000;
+      const { resources, policies } = state;
+      // 条件1: 仙道类政策≥4条同时生效
+      const taoismPolicies = policies.active.filter(policy => 
+        policy.tags && policy.tags.includes('仙道')
+      );
+      const hasEnoughTaoismPolicies = taoismPolicies.length >= 4;
+
+      // 条件2: 财政≤1000
+      const lowFiscal = resources.fiscal <= 1000;
+
+      // 条件3: 士气≤40
+      const lowMorale = resources.morale <= 40;
+
+      // 三个条件都满足才触发结局
+      return hasEnoughTaoismPolicies && lowFiscal && lowMorale;
     },
     priority: 4
   },
