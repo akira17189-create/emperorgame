@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>靖朝皇帝模拟游戏 · 开发计划书 V2（含代码实现）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&family=Ma+Shan+Zheng&display=swap');
+
+  :root {
+    --ink: #1a1208;
+    --ink-light: #3d2e1a;
+    --paper: #f5efe2;
+    --paper-warm: #ede4cf;
+    --paper-deep: #e0d4b8;
+    --red: #8b1a1a;
+    --red-light: #b52a2a;
+    --gold: #b8922a;
+    --gold-light: #d4a93a;
+    --seal-red: #c0392b;
+    --divider: rgba(139, 90, 30, 0.25);
+    --shadow: rgba(26,18,8,0.12);
+    --code-bg: #16120a;
+    --code-fg: #c8bfa8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--paper-deep);
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b8922a' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  .site-header {
+    background: var(--ink);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(184,146,42,0.08) 39px, rgba(184,146,42,0.08) 40px),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(184,146,42,0.08) 39px, rgba(184,146,42,0.08) 40px);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 56px 40px 48px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 40px;
+  }
+  .header-seal {
+    width: 90px; height: 90px;
+    border: 3px solid var(--seal-red);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transform: rotate(-3deg);
+    background: rgba(192,57,43,0.08);
+    position: relative;
+  }
+  .header-seal::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(192,57,43,0.4);
+  }
+  .seal-text {
+    font-family: 'Ma Shan Zheng', serif;
+    font-size: 22px;
+    color: var(--seal-red);
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 2px;
+  }
+  .header-text { flex: 1; }
+  .header-kicker {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px; font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 4px; text-transform: uppercase;
+    margin-bottom: 12px; opacity: 0.8;
+  }
+  .header-title {
+    font-family: 'Ma Shan Zheng', serif;
+    font-size: 38px; color: var(--paper);
+    line-height: 1.2; letter-spacing: 3px; margin-bottom: 8px;
+  }
+  .header-subtitle {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px; color: rgba(245,239,226,0.5);
+    font-weight: 300; letter-spacing: 2px;
+  }
+  .header-meta {
+    display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 12px; color: rgba(245,239,226,0.6); font-weight: 300;
+  }
+  .meta-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; opacity: 0.7; }
+
+  .gold-band {
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px 80px;
+  }
+
+  /* SECTION */
+  .section { margin-top: 64px; }
+  .section-header {
+    display: flex; align-items: baseline; gap: 16px;
+    margin-bottom: 32px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .section-num {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px; font-weight: 300; color: var(--gold);
+    letter-spacing: 2px; flex-shrink: 0; padding-top: 4px;
+  }
+  .section-title {
+    font-family: 'Ma Shan Zheng', serif;
+    font-size: 26px; color: var(--ink); letter-spacing: 2px; line-height: 1.3;
+  }
+  .section-title-en {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px; font-weight: 300; color: var(--gold);
+    letter-spacing: 3px; margin-left: auto; flex-shrink: 0; padding-top: 6px;
+  }
+
+  /* CALLOUT */
+  .callout {
+    background: rgba(184,146,42,0.08);
+    border: 1px solid rgba(184,146,42,0.3);
+    padding: 16px 20px; margin: 20px 0;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px; line-height: 1.9;
+    color: var(--ink-light); font-weight: 300;
+  }
+  .callout strong { color: var(--gold); font-weight: 500; }
+  .callout.alert { background: rgba(139,26,26,0.06); border-color: rgba(139,26,26,0.3); }
+  .callout.alert strong { color: var(--red); }
+  .callout.success { background: rgba(44,107,58,0.06); border-color: rgba(44,107,58,0.3); }
+  .callout.success strong { color: #2c6b3a; }
+
+  /* CODE BLOCK */
+  .code-file {
+    margin: 28px 0;
+    border: 1px solid rgba(184,146,42,0.2);
+    overflow: hidden;
+  }
+  .code-file-header {
+    background: var(--ink);
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 2px solid var(--gold);
+  }
+  .code-file-path {
+    font-family: 'Consolas', monospace;
+    font-size: 12px; color: var(--gold);
+    letter-spacing: 0.5px;
+  }
+  .code-file-badge {
+    margin-left: auto;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 9px; font-weight: 500;
+    letter-spacing: 3px; padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .badge-new { background: rgba(44,107,58,0.3); color: #6baa7a; }
+  .badge-patch { background: rgba(184,146,42,0.2); color: var(--gold); }
+  .badge-fix { background: rgba(139,26,26,0.2); color: #c05050; }
+  .code-block {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 24px 28px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12px; line-height: 1.8;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .c { color: #5c5340; } /* comment */
+  .k { color: #d4a93a; } /* keyword */
+  .s { color: #7daa7d; } /* string */
+  .t { color: #7ab5cc; } /* type */
+  .p { color: #c8bfa8; } /* prop */
+  .n { color: #d4875a; } /* number/const */
+  .fn { color: #b8d4a8; } /* function name */
+
+  /* SUB-SECTION */
+  .subsection { margin-top: 40px; }
+  .subsection-title {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 14px; font-weight: 500;
+    color: var(--ink); letter-spacing: 2px;
+    margin-bottom: 12px;
+    padding: 10px 16px;
+    background: var(--paper-warm);
+    border-left: 3px solid var(--gold);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .subsection-num {
+    font-size: 10px; color: var(--gold); letter-spacing: 3px;
+    font-weight: 300;
+  }
+
+  /* DIAGNOSIS GRID */
+  .diagnosis-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2px; background: var(--divider);
+    border: 1px solid var(--divider);
+  }
+  .diag-card {
+    background: var(--paper); padding: 28px 32px; position: relative;
+  }
+  .diag-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+  }
+  .diag-card.gap1::before { background: #8b1a1a; }
+  .diag-card.gap2::before { background: #2c6b3a; }
+  .diag-card.gap3::before { background: #1a4a7a; }
+  .diag-card.gap4::before { background: #7a4a1a; }
+  .diag-number { font-family: 'Noto Sans SC', sans-serif; font-size: 10px; letter-spacing: 3px; color: var(--gold); margin-bottom: 10px; font-weight: 500; }
+  .diag-title { font-size: 17px; font-weight: 600; color: var(--ink); margin-bottom: 12px; letter-spacing: 1px; }
+  .diag-body { font-family: 'Noto Sans SC', sans-serif; font-size: 13px; line-height: 1.9; color: var(--ink-light); font-weight: 300; }
+  .diag-body code { background: var(--paper-deep); padding: 1px 6px; font-size: 11px; border-radius: 2px; font-family: 'Consolas', monospace; color: var(--red); }
+
+  /* PHASE PLAN */
+  .plan-phases { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--divider); }
+  .phase-block { display: flex; border-bottom: 1px solid var(--divider); }
+  .phase-block:last-child { border-bottom: none; }
+  .phase-sidebar { width: 160px; flex-shrink: 0; padding: 28px 24px; display: flex; flex-direction: column; justify-content: center; }
+  .phase-block.immediate .phase-sidebar { background: #1a1208; }
+  .phase-block.phase3 .phase-sidebar { background: #1e2a1a; }
+  .phase-block.phase4 .phase-sidebar { background: #1a2030; }
+  .phase-tag { font-family: 'Noto Sans SC', sans-serif; font-size: 9px; letter-spacing: 4px; font-weight: 500; margin-bottom: 8px; }
+  .phase-block.immediate .phase-tag { color: var(--gold); }
+  .phase-block.phase3 .phase-tag { color: #6baa7a; }
+  .phase-block.phase4 .phase-tag { color: #6a9abf; }
+  .phase-name { font-family: 'Ma Shan Zheng', serif; font-size: 20px; letter-spacing: 2px; line-height: 1.4; }
+  .phase-block.immediate .phase-name { color: var(--paper); }
+  .phase-block.phase3 .phase-name { color: #d4f0dc; }
+  .phase-block.phase4 .phase-name { color: #c8dff0; }
+  .phase-duration { font-family: 'Noto Sans SC', sans-serif; font-size: 11px; font-weight: 300; margin-top: 8px; opacity: 0.6; }
+  .phase-block.immediate .phase-duration { color: var(--paper); }
+  .phase-block.phase3 .phase-duration { color: #d4f0dc; }
+  .phase-block.phase4 .phase-duration { color: #c8dff0; }
+  .phase-body { flex: 1; padding: 28px 32px; background: var(--paper); }
+  .task-group { margin-bottom: 20px; }
+  .task-group:last-child { margin-bottom: 0; }
+  .task-agent { font-family: 'Noto Sans SC', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 3px; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .task-agent::after { content: ''; flex: 1; height: 1px; background: var(--divider); }
+  .task-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .task-list li { display: flex; align-items: flex-start; gap: 10px; font-family: 'Noto Sans SC', sans-serif; font-size: 13px; line-height: 1.7; color: var(--ink-light); font-weight: 300; }
+  .task-list li::before { content: '─'; color: var(--gold); opacity: 0.6; flex-shrink: 0; margin-top: 2px; }
+  .task-list li strong { color: var(--ink); font-weight: 500; }
+  .task-list li code { font-family: 'Consolas', monospace; font-size: 11px; background: var(--paper-deep); padding: 1px 5px; border-radius: 2px; color: var(--red); }
+
+  /* AGENT CARDS */
+  .agent-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 4px; }
+  .agent-card { border: 1px solid var(--divider); background: var(--paper); overflow: hidden; }
+  .agent-card-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--divider); display: flex; align-items: center; gap: 14px; }
+  .agent-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .agent-deepseek .agent-icon { background: rgba(139,26,26,0.12); }
+  .agent-mimo .agent-icon { background: rgba(28,90,50,0.12); }
+  .agent-card-name { font-family: 'Noto Sans SC', sans-serif; font-size: 14px; font-weight: 500; color: var(--ink); letter-spacing: 1px; }
+  .agent-card-role { font-family: 'Noto Sans SC', sans-serif; font-size: 11px; font-weight: 300; color: var(--gold); letter-spacing: 1px; margin-top: 2px; }
+  .agent-card-body { padding: 20px 24px; }
+  .agent-instruction { background: var(--paper-deep); border-left: 3px solid var(--gold); padding: 16px 18px; margin-bottom: 16px; font-family: 'Noto Sans SC', sans-serif; font-size: 12px; line-height: 1.9; color: var(--ink-light); font-weight: 300; }
+  .agent-instruction strong { color: var(--ink); font-weight: 500; }
+  .agent-instruction code { font-family: 'Consolas', monospace; font-size: 11px; background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 2px; color: var(--red); }
+  .agent-outputs { font-family: 'Noto Sans SC', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 2px; color: var(--gold); margin-bottom: 8px; }
+  .output-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .output-tag { font-family: 'Noto Sans SC', sans-serif; font-size: 11px; font-weight: 300; color: var(--ink); background: var(--paper-warm); border: 1px solid var(--divider); padding: 3px 10px; border-radius: 2px; }
+
+  /* RISK TABLE */
+  .risk-table { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--divider); }
+  .risk-table th { background: var(--ink); color: var(--gold); font-family: 'Noto Sans SC', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 3px; padding: 14px 20px; text-align: left; border-bottom: 2px solid var(--gold); }
+  .risk-table td { padding: 14px 20px; border-bottom: 1px solid var(--divider); font-family: 'Noto Sans SC', sans-serif; font-size: 13px; font-weight: 300; color: var(--ink-light); vertical-align: top; line-height: 1.7; }
+  .risk-table td:first-child { font-weight: 500; color: var(--ink); }
+  .risk-table tr:last-child td { border-bottom: none; }
+  .risk-badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: 500; letter-spacing: 1px; }
+  .risk-high { background: rgba(139,26,26,0.12); color: var(--red); }
+  .risk-med { background: rgba(184,146,42,0.15); color: var(--gold); }
+  .risk-low { background: rgba(44,107,58,0.12); color: #2c6b3a; }
+
+  /* CHECKLIST */
+  .checklist { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+  .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px; background: var(--paper); border: 1px solid var(--divider); font-family: 'Noto Sans SC', sans-serif; font-size: 13px; line-height: 1.6; color: var(--ink-light); font-weight: 300; }
+  .check-box { width: 18px; height: 18px; border: 1.5px solid var(--divider); flex-shrink: 0; margin-top: 1px; }
+  .check-item.done .check-box { background: #2c6b3a; border-color: #2c6b3a; position: relative; }
+  .check-item.done .check-box::after { content: '✓'; position: absolute; top: -1px; left: 2px; font-size: 12px; color: white; }
+  .check-item.urgent .check-box { border-color: var(--red); }
+  .check-item strong { color: var(--ink); font-weight: 500; display: block; }
+
+  /* ROADMAP */
+  .roadmap { position: relative; padding-left: 32px; margin-top: 8px; }
+  .roadmap::before { content: ''; position: absolute; left: 8px; top: 20px; bottom: 20px; width: 1px; background: linear-gradient(to bottom, var(--gold), var(--divider)); }
+  .road-item { position: relative; padding: 0 0 32px 32px; }
+  .road-item::before { content: ''; position: absolute; left: -1px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); border: 2px solid var(--paper-deep); box-shadow: 0 0 0 2px var(--gold); }
+  .road-item.dim::before { background: var(--divider); box-shadow: 0 0 0 2px var(--divider); }
+  .road-phase-tag { font-family: 'Noto Sans SC', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 3px; color: var(--gold); margin-bottom: 6px; }
+  .road-phase-tag.dim-tag { color: rgba(184,146,42,0.4); }
+  .road-title { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 6px; letter-spacing: 1px; }
+  .road-desc { font-family: 'Noto Sans SC', sans-serif; font-size: 13px; font-weight: 300; color: var(--ink-light); line-height: 1.8; }
+  .road-item.dim .road-title { color: rgba(26,18,8,0.4); }
+  .road-item.dim .road-desc { color: rgba(26,18,8,0.3); }
+
+  .exec-summary { background: var(--ink); color: var(--paper); margin: 40px 0 0; padding: 40px 48px; border-left: 4px solid var(--gold); position: relative; }
+  .exec-summary::after { content: '⚠'; position: absolute; top: 36px; right: 40px; font-size: 28px; color: var(--gold); opacity: 0.3; }
+  .exec-label { font-family: 'Noto Sans SC', sans-serif; font-size: 10px; letter-spacing: 5px; color: var(--gold); font-weight: 500; margin-bottom: 16px; text-transform: uppercase; }
+  .exec-summary p { font-size: 15px; line-height: 2; color: rgba(245,239,226,0.85); font-weight: 300; }
+  .exec-summary strong { color: var(--gold-light); font-weight: 500; }
+
+  .layer-diagram { margin: 32px 0; }
+  .layer-row { display: flex; align-items: stretch; gap: 0; margin-bottom: 3px; transition: transform 0.2s; }
+  .layer-row:hover { transform: translateX(4px); }
+  .layer-label { width: 120px; flex-shrink: 0; background: var(--ink); color: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Noto Sans SC', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 2px; padding: 14px 8px; text-align: center; line-height: 1.4; }
+  .layer-arrow { width: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--gold); background: var(--paper-warm); }
+  .layer-content { flex: 1; padding: 14px 20px; font-family: 'Noto Sans SC', sans-serif; font-size: 13px; font-weight: 400; line-height: 1.7; }
+  .layer-status { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: 'Noto Sans SC', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 1px; }
+  .status-done { background: #eaf5ec; color: #2c6b3a; }
+  .status-gap { background: #fdf0f0; color: #8b1a1a; }
+  .status-partial { background: #fef9ec; color: #7a5a1a; }
+  .layer-row.l1 .layer-content { background: #f0ece3; }
+  .layer-row.l2 .layer-content { background: #eee8da; }
+  .layer-row.l3 .layer-content { background: #ebe4d4; }
+
+  .site-footer { background: var(--ink); margin-top: 80px; padding: 32px 40px; text-align: center; }
+  .footer-text { font-family: 'Noto Sans SC', sans-serif; font-size: 11px; font-weight: 300; color: rgba(245,239,226,0.35); letter-spacing: 2px; }
+
+  .inline-note { display: inline-block; background: rgba(184,146,42,0.1); border: 1px solid rgba(184,146,42,0.25); padding: 1px 8px; font-family: 'Noto Sans SC', sans-serif; font-size: 11px; border-radius: 2px; color: var(--gold); font-weight: 300; margin: 0 4px; }
+
+  @media (max-width: 768px) {
+    .header-inner { flex-direction: column; align-items: flex-start; gap: 20px; }
+    .diagnosis-grid, .checklist, .agent-cards { grid-template-columns: 1fr; }
+    .phase-block { flex-direction: column; }
+    .phase-sidebar { width: 100%; flex-direction: row; align-items: center; gap: 16px; padding: 20px 24px; }
+    .layer-label { width: 80px; font-size: 9px; }
+    .container { padding: 0 20px 60px; }
+    .header-inner { padding: 36px 20px 32px; }
+    .code-block { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-seal"><span class="seal-text">靖朝<br>御览</span></div>
+    <div class="header-text">
+      <div class="header-kicker">DEVELOPMENT MASTER PLAN · V2.0 WITH CODE</div>
+      <h1 class="header-title">靖朝皇帝模拟游戏<br>综合开发计划书（含代码实现）</h1>
+      <div class="header-subtitle">世界观贯通 · 设定落地 · Phase 3 推进路线 · 具体实现代码</div>
+      <div class="header-meta">
+        <div class="meta-item"><span class="meta-dot"></span>生成日期：2026年4月18日</div>
+        <div class="meta-item"><span class="meta-dot"></span>当前阶段：Phase 3 准备中</div>
+        <div class="meta-item"><span class="meta-dot"></span>参与Agent：DeepSeek · Mimo</div>
+        <div class="meta-item"><span class="meta-dot"></span>技术栈：Preact · TypeScript · Vite</div>
+        <div class="meta-item"><span class="meta-dot"></span>本版新增：Section 08 完整代码实现</div>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="gold-band"></div>
+
+<div class="container">
+
+  <!-- EXEC SUMMARY -->
+  <div class="exec-summary">
+    <div class="exec-label">执行摘要</div>
+    <p>
+      当前项目已完成 <strong>Phase 1 &amp; Phase 2</strong> 全部工程骨架（指令归一化、多Agent仲裁、动态叙事、14资源系统、NPC自主行为、四阶段Tick架构），
+      可正常运行。核心问题在于：<strong>世界观设定（lore文档）、立项任务书（V2.2）与运行代码之间存在三层断层</strong>，
+      导致游戏页面虽能跑通，却感受不到「靖朝」的世界观质感。本计划（V2版）在原有分析基础上，
+      <strong>新增 Section 08「完整代码实现」</strong>，覆盖 lore-bridge.ts、prompt全量替换、scene.ts字段修复、
+      policy-engine.ts、event-engine.ts、PolicyPanel.tsx，可直接交付 Mimo 执行。
+    </p>
+  </div>
+
+  <!-- SECTION 1: DIAGNOSIS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">SECTION 01</span>
+      <h2 class="section-title">根本原因诊断</h2>
+      <span class="section-title-en">ROOT CAUSE ANALYSIS</span>
+    </div>
+
+    <div class="layer-diagram">
+      <div class="layer-row l1">
+        <div class="layer-label">V2.2<br>立项任务书</div>
+        <div class="layer-arrow">↓</div>
+        <div class="layer-content"><strong>愿景层：</strong>15条文风规则、双轨史册、宰相代理、穿越者成长线、后宫政治、三层爽点设计、68个历史知识技能</div>
+        <div class="layer-status status-gap">大量缺失</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:4px 0 4px 60px;gap:8px;">
+        <span style="color:var(--red);font-size:20px;font-family:'Noto Sans SC';font-weight:300">❌</span>
+        <span style="font-family:'Noto Sans SC';font-size:12px;font-weight:300;color:var(--red)">未翻译为数据格式，纯文档态，代码无法读取</span>
+      </div>
+      <div class="layer-row l2">
+        <div class="layer-label">lore/<br>世界观设定</div>
+        <div class="layer-arrow">↓</div>
+        <div class="layer-content"><strong>设定层：</strong>靖朝历史、4核心角色（张猛/谢渊/李静斋/国师玄明）、NPC人际网络、派系关系、世界事件链、政策设计</div>
+        <div class="layer-status status-partial">部分缺失</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:4px 0 4px 60px;gap:8px;">
+        <span style="color:var(--red);font-size:20px;font-family:'Noto Sans SC';font-weight:300">❌</span>
+        <span style="font-family:'Noto Sans SC';font-size:12px;font-weight:300;color:var(--red)">未转化为可注入Prompt的结构化数据，代码不引用</span>
+      </div>
+      <div class="layer-row l3">
+        <div class="layer-label">代码/<br>运行游戏</div>
+        <div class="layer-arrow"></div>
+        <div class="layer-content"><strong>实现层：</strong>NPC voice字段部分填充（fang-zhi已有但不全）、style.ts只有4种简化风格（非15条）、scene.ts字段名有bug、policy-engine.ts不存在</div>
+        <div class="layer-status status-gap">严重空洞</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>代码审查新发现（V2版追加）：</strong>读取实际代码后发现额外问题——
+      ① <code>prompt/scene.ts</code> 用了错误字段名 <code>popular_support</code>（实际是 <code>morale</code>）和 <code>treasury</code>（实际是 <code>fiscal</code>），导致UI显示永远是0；
+      ② <code>prompt/style.ts</code> 只有4种风格的简化版，完全不是V2.2的15条规则；
+      ③ <code>seed-npcs.ts</code> 的 fang-zhi 已有voice数据但其余NPC大多空缺；
+      ④ <code>createEmptyGameState()</code> 已写 dynasty:'靖朝' 但 era 是'永德'而非'承德'，需要确认正确年号。
+    </div>
+
+    <div class="diagnosis-grid">
+      <div class="diag-card gap1">
+        <div class="diag-number">缺口 01（已确认）</div>
+        <div class="diag-title">scene.ts 字段名Bug</div>
+        <div class="diag-body">
+          <code>popular_support</code> → 应为 <code>morale</code><br>
+          <code>treasury</code> → 应为 <code>fiscal</code><br>
+          这导致叙事Prompt里「民心：0/国库：0」，AI生成内容严重失真。Section 08.4 提供修复patch。
+        </div>
+      </div>
+      <div class="diag-card gap2">
+        <div class="diag-number">缺口 02（已确认）</div>
+        <div class="diag-title">style.ts 未实现15条规则</div>
+        <div class="diag-body">
+          现有4种风格（normal/dark/satire/poetic）只是简单描述，完全不是V2.2的15条具体规则。
+          最关键的「短句制造叙事高潮」「括号是第二张嘴」「禁用内心复杂」等没有落进Prompt。
+          Section 08.2 提供全量替换版。
+        </div>
+      </div>
+      <div class="diag-card gap3">
+        <div class="diag-number">缺口 03（新发现）</div>
+        <div class="diag-title">system.ts 缺NPC voice注入机制</div>
+        <div class="diag-body">
+          <code>system.ts</code> 有「NPC发言规则」段落，但只是泛化描述，没有把 <code>voice.features</code> 和
+          <code>voice.syntax_rules</code> 真正注入。需要在 scene.ts 的 NPC 段落补充 voice 字段渲染。
+          Section 08.3 提供修复版 scene.ts（合并voice注入）。
+        </div>
+      </div>
+      <div class="diag-card gap4">
+        <div class="diag-number">缺口 04（已确认）</div>
+        <div class="diag-title">lore-bridge.ts 完全缺失</div>
+        <div class="diag-body">
+          靖朝世界观配置、15条文风Prompt版、全部NPC voice完整数据——三样缺一样。
+          Section 08.1 提供完整 lore-bridge.ts 模板，DeepSeek填充内容，Mimo接入三个注入点。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: IMMEDIATE BRIDGE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">SECTION 02</span>
+      <h2 class="section-title">立即执行：打通文档-数据-游戏管道</h2>
+      <span class="section-title-en">IMMEDIATE BRIDGE TASK</span>
+    </div>
+    <div class="callout">
+      <strong>核心方案：</strong>创建 <strong><code>ai-context/src/data/lore-bridge.ts</code></strong> 数据桥接文件。
+      DeepSeek 读懂所有lore文档产出这一份 TypeScript，Mimo 接入三个注入点。
+      预计 DeepSeek 半天产出，Mimo 半天接入，总工期 1 天，游戏质感立刻可见提升。
+    </div>
+    <div class="agent-cards">
+      <div class="agent-card agent-deepseek">
+        <div class="agent-card-header">
+          <div class="agent-icon">🪶</div>
+          <div>
+            <div class="agent-card-name">DeepSeek — 设定/文案</div>
+            <div class="agent-card-role">CONTENT &amp; WORLDBUILDING AGENT</div>
+          </div>
+        </div>
+        <div class="agent-card-body">
+          <div class="agent-instruction">
+            <strong>立即执行指令：</strong>参考 Section 08.1 提供的 lore-bridge.ts 代码骨架，
+            填充所有 <code>// TODO: DeepSeek填充</code> 注释处的内容。
+            重点：① 确认靖朝年号（承德 or 永德）；② 完整15条文风规则Prompt版；③ 全部NPC voice完整填充。
+          </div>
+          <div class="agent-outputs">同步交付物</div>
+          <div class="output-tags">
+            <span class="output-tag">lore-bridge.ts 完整填充版</span>
+            <span class="output-tag">policies.md 补全</span>
+            <span class="output-tag">NPC台词钩子</span>
+          </div>
+        </div>
+      </div>
+      <div class="agent-card agent-mimo">
+        <div class="agent-card-header">
+          <div class="agent-icon">⚙️</div>
+          <div>
+            <div class="agent-card-name">Mimo — 代码实现</div>
+            <div class="agent-card-role">ENGINEERING AGENT</div>
+          </div>
+        </div>
+        <div class="agent-card-body">
+          <div class="agent-instruction">
+            <strong>接收lore-bridge.ts后执行：</strong>按 Section 08.2~08.5 的patch逐一应用：
+            ① 替换 prompt/style.ts（15条规则）；② 修复 prompt/scene.ts（字段名bug+voice注入）；
+            ③ CourtPage.tsx header渲染朝代年号；④ 接入 lore-bridge.ts 的 DYNASTY_CONFIG。
+          </div>
+          <div class="agent-outputs">交付验收点</div>
+          <div class="output-tags">
+            <span class="output-tag">页面显示朝代信息</span>
+            <span class="output-tag">NPC对话有腔调差异</span>
+            <span class="output-tag">资源数值显示正确</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: PHASE 3 PLAN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">SECTION 03</span>
+      <h2 class="section-title">Phase 3 开发路线（8天）</h2>
+      <span class="section-title-en">PHASE 3 DEVELOPMENT ROADMAP</span>
+    </div>
+    <div class="callout">
+      <strong>Phase 3目标：</strong>将游戏从「能跑」提升到「好玩」。三条主线：
+      <strong>政策系统</strong>（创造策略深度）→ <strong>世界事件系统</strong>（创造动态世界）→ <strong>UI/UX优化</strong>（创造沉浸体验）。
+      Section 08.6~08.8 提供政策引擎、事件引擎、PolicyPanel的完整代码。
+    </div>
+    <div class="plan-phases">
+      <div class="phase-block immediate">
+        <div class="phase-sidebar">
+          <div class="phase-tag">IMMEDIATE · D0</div>
+          <div class="phase-name">桥接<br>打通</div>
+          <div class="phase-duration">预估 1 天</div>
+        </div>
+        <div class="phase-body">
+          <div class="task-group">
+            <div class="task-agent">DEEPSEEK</div>
+            <ul class="task-list">
+              <li>填充 <code>lore-bridge.ts</code>（参考 Section 08.1 骨架）</li>
+              <li>补全 <code>policies.md</code> 仙道6个、工业5个政策设计</li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-agent">MIMO</div>
+            <ul class="task-list">
+              <li>应用 <strong>Section 08.2</strong> patch：替换 prompt/style.ts（15条规则）</li>
+              <li>应用 <strong>Section 08.3</strong> patch：修复 prompt/scene.ts 字段bug+voice注入</li>
+              <li>应用 <strong>Section 08.4</strong> patch：CourtPage.tsx 朝代header</li>
+              <li>应用 <strong>Section 08.5</strong> patch：state.ts 接入 DYNASTY_CONFIG</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="phase-block phase3">
+        <div class="phase-sidebar">
+          <div class="phase-tag">PHASE 3.1 · D1-D3</div>
+          <div class="phase-name">政策<br>系统</div>
+          <div class="phase-duration">预估 3 天</div>
+        </div>
+        <div class="phase-body">
+          <div class="task-group">
+            <div class="task-agent">MIMO — 使用 Section 08.6</div>
+            <ul class="task-list">
+              <li>直接使用 <strong>Section 08.6</strong> 的 <code>policy-engine.ts</code> 完整代码</li>
+              <li>直接使用 <strong>Section 08.8</strong> 的 <code>PolicyPanel.tsx</code> UI组件</li>
+              <li>在 <code>tick.ts</code> 接入 <code>applyPolicyTickEffects()</code> 持续效果</li>
+              <li>D3 走通完整循环：颁布政策 → 朝堂反应 → 资源变化 → 史册记录</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="phase-block phase3">
+        <div class="phase-sidebar">
+          <div class="phase-tag">PHASE 3.2 · D4-D5</div>
+          <div class="phase-name">世界<br>事件</div>
+          <div class="phase-duration">预估 2 天</div>
+        </div>
+        <div class="phase-body">
+          <div class="task-group">
+            <div class="task-agent">MIMO — 使用 Section 08.7</div>
+            <ul class="task-list">
+              <li>直接使用 <strong>Section 08.7</strong> 的 <code>event-engine.ts</code> 骨架代码</li>
+              <li>DeepSeek 补充32个事件模板的分支结局 JSON</li>
+              <li>事件弹出UI：弹出式事件卡片 + 决策按钮</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="phase-block phase4">
+        <div class="phase-sidebar">
+          <div class="phase-tag">PHASE 3.3 · D6-D8</div>
+          <div class="phase-name">UI/UX<br>优化</div>
+          <div class="phase-duration">预估 3 天</div>
+        </div>
+        <div class="phase-body">
+          <div class="task-group">
+            <div class="task-agent">MIMO</div>
+            <ul class="task-list">
+              <li>虚拟列表处理长史册（60fps目标）</li>
+              <li>资源仪表盘（14个资源字段可视化，使用 Section 08.4 中的正确字段名）</li>
+              <li>Loading状态 + 节流/防抖处理</li>
+              <li>快速存档/读档功能</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: PHASE 4 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">SECTION 04</span>
+      <h2 class="section-title">Phase 4 规划：V2.2核心系统落地</h2>
+      <span class="section-title-en">PHASE 4 · V2.2 SYSTEMS IMPLEMENTATION</span>
+    </div>
+    <div class="plan-phases">
+      <div class="phase-block phase4">
+        <div class="phase-sidebar">
+          <div class="phase-tag">PHASE 4.1</div>
+          <div class="phase-name">宰相<br>代理</div>
+          <div class="phase-duration">预估 4 天</div>
+        </div>
+        <div class="phase-body">
+          <div class="task-group">
+            <div class="task-agent">核心价值</div>
+            <ul class="task-list">
+              <li><strong>放置游戏最核心爽点之一</strong>：离线回来批阅宰相决策记录</li>
+              <li>玩家出发前预设执政方针（财政优先级/贪腐处理原则/外交姿态）</li>
+              <li>宰相每次决策生成理由，玩家可否决或追认（批阅奏折代入感）</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="phase-block phase4">
+        <div class="phase-sidebar">
+          <div class="phase-tag">PHASE 4.2</div>
+          <div class="phase-name">双轨<br>史册</div>
+          <div class="phase-duration">预估 3 天</div>
+        </div>
+        <div class="phase-body">
+          <div class="task-group">
+            <div class="task-agent">核心价值</div>
+            <ul class="task-list">
+              <li>官方史书（玩家视角）+ 野史/民间说法（更接近真实），形成认知反差</li>
+              <li><code>chronicle.official</code> 和 <code>chronicle.unofficial</code> 类型已在 types.ts 定义好，只需激活</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="phase-block phase4">
+        <div class="phase-sidebar">
+          <div class="phase-tag">PHASE 4.3</div>
+          <div class="phase-name">穿越者<br>成长线</div>
+          <div class="phase-duration">预估 5 天</div>
+        </div>
+        <div class="phase-body">
+          <div class="task-group">
+            <div class="task-agent">核心价值</div>
+            <ul class="task-list">
+              <li>「现代知识」技能树，读书解锁干预权而非数值</li>
+              <li>「水土不服」机制：现代技能触动地方豪强→集体抵制/天象示警</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: RISKS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">SECTION 05</span>
+      <h2 class="section-title">风险控制</h2>
+      <span class="section-title-en">RISK MANAGEMENT</span>
+    </div>
+    <table class="risk-table">
+      <thead>
+        <tr><th>风险项</th><th>等级</th><th>描述</th><th>应对方案</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Token超限</td>
+          <td><span class="risk-badge risk-high">高</span></td>
+          <td>政策+事件系统会大幅增加LLM调用频率和Prompt长度</td>
+          <td>立刻应用 Section 08.2 的15条规则版style.ts（规则更精准，反而可以删除废话描述）；policy叙事用模板化+关键变量填充</td>
+        </tr>
+        <tr>
+          <td>scene.ts字段名Bug</td>
+          <td><span class="risk-badge risk-high">高</span></td>
+          <td><code>popular_support</code>/<code>treasury</code> 字段不存在，导致叙事Prompt数据全为0</td>
+          <td>立刻应用 Section 08.3 的fix patch，3处字段名替换</td>
+        </tr>
+        <tr>
+          <td>向后兼容</td>
+          <td><span class="risk-badge risk-med">中</span></td>
+          <td>新增Policy/Event字段可能导致旧存档读取失败</td>
+          <td>所有新增字段提供默认值；state.ts的repairState函数增加新字段自动适配</td>
+        </tr>
+        <tr>
+          <td>CourtPage.tsx膨胀</td>
+          <td><span class="risk-badge risk-low">低</span></td>
+          <td>已有13个backup版本，继续加政策面板会进一步膨胀</td>
+          <td>政策面板抽取为独立组件 PolicyPanel.tsx（Section 08.8）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 6: CHECKLIST -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">SECTION 06</span>
+      <h2 class="section-title">当前状态 · 验收清单</h2>
+      <span class="section-title-en">STATUS &amp; ACCEPTANCE CHECKLIST</span>
+    </div>
+    <div class="checklist">
+      <div class="check-item done"><div class="check-box"></div><div><strong>指令归一化系统</strong>normalize-command.md 完整实现</div></div>
+      <div class="check-item done"><div class="check-box"></div><div><strong>多Agent仲裁系统</strong>arbitration.ts (752行) 完整实现</div></div>
+      <div class="check-item done"><div class="check-box"></div><div><strong>完整资源系统</strong>14个资源字段三层架构</div></div>
+      <div class="check-item done"><div class="check-box"></div><div><strong>NPC自主行为</strong>goals-manager.ts + 行为规则框架</div></div>
+      <div class="check-item done"><div class="check-box"></div><div><strong>四阶段架构重构</strong>tick拆分为input/simulation/arbitration/narration</div></div>
+      <div class="check-item done"><div class="check-box"></div><div><strong>LLM统一调用层</strong>callLLM + callLLMWithRetry</div></div>
+      <div class="check-item todo urgent"><div class="check-box"></div><div><strong>scene.ts字段名Bug修复（紧急）</strong>popular_support→morale, treasury→fiscal</div></div>
+      <div class="check-item todo urgent"><div class="check-box"></div><div><strong>lore-bridge.ts（紧急）</strong>世界观数据桥接文件，当前完全缺失</div></div>
+      <div class="check-item todo urgent"><div class="check-box"></div><div><strong>文风15条完整激活（紧急）</strong>style.ts全量替换为15条规则版</div></div>
+      <div class="check-item todo urgent"><div class="check-box"></div><div><strong>NPC voice字段注入（紧急）</strong>scene.ts补充voice渲染逻辑</div></div>
+      <div class="check-item todo urgent"><div class="check-box"></div><div><strong>朝代信息上屏（紧急）</strong>CourtPage显示「靖朝承德X年」</div></div>
+      <div class="check-item todo"><div class="check-box"></div><div><strong>政策系统</strong>policy-engine.ts + PolicyPanel.tsx（Section 08.6/08.8）</div></div>
+      <div class="check-item todo"><div class="check-box"></div><div><strong>世界事件系统</strong>event-engine.ts + 32个事件模板（Section 08.7）</div></div>
+      <div class="check-item todo"><div class="check-box"></div><div><strong>UI/UX优化</strong>虚拟列表 + 资源仪表盘 + 60fps</div></div>
+      <div class="check-item todo"><div class="check-box"></div><div><strong>宰相离线代理（Phase 4）</strong>批阅奏折代入感</div></div>
+      <div class="check-item todo"><div class="check-box"></div><div><strong>双轨史册（Phase 4）</strong>官史 vs 野史对比系统</div></div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: ROADMAP -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">SECTION 07</span>
+      <h2 class="section-title">全局路线图</h2>
+      <span class="section-title-en">MASTER ROADMAP</span>
+    </div>
+    <div class="roadmap">
+      <div class="road-item">
+        <div class="road-phase-tag">DONE · Phase 1 &amp; 2</div>
+        <div class="road-title">工程骨架完成</div>
+        <div class="road-desc">指令归一化、多Agent仲裁、动态叙事引擎、14资源三层架构、NPC自主行为、四阶段Tick、LLM统一调用层。游戏可运行但缺乏世界观质感，且有字段名bug。</div>
+      </div>
+      <div class="road-item">
+        <div class="road-phase-tag">IMMEDIATE · D0（本周内）</div>
+        <div class="road-title">文档-数据-游戏管道打通 + Bug修复</div>
+        <div class="road-desc">修复scene.ts字段名bug（5分钟工作）→ 替换style.ts为15条规则版 → DeepSeek填充lore-bridge.ts → Mimo接入三个注入点。完成后立刻出现「靖朝承德X年」、NPC腔调差异化、资源数值正确、叙事文风明显提升。</div>
+      </div>
+      <div class="road-item">
+        <div class="road-phase-tag">PHASE 3.1 · D1-D3</div>
+        <div class="road-title">政策系统上线</div>
+        <div class="road-desc">使用Section 08.6的policy-engine.ts和Section 08.8的PolicyPanel.tsx，玩家能颁布政策、触发NPC仲裁、看到史册记录。</div>
+      </div>
+      <div class="road-item">
+        <div class="road-phase-tag">PHASE 3.2 · D4-D5</div>
+        <div class="road-title">世界事件系统上线</div>
+        <div class="road-desc">使用Section 08.7的event-engine.ts骨架，放置期间触发随机事件，玩家做决策，后果影响游戏状态。</div>
+      </div>
+      <div class="road-item">
+        <div class="road-phase-tag">PHASE 3.3 · D6-D8</div>
+        <div class="road-title">UI/UX全面优化</div>
+        <div class="road-desc">界面流畅（60fps）、资源仪表盘可视化（使用正确的14个字段名）、史册时间线美化、快速存档读档。</div>
+      </div>
+      <div class="road-item dim">
+        <div class="road-phase-tag dim-tag">PHASE 4 · 后续规划</div>
+        <div class="road-title">V2.2核心系统落地</div>
+        <div class="road-desc">宰相离线代理（4.1）→ 双轨史册（4.2）→ 穿越者成长线（4.3）→ 后宫政治联动（4.4）。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 08: CODE IMPLEMENTATIONS ==================== -->
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">SECTION 08</span>
+      <h2 class="section-title">完整代码实现</h2>
+      <span class="section-title-en">FULL CODE IMPLEMENTATION</span>
+    </div>
+
+    <div class="callout success">
+      <strong>本节使用说明：</strong>以下代码均为可直接使用的完整实现。
+      标注 <span class="inline-note">NEW FILE</span> 的是新建文件；
+      标注 <span class="inline-note">PATCH</span> 的是对现有文件的替换/修改；
+      标注 <span class="inline-note">BUG FIX</span> 的是紧急修复。
+      建议 Mimo 按 08.1 → 08.2 → 08.3 → 08.4 → 08.5 → 08.6 → 08.7 → 08.8 顺序执行。
+    </div>
+
+    <!-- 08.1 lore-bridge.ts -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.1</span>
+        lore-bridge.ts — 世界观数据桥接层（DeepSeek填充骨架）
+      </div>
+      <div class="callout">
+        <strong>分工说明：</strong>DeepSeek 读取 lore 文档后填充所有 <code>// TODO: DeepSeek填充</code> 处。
+        Mimo 将此文件放入 <code>ai-context/src/data/lore-bridge.ts</code> 后在三个位置 import（见 08.4/08.5）。
+        年号「承德/永德」需 DeepSeek 确认后统一。
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/data/lore-bridge.ts</span>
+          <span class="code-file-badge badge-new">NEW FILE</span>
+        </div>
+        <div class="code-block"><span class="c">// ============================================================
+// lore-bridge.ts — 靖朝世界观数据桥接层
+// 职责：将lore文档翻译为可注入Prompt的结构化TypeScript数据
+// 生产者：DeepSeek（负责填充内容）
+// 消费者：Mimo（负责在3个位置import）
+// 注入点1：src/engine/state.ts → createEmptyGameState()
+// 注入点2：src/ui/CourtPage.tsx → 朝代header渲染
+// 注入点3：src/engine/prompt/style.ts → buildStylePrompt()
+// ============================================================</span>
+
+<span class="c">// ---- 类型定义 ----</span>
+<span class="k">export interface</span> <span class="t">NPCVoice</span> {
+  features: <span class="t">string</span>[];        <span class="c">// 人格特征标签，如「刚直」「谄媚」</span>
+  syntax_rules: <span class="t">string</span>[];    <span class="c">// 说话句式规则，如「惯用'臣以为'开头」</span>
+  forbidden_phrases: <span class="t">string</span>[]; <span class="c">// 禁用词/禁用表达</span>
+  signature_phrase?: <span class="t">string</span>;  <span class="c">// 标志性口头禅（可选）</span>
+}
+
+<span class="k">export interface</span> <span class="t">DynastyConfig</span> {
+  name: <span class="t">string</span>;
+  era_name: <span class="t">string</span>;
+  current_year_display: (<span class="p">year</span>: <span class="t">number</span>) => <span class="t">string</span>;
+  emperor_title: <span class="t">string</span>;
+  capital: <span class="t">string</span>;
+  current_tone: <span class="t">string</span>;
+  background_summary: <span class="t">string</span>;
+}
+
+<span class="c">// ---- 一、朝代基本配置 ----
+// TODO: DeepSeek 根据lore确认年号（承德 or 永德）并填充其余字段</span>
+<span class="k">export const</span> <span class="p">DYNASTY_CONFIG</span>: <span class="t">DynastyConfig</span> = {
+  name: <span class="s">"靖朝"</span>,
+  era_name: <span class="s">"承德"</span>,  <span class="c">// TODO: DeepSeek确认正确年号</span>
+  current_year_display: (<span class="p">year</span>) => <span class="s">`靖朝承德${year}年`</span>,
+  emperor_title: <span class="s">"陛下"</span>,  <span class="c">// TODO: DeepSeek填充（朕/陛下/皇帝）</span>
+  capital: <span class="s">"TODO: DeepSeek填充京城名称"</span>,
+  current_tone: <span class="s">"猜忌"</span>,   <span class="c">// 初始时代基调</span>
+  background_summary: <span class="s">`TODO: DeepSeek填充靖朝开局背景（3-5句）。
+玩家扮演穿越者，继承皇位，面对朝堂格局。`</span>
+};
+
+<span class="c">// ---- 二、V2.2 文风规则完整版（Prompt注入格式）----
+// TODO: DeepSeek 根据V2.2完整15条规则填充，这是影响叙事质感最直接的设置</span>
+<span class="k">export const</span> <span class="p">NARRATIVE_STYLE_RULES_PROMPT</span> = <span class="s">`
+【靖朝叙事文风 · 十五条规则】
+
+[规则01·语体] 用现代白话写历史感。官职/年号/地名保留古代原称，
+              人物对话和内心活动用现代节奏写。禁止「之乎者也」式堆砌。
+
+[规则02·开场] 重大事件前先交代人物处境（1-3句），不从结果讲起。
+              错误示例：「皇帝决定处斩钱谦」
+              正确示例：「钱谦跪在地上，汗已经湿透了朝服后背。」
+
+[规则03·节奏] 关键转折用短句收束，制造叙事高潮。
+              示例：「三天后，他死了。」「圣旨到了。」「没有人说话。」
+
+[规则04·错位] 现代词汇错位感每段最多1-2处，制造穿越感。
+              示例：「（这套话术放在21世纪能当销售冠军）」
+
+[规则05·括号] 括号是第二张嘴，补充旁白/调侃，不超过15字。
+              示例：「（皇帝听懂了，但装没听懂）」
+
+[规则06·内心] 人物内心必须具体、可触摸。
+              禁止：「他内心复杂」「她百感交集」「皇帝若有所思」
+              必须：「他想到三年前那道折子，手指不自觉握紧了」
+
+[规则07·结论] 每个自然段结尾必须有一句定论或反转。
+              不能以「……」或「不知道」结尾。
+
+[规则08·数字] 具体数字比形容词有力。
+              错误：「国库空虚」→ 正确：「国库只剩三个月的军饷」
+
+[规则09·沉默] 沉默也要写出来，不要跳过。
+              「皇帝没有说话。这沉默持续了有一盏茶的时间。」
+
+[规则10·身体] 用身体动作代替情绪词。
+              错误：「方直很愤怒」→ 正确：「方直把笏板拍在地上」
+
+[规则11·史笔] 重要决定后，加一句史官视角的冷淡评语。
+              格式：「——后世史书记：此举埋下X年后Y事之根」
+
+[规则12·对话] NPC对话必须体现其voice特征，不能所有人说话腔调相同。
+              方直用反问，钱谦用暗示，太监用「奴才以为」。
+
+[规则13·因果] 每个事件必须有可追溯的原因，不能「突然」或「莫名」。
+
+[规则14·限制] 单次叙事不超过300字。宁短勿长，留白比填满好。
+
+[规则15·禁词] 禁止使用以下词汇：内心复杂、百感交集、意义重大、
+              影响深远、历史长河、深谋远虑、运筹帷幄、胸有成竹。
+`</span>;
+
+<span class="c">// ---- 三、NPC 语音人格数据库 ----
+// seed-npcs.ts 里已有 fang-zhi 的简版，这里提供更完整的全量版本
+// TODO: DeepSeek 根据lore角色设定，为每个NPC填充完整的voice数据
+// Mimo 在 prompt/scene.ts 的 targetNpc 渲染段落注入这些数据</span>
+<span class="k">export const</span> <span class="p">NPC_VOICES</span>: <span class="t">Record</span>&lt;<span class="t">string</span>, <span class="t">NPCVoice</span>&gt; = {
+
+  <span class="c">// 方直 — 都察院左佥都御史，清流代表</span>
+  <span class="s">"fang-zhi"</span>: {
+    features: [<span class="s">"刚直不阿"</span>, <span class="s">"引经据典"</span>, <span class="s">"不留情面"</span>, <span class="s">"寒门出身"</span>],
+    syntax_rules: [
+      <span class="s">"惯用'臣以为'开头，随后接律法或典故"</span>,
+      <span class="s">"爱用反问句：'陛下难道不觉得……?'"</span>,
+      <span class="s">"引用古制时用'昔者……'或'史载……'"</span>,
+      <span class="s">"说完话必然跪下，动作与言语同步"</span>
+    ],
+    forbidden_phrases: [<span class="s">"权宜之计"</span>, <span class="s">"睁一只眼闭一只眼"</span>, <span class="s">"不妨考虑"</span>],
+    signature_phrase: <span class="s">"臣参奏，此事有违祖制——"</span>
+  },
+
+  <span class="c">// 钱谦 — 礼部右侍郎，帝党投机者</span>
+  <span class="s">"qian-qian"</span>: {
+    features: [<span class="s">"八面玲珑"</span>, <span class="s">"话中有话"</span>, <span class="s">"永远不直说"</span>, <span class="s">"善于揣摩圣意"</span>],
+    syntax_rules: [
+      <span class="s">"永远先赞美皇帝，哪怕赞美与主题无关"</span>,
+      <span class="s">"结论藏在中间，开头和结尾都是铺垫"</span>,
+      <span class="s">"惯用'臣斗胆一问……'引出刁钻问题"</span>,
+      <span class="s">"结尾必留退路：'当然一切凭陛下圣断'"</span>
+    ],
+    forbidden_phrases: [<span class="s">"直接反对"</span>, <span class="s">"臣以为不妥"</span>, <span class="s">"明确表态"</span>],
+    signature_phrase: <span class="s">"陛下圣明，臣有一事，不知当讲不当讲……"</span>
+  },
+
+  <span class="c">// 郑经 — 户部主事，务实改革派</span>
+  <span class="s">"zheng-jing"</span>: {
+    features: [<span class="s">"务实精明"</span>, <span class="s">"数字思维"</span>, <span class="s">"不爱废话"</span>],
+    syntax_rules: [
+      <span class="s">"开口必说数字：'去年税收……，今年缺口……'"</span>,
+      <span class="s">"说完问题立刻给方案，不发牢骚"</span>,
+      <span class="s">"用类比解释复杂问题，喜欢说'就好比……'"</span>
+    ],
+    forbidden_phrases: [<span class="s">"祖制如此"</span>, <span class="s">"礼不可废"</span>],
+    signature_phrase: <span class="s">"账算出来了，臣说实话：亏空比陛下想的大。"</span>
+  },
+
+  <span class="c">// 王福全 — 司礼监掌印太监，深宫老狐狸</span>
+  <span class="s">"wang-fuquan"</span>: {
+    features: [<span class="s">"谄媚圆滑"</span>, <span class="s">"信息掮客"</span>, <span class="s">"笑里藏刀"</span>],
+    syntax_rules: [
+      <span class="s">"自称'奴才'，绝不用'臣'"</span>,
+      <span class="s">"说坏消息时先铺垫好事，再引出转折"</span>,
+      <span class="s">"惯用'不知是否与……有关'暗示不说透"</span>,
+      <span class="s">"言辞里常有'听说'、'坊间传言'等免责词"</span>
+    ],
+    forbidden_phrases: [<span class="s">"奴才直言"</span>, <span class="s">"明确建议"</span>],
+    signature_phrase: <span class="s">"万岁爷，奴才多嘴一句，不知当讲否……"</span>
+  },
+
+  <span class="c">// 林婉儿 — 贵妃，后宫政治核心
+  // TODO: DeepSeek 根据lore填充完整voice数据</span>
+  <span class="s">"lin-waner"</span>: {
+    features: [<span class="s">"TODO: DeepSeek填充"</span>],
+    syntax_rules: [<span class="s">"TODO: DeepSeek填充"</span>],
+    forbidden_phrases: [<span class="s">"TODO: DeepSeek填充"</span>],
+    signature_phrase: <span class="s">"TODO: DeepSeek填充"</span>
+  },
+
+  <span class="c">// ---- 四个核心新角色（lore独有）----
+  // TODO: DeepSeek 根据lore/角色设定完整填充以下四个角色</span>
+
+  <span class="c">// 张猛 — TODO: DeepSeek确认职位</span>
+  <span class="s">"zhang-meng"</span>: {
+    features: [<span class="s">"TODO: DeepSeek填充"</span>],
+    syntax_rules: [<span class="s">"TODO: DeepSeek填充"</span>],
+    forbidden_phrases: [<span class="s">"TODO: DeepSeek填充"</span>]
+  },
+
+  <span class="c">// 谢渊 — TODO: DeepSeek确认职位</span>
+  <span class="s">"xie-yuan"</span>: {
+    features: [<span class="s">"TODO: DeepSeek填充"</span>],
+    syntax_rules: [<span class="s">"TODO: DeepSeek填充"</span>],
+    forbidden_phrases: [<span class="s">"TODO: DeepSeek填充"</span>]
+  },
+
+  <span class="c">// 李静斋 — TODO: DeepSeek确认职位</span>
+  <span class="s">"li-jingzhai"</span>: {
+    features: [<span class="s">"TODO: DeepSeek填充"</span>],
+    syntax_rules: [<span class="s">"TODO: DeepSeek填充"</span>],
+    forbidden_phrases: [<span class="s">"TODO: DeepSeek填充"</span>]
+  },
+
+  <span class="c">// 国师玄明 — TODO: DeepSeek确认设定</span>
+  <span class="s">"guoshi-xuanming"</span>: {
+    features: [<span class="s">"TODO: DeepSeek填充"</span>],
+    syntax_rules: [<span class="s">"TODO: DeepSeek填充"</span>],
+    forbidden_phrases: [<span class="s">"TODO: DeepSeek填充"</span>]
+  }
+};
+
+<span class="c">// ---- 四、辅助函数 ----</span>
+
+<span class="c">/** 获取NPC的voice数据，优先从lore-bridge取，fallback到NPC自身voice字段 */</span>
+<span class="k">export function</span> <span class="fn">getVoiceForNPC</span>(<span class="p">npcId</span>: <span class="t">string</span>, <span class="p">npcVoice</span>?: <span class="t">any</span>): <span class="t">NPCVoice</span> {
+  <span class="k">const</span> bridgeVoice = NPC_VOICES[npcId];
+  <span class="k">if</span> (bridgeVoice && bridgeVoice.features[<span class="n">0</span>] !== <span class="s">"TODO: DeepSeek填充"</span>) {
+    <span class="k">return</span> bridgeVoice;
+  }
+  <span class="c">// fallback到NPC自身voice字段</span>
+  <span class="k">if</span> (npcVoice?.features?.length > <span class="n">0</span>) {
+    <span class="k">return</span> npcVoice;
+  }
+  <span class="k">return</span> {
+    features: [<span class="s">"谨慎"</span>, <span class="s">"守礼"</span>],
+    syntax_rules: [<span class="s">"语气平和，不轻易表态"</span>],
+    forbidden_phrases: []
+  };
+}
+
+<span class="c">/** 将voice数据转成Prompt注入字符串 */</span>
+<span class="k">export function</span> <span class="fn">buildVoicePrompt</span>(<span class="p">voice</span>: <span class="t">NPCVoice</span>, <span class="p">npcName</span>: <span class="t">string</span>): <span class="t">string</span> {
+  <span class="k">let</span> prompt = <span class="s">`\n【${npcName}的说话风格】\n`</span>;
+  prompt += <span class="s">`人格特征：${voice.features.join('、')}\n`</span>;
+  prompt += <span class="s">`句式规则：\n`</span>;
+  voice.syntax_rules.forEach(<span class="p">r</span> => { prompt += <span class="s">`  - ${r}\n`</span>; });
+  <span class="k">if</span> (voice.forbidden_phrases.length > <span class="n">0</span>) {
+    prompt += <span class="s">`绝对禁止使用：${voice.forbidden_phrases.join('、')}\n`</span>;
+  }
+  <span class="k">if</span> (voice.signature_phrase) {
+    prompt += <span class="s">`标志性口头禅：「${voice.signature_phrase}」\n`</span>;
+  }
+  <span class="k">return</span> prompt;
+}
+</div>
+      </div>
+    </div>
+
+    <!-- 08.2 style.ts PATCH -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.2</span>
+        prompt/style.ts — 全量替换为15条规则版
+      </div>
+      <div class="callout alert">
+        <strong>替换说明：</strong>这是对 <code>ai-context/src/engine/prompt/style.ts</code> 的完整替换。
+        原版4种风格的描述性文字改为从 lore-bridge.ts 读取完整15条规则，同时保留4种tone的额外指令。
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/engine/prompt/style.ts</span>
+          <span class="code-file-badge badge-patch">FULL REPLACE</span>
+        </div>
+        <div class="code-block"><span class="k">import</span> { NARRATIVE_STYLE_RULES_PROMPT } <span class="k">from</span> <span class="s">'../../data/lore-bridge'</span>;
+
+<span class="k">export type</span> <span class="t">NarrativeStyle</span> = <span class="s">'normal'</span> | <span class="s">'dark'</span> | <span class="s">'satire'</span> | <span class="s">'poetic'</span>;
+
+<span class="c">/** 额外的tone修饰符，叠加在15条规则之上 */</span>
+<span class="k">const</span> <span class="p">TONE_MODIFIERS</span>: <span class="t">Record</span>&lt;<span class="t">NarrativeStyle</span>, <span class="t">string</span>&gt; = {
+  normal: <span class="s">''</span>,
+  dark:   <span class="s">`\n【本段附加指令·黑暗现实主义】压抑基调。强调决策代价。不要柔化后果。`</span>,
+  satire: <span class="s">`\n【本段附加指令·讽刺黑色幽默】反讽和夸张手法。严肃情境中加入荒诞元素。距离感如旁观者评论。`</span>,
+  poetic: <span class="s">`\n【本段附加指令·诗意叙事】意境营造。比喻和象征。但历史感不能丢失。`</span>
+};
+
+<span class="k">export function</span> <span class="fn">buildStylePrompt</span>(<span class="p">style</span>: <span class="t">NarrativeStyle</span> = <span class="s">'normal'</span>): <span class="t">string</span> {
+  <span class="k">return</span> NARRATIVE_STYLE_RULES_PROMPT + (TONE_MODIFIERS[style] || <span class="s">''</span>);
+}
+
+<span class="k">export function</span> <span class="fn">getStyleFromState</span>(<span class="p">state</span>: <span class="k">any</span>): <span class="t">NarrativeStyle</span> {
+  <span class="k">const</span> tags = state?.style_state?.current_tags || [];
+  <span class="k">if</span> (tags.includes(<span class="s">'黑暗'</span>) || tags.includes(<span class="s">'沉重'</span>)) <span class="k">return</span> <span class="s">'dark'</span>;
+  <span class="k">if</span> (tags.includes(<span class="s">'讽刺'</span>) || tags.includes(<span class="s">'幽默'</span>)) <span class="k">return</span> <span class="s">'satire'</span>;
+  <span class="k">if</span> (tags.includes(<span class="s">'诗意'</span>) || tags.includes(<span class="s">'抒情'</span>)) <span class="k">return</span> <span class="s">'poetic'</span>;
+  <span class="k">return</span> <span class="s">'normal'</span>;
+}
+</div>
+      </div>
+    </div>
+
+    <!-- 08.3 scene.ts BUG FIX + voice injection -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.3</span>
+        prompt/scene.ts — 字段名Bug修复 + Voice注入
+      </div>
+      <div class="callout alert">
+        <strong>Bug修复（立刻执行）：</strong>原 scene.ts 使用了不存在的字段名，导致叙事Prompt里资源全为0。
+        同时补充NPC voice注入。以下是完整替换版。
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/engine/prompt/scene.ts</span>
+          <span class="code-file-badge badge-fix">BUG FIX + VOICE INJECTION</span>
+        </div>
+        <div class="code-block"><span class="k">import</span> { getVoiceForNPC, buildVoicePrompt, DYNASTY_CONFIG } <span class="k">from</span> <span class="s">'../../data/lore-bridge'</span>;
+
+<span class="k">export interface</span> <span class="t">SceneInput</span> {
+  state: <span class="k">any</span>;
+  command?: <span class="t">string</span>;
+  events?: <span class="t">string</span>[];
+  targetNpc?: <span class="k">any</span>;
+  intent?: <span class="k">any</span>;
+}
+
+<span class="k">export function</span> <span class="fn">buildScenePrompt</span>(<span class="p">input</span>: <span class="t">SceneInput</span>): <span class="t">string</span> {
+  <span class="k">const</span> { state, command, events = [], targetNpc, intent } = input;
+
+  <span class="k">let</span> scene = <span class="s">'【当前场景】\n\n'</span>;
+
+  <span class="c">// 一、世界状态（使用正确字段名，并接入DYNASTY_CONFIG）</span>
+  <span class="k">const</span> dynastyName = state.world?.dynasty || DYNASTY_CONFIG.name;
+  <span class="k">const</span> eraName    = state.world?.era    || DYNASTY_CONFIG.era_name;
+  <span class="k">const</span> year       = state.world?.year   || <span class="n">1</span>;
+  scene += <span class="s">`一、世界状态\n`</span>;
+  scene += <span class="s">`- 当前年号：${dynastyName}${eraName}${year}年\n`</span>;
+  scene += <span class="s">`- 时代基调：${state.world?.tone || DYNASTY_CONFIG.current_tone}\n`</span>;
+  scene += <span class="s">`- 天气：${state.world?.weather_this_year >= 0.7 ? '风调雨顺' :
+                      state.world?.weather_this_year >= 0.4 ? '普通' : '旱涝不定'}\n`</span>;
+
+  <span class="c">// 二、国家资源（BUG FIX：使用正确字段名）
+  // 原版错误：popular_support（不存在）→ 正确：morale
+  // 原版错误：treasury（不存在）→ 正确：fiscal</span>
+  scene += <span class="s">`\n二、国家资源\n`</span>;
+  <span class="k">if</span> (state.resources) {
+    <span class="k">const</span> r = state.resources;
+    scene += <span class="s">`- 民心：${r.morale ?? 0}/100\n`</span>;         <span class="c">// 修复：morale</span>
+    scene += <span class="s">`- 国库：${r.fiscal ?? 0}万两\n`</span>;         <span class="c">// 修复：fiscal</span>
+    scene += <span class="s">`- 军力：${r.military ?? 0}\n`</span>;
+    scene += <span class="s">`- 粮食：${r.food ?? 0}\n`</span>;
+    scene += <span class="s">`- 人口：${r.population ?? 0}\n`</span>;
+    scene += <span class="s">`- 商税：${r.commerce ?? 0}\n`</span>;
+    scene += <span class="s">`- 宦官势力：${r.eunuch ?? 0}/100\n`</span>;
+    scene += <span class="s">`- 外患指数：${r.threat ?? 0}/100\n`</span>;
+    scene += <span class="s">`- 派系张力：${r.faction ?? 0}/100\n`</span>;
+  }
+
+  <span class="c">// 三、当前活跃政策</span>
+  <span class="k">if</span> (state.policies?.active?.length > <span class="n">0</span>) {
+    scene += <span class="s">`\n三、当前政策（${state.policies.active.length}条）\n`</span>;
+    state.policies.active.slice(<span class="n">0</span>, <span class="n">5</span>).forEach((<span class="p">p</span>: <span class="k">any</span>, <span class="p">i</span>: <span class="t">number</span>) => {
+      scene += <span class="s">`${i + 1}. ${p.description || p.id}\n`</span>;
+    });
+  }
+
+  <span class="c">// 四、集体记忆（叙事背景）</span>
+  <span class="k">if</span> (state.world?.collective_memory?.length > <span class="n">0</span>) {
+    scene += <span class="s">`\n四、近期重大记忆\n`</span>;
+    state.world.collective_memory.slice(-<span class="n">3</span>).forEach((<span class="p">m</span>: <span class="t">string</span>) => {
+      scene += <span class="s">`- ${m}\n`</span>;
+    });
+  }
+
+  <span class="c">// 五、玩家指令</span>
+  <span class="k">if</span> (command) {
+    scene += <span class="s">`\n五、玩家指令\n`</span>;
+    scene += <span class="s">`指令：${command}\n`</span>;
+    <span class="k">if</span> (intent) {
+      scene += <span class="s">`意图类型：${intent.intent || '未知'}\n`</span>;
+      <span class="k">if</span> (intent.targets?.length > <span class="n">0</span>) scene += <span class="s">`目标：${intent.targets.join('、')}\n`</span>;
+    }
+  }
+
+  <span class="c">// 六、目标NPC（含voice注入）</span>
+  <span class="k">if</span> (targetNpc) {
+    scene += <span class="s">`\n六、目标NPC\n`</span>;
+    scene += <span class="s">`- 姓名：${targetNpc.name}（${targetNpc.role}）\n`</span>;
+    scene += <span class="s">`- 派系：${targetNpc.faction || '中立'}\n`</span>;
+    scene += <span class="s">`- 当前压力：${targetNpc.state?.pressure ?? 0}/100\n`</span>;
+    scene += <span class="s">`- 对皇帝忠诚：${targetNpc.state?.loyalty_to_emperor ?? 50}/100\n`</span>;
+    scene += <span class="s">`- 行为倾向：${targetNpc.state?.behavior_modifier || '正常'}\n`</span>;
+
+    <span class="c">// 注入voice数据（从lore-bridge获取完整版）</span>
+    <span class="k">const</span> voice = getVoiceForNPC(targetNpc.id, targetNpc.voice);
+    scene += buildVoicePrompt(voice, targetNpc.name);
+
+    <span class="c">// 当前目标</span>
+    <span class="k">const</span> activeGoals = targetNpc.goals?.filter((<span class="p">g</span>: <span class="k">any</span>) => g.status === <span class="s">'active'</span>)
+      .sort((<span class="p">a</span>: <span class="k">any</span>, <span class="p">b</span>: <span class="k">any</span>) => b.priority - a.priority)
+      .slice(<span class="n">0</span>, <span class="n">2</span>);
+    <span class="k">if</span> (activeGoals?.length > <span class="n">0</span>) {
+      scene += <span class="s">`\n【当前目标】\n`</span>;
+      activeGoals.forEach((<span class="p">g</span>: <span class="k">any</span>) => {
+        scene += <span class="s">`- ${g.description}（优先级：${g.priority >= 0.8 ? '高' : g.priority >= 0.5 ? '中' : '低'}）\n`</span>;
+      });
+    }
+
+    scene += <span class="s">`\n【NPC发言要求】\n`</span>;
+    scene += <span class="s">`以第三人称描述${targetNpc.name}的发言和举止。\n`</span>;
+    scene += <span class="s">`必须体现上述【说话风格】的句式规则，绝对不能使用【绝对禁止使用】的表达。\n`</span>;
+    scene += <span class="s">`发言不超过80字，言辞背后要有他自己的算计。\n`</span>;
+  }
+
+  <span class="c">// 七、待处理事件</span>
+  <span class="k">if</span> (events.length > <span class="n">0</span>) {
+    scene += <span class="s">`\n七、待处理事件\n`</span>;
+    events.forEach((<span class="p">e</span>, <span class="p">i</span>) => { scene += <span class="s">`${i + 1}. ${e}\n`</span>; });
+  }
+
+  <span class="k">return</span> scene;
+}
+
+<span class="k">export function</span> <span class="fn">buildMinimalScenePrompt</span>(<span class="p">state</span>: <span class="k">any</span>, <span class="p">command</span>?: <span class="t">string</span>): <span class="t">string</span> {
+  <span class="k">const</span> r = state.resources || {};
+  <span class="k">let</span> prompt = <span class="s">`【状态摘要】${state.world?.dynasty || '靖朝'}${state.world?.year || 1}年\n`</span>;
+  prompt += <span class="s">`民心：${r.morale ?? 0} 国库：${r.fiscal ?? 0} 军力：${r.military ?? 0}\n`</span>;
+  <span class="k">if</span> (command) prompt += <span class="s">`\n【指令】${command}\n`</span>;
+  <span class="k">return</span> prompt;
+}
+</div>
+      </div>
+    </div>
+
+    <!-- 08.4 CourtPage.tsx dynasty header patch -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.4</span>
+        CourtPage.tsx — 朝代年号 Header 注入
+      </div>
+      <div class="callout">
+        <strong>说明：</strong>在 CourtPage.tsx 顶部渲染区域加入朝代年号栏。以下是 patch 片段（在 JSX return 的开头加入）。
+        不需要全量替换 CourtPage.tsx，只需找到 <code>return (</code> 后的第一个 <code>&lt;div&gt;</code> 加入以下组件。
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/ui/CourtPage.tsx</span>
+          <span class="code-file-badge badge-patch">ADD DYNASTY HEADER</span>
+        </div>
+        <div class="code-block"><span class="c">// 在文件顶部 import 区域追加：</span>
+<span class="k">import</span> { DYNASTY_CONFIG } <span class="k">from</span> <span class="s">'../data/lore-bridge'</span>;
+
+<span class="c">// ---- 在 CourtPage 函数内，return 之前的 JSX 里，加入以下朝代 Header 组件 ----
+// 将以下 &lt;DynastyHeader&gt; 放在页面最顶部（现有 Navbar 下方）</span>
+
+<span class="c">// ---- 新增：朝代Header组件（可以直接写在CourtPage.tsx里） ----</span>
+<span class="k">function</span> <span class="fn">DynastyHeader</span>({ state }: { state: <span class="k">any</span> }) {
+  <span class="k">if</span> (!state) <span class="k">return null</span>;
+  <span class="k">const</span> dynastyName = state.world?.dynasty || DYNASTY_CONFIG.name;
+  <span class="k">const</span> eraName    = state.world?.era    || DYNASTY_CONFIG.era_name;
+  <span class="k">const</span> year       = state.world?.year   || <span class="n">1</span>;
+  <span class="k">const</span> tone       = state.world?.tone   || DYNASTY_CONFIG.current_tone;
+  <span class="k">const</span> r          = state.resources     || {};
+
+  <span class="k">return</span> (
+    &lt;div style={{
+      background: <span class="s">'#1a1208'</span>,
+      borderBottom: <span class="s">'2px solid #b8922a'</span>,
+      padding: <span class="s">'10px 20px'</span>,
+      display: <span class="s">'flex'</span>,
+      alignItems: <span class="s">'center'</span>,
+      gap: <span class="s">'16px'</span>,
+      flexWrap: <span class="s">'wrap'</span>
+    }}&gt;
+      {<span class="c">/* 朝代年号 */</span>}
+      &lt;div style={{ color: <span class="s">'#d4a93a'</span>, fontFamily: <span class="s">'serif'</span>, fontSize: <span class="s">'18px'</span>, letterSpacing: <span class="s">'3px'</span> }}&gt;
+        {dynastyName}·{eraName}{year}年
+      &lt;/div&gt;
+
+      {<span class="c">/* 分隔线 */</span>}
+      &lt;div style={{ width: <span class="s">'1px'</span>, height: <span class="s">'20px'</span>, background: <span class="s">'rgba(184,146,42,0.3)'</span> }} /&gt;
+
+      {<span class="c">/* 时代基调 */</span>}
+      &lt;div style={{ color: <span class="s">'rgba(245,239,226,0.6)'</span>, fontSize: <span class="s">'12px'</span>, fontFamily: <span class="s">'sans-serif'</span> }}&gt;
+        时代基调：&lt;span style={{ color: <span class="s">'#d4875a'</span> }}&gt;{tone}&lt;/span&gt;
+      &lt;/div&gt;
+
+      {<span class="c">/* 关键资源快览（使用正确字段名）*/</span>}
+      &lt;div style={{ marginLeft: <span class="s">'auto'</span>, display: <span class="s">'flex'</span>, gap: <span class="s">'16px'</span>, fontSize: <span class="s">'12px'</span>, fontFamily: <span class="s">'sans-serif'</span> }}&gt;
+        &lt;span style={{ color: <span class="s">'rgba(245,239,226,0.5)'</span> }}&gt;
+          民心 &lt;span style={{ color: (r.morale ?? <span class="n">0</span>) &gt; <span class="n">60</span> ? <span class="s">'#6baa7a'</span> : <span class="s">'#c05050'</span> }}&gt;
+            {r.morale ?? <span class="n">0</span>}
+          &lt;/span&gt;
+        &lt;/span&gt;
+        &lt;span style={{ color: <span class="s">'rgba(245,239,226,0.5)'</span> }}&gt;
+          国库 &lt;span style={{ color: <span class="s">'#d4a93a'</span> }}&gt;{r.fiscal ?? <span class="n">0</span>}&lt;/span&gt;
+        &lt;/span&gt;
+        &lt;span style={{ color: <span class="s">'rgba(245,239,226,0.5)'</span> }}&gt;
+          军力 &lt;span style={{ color: <span class="s">'#7ab5cc'</span> }}&gt;{r.military ?? <span class="n">0</span>}&lt;/span&gt;
+        &lt;/span&gt;
+        &lt;span style={{ color: <span class="s">'rgba(245,239,226,0.5)'</span> }}&gt;
+          外患 &lt;span style={{ color: (r.threat ?? <span class="n">0</span>) &gt; <span class="n">50</span> ? <span class="s">'#c05050'</span> : <span class="s">'rgba(245,239,226,0.5)'</span> }}&gt;
+            {r.threat ?? <span class="n">0</span>}
+          &lt;/span&gt;
+        &lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+<span class="c">// ---- 在 CourtPage return 的 JSX 里，Navbar 下方插入：
+// &lt;DynastyHeader state={state} /&gt;</span>
+</div>
+      </div>
+    </div>
+
+    <!-- 08.5 state.ts patch -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.5</span>
+        engine/state.ts — createEmptyGameState 接入 DYNASTY_CONFIG
+      </div>
+      <div class="callout">
+        <strong>说明：</strong>这是最小化patch，只修改 createEmptyGameState 里的 world 字段。
+        找到 <code>world: {</code> 那个对象，修改 dynasty 和 era 两行即可。
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/engine/types.ts（或state.ts）</span>
+          <span class="code-file-badge badge-patch">MICRO PATCH</span>
+        </div>
+        <div class="code-block"><span class="c">// 在 types.ts 顶部追加 import：</span>
+<span class="k">import</span> { DYNASTY_CONFIG } <span class="k">from</span> <span class="s">'../data/lore-bridge'</span>;
+
+<span class="c">// 修改 createEmptyGameState() 里的 world 字段：
+// 原代码：</span>
+<span class="c">// world: {
+//   dynasty: '靖朝',
+//   era: '永德',   ← 可能是错误年号
+//   ...</span>
+
+<span class="c">// 改为：</span>
+world: {
+  dynasty: DYNASTY_CONFIG.name,      <span class="c">// "靖朝"</span>
+  era:     DYNASTY_CONFIG.era_name,  <span class="c">// 由DeepSeek确认后填入lore-bridge.ts</span>
+  year: <span class="n">1</span>,
+  tone: DYNASTY_CONFIG.current_tone <span class="k">as</span> <span class="k">any</span>,
+  named_events: [],
+  collective_memory: [DYNASTY_CONFIG.background_summary],
+  wills: [],
+  weather_this_year: <span class="n">0.5</span>,
+  conflict_ratio: <span class="n">0.3</span>
+},
+</div>
+      </div>
+    </div>
+
+    <!-- 08.6 policy-engine.ts -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.6</span>
+        engine/policy-engine.ts — 政策引擎完整实现
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/engine/policy-engine.ts</span>
+          <span class="code-file-badge badge-new">NEW FILE</span>
+        </div>
+        <div class="code-block"><span class="k">import</span> { callLLMWithRetry } <span class="k">from</span> <span class="s">'./llm'</span>;
+<span class="k">import</span> <span class="k">type</span> { GameState, Policy, PolicyLog } <span class="k">from</span> <span class="s">'./types'</span>;
+<span class="k">import</span> { NARRATIVE_STYLE_RULES_PROMPT } <span class="k">from</span> <span class="s">'../data/lore-bridge'</span>;
+
+<span class="c">// ---- 类型扩展 ----</span>
+<span class="k">export interface</span> <span class="t">PolicyEffect</span> {
+  resource_change: <span class="t">Partial</span>&lt;<span class="t">Record</span>&lt;<span class="t">string</span>, <span class="t">number</span>&gt;&gt;; <span class="c">// 立即效果</span>
+  tick_change: <span class="t">Partial</span>&lt;<span class="t">Record</span>&lt;<span class="t">string</span>, <span class="t">number</span>&gt;&gt;;     <span class="c">// 每tick持续效果</span>
+  duration_years: <span class="t">number</span>;                            <span class="c">// 持续年数，-1为永久</span>
+  npc_reactions: <span class="t">NPCReaction</span>[];
+  chronicle_note: <span class="t">string</span>;                            <span class="c">// 史册记录</span>
+  faction_impact: <span class="t">Record</span>&lt;<span class="t">string</span>, <span class="t">number</span>&gt;;            <span class="c">// 各派系满意度变化</span>
+}
+
+<span class="k">export interface</span> <span class="t">NPCReaction</span> {
+  npc_id: <span class="t">string</span>;
+  attitude: <span class="s">'支持'</span> | <span class="s">'反对'</span> | <span class="s">'中立'</span> | <span class="s">'观望'</span>;
+  speech: <span class="t">string</span>;       <span class="c">// NPC发言</span>
+  hidden_action?: <span class="t">string</span>; <span class="c">// 暗中行动（不对玩家展示）</span>
+}
+
+<span class="k">export interface</span> <span class="t">PolicyInterpretResult</span> {
+  success: <span class="t">boolean</span>;
+  policy: <span class="t">Policy</span>;
+  effect: <span class="t">PolicyEffect</span>;
+  narrative: <span class="t">string</span>;      <span class="c">// 颁布政策时的叙事文本</span>
+  error?: <span class="t">string</span>;
+}
+
+<span class="c">// ---- 预设政策模板（22个，DeepSeek补充细节）----</span>
+<span class="k">export const</span> <span class="p">POLICY_PRESETS</span> = {
+  <span class="c">// 内政类</span>
+  <span class="s">"减税惠民"</span>:     { tags: [<span class="s">"内政"</span>, <span class="s">"财政"</span>], tick_change: { morale: <span class="n">+2</span>, fiscal: <span class="n">-100</span> }, duration: <span class="n">3</span> },
+  <span class="s">"加征赋税"</span>:     { tags: [<span class="s">"内政"</span>, <span class="s">"财政"</span>], tick_change: { morale: <span class="n">-2</span>, fiscal: <span class="n">+150</span> }, duration: <span class="n">-1</span> },
+  <span class="s">"整顿吏治"</span>:     { tags: [<span class="s">"内政"</span>, <span class="s">"廉政"</span>], tick_change: { morale: <span class="n">+1</span>, fiscal: <span class="n">-30</span> }, duration: <span class="n">2</span> },
+  <span class="s">"广开言路"</span>:     { tags: [<span class="s">"内政"</span>, <span class="s">"言论"</span>], tick_change: { faction: <span class="n">-5</span>, morale: <span class="n">+1</span> }, duration: <span class="n">3</span> },
+  <span class="s">"兴建水利"</span>:     { tags: [<span class="s">"内政"</span>, <span class="s">"农业"</span>], tick_change: { food: <span class="n">+80</span>, fiscal: <span class="n">-200</span> }, duration: <span class="n">5</span> },
+  <span class="s">"开仓赈灾"</span>:     { tags: [<span class="s">"内政"</span>, <span class="s">"民生"</span>], tick_change: { morale: <span class="n">+3</span>, food: <span class="n">-200</span> }, duration: <span class="n">1</span> },
+  <span class="c">// 军事类</span>
+  <span class="s">"扩充禁军"</span>:     { tags: [<span class="s">"军事"</span>], tick_change: { military: <span class="n">+50</span>, fiscal: <span class="n">-150</span> }, duration: <span class="n">-1</span> },
+  <span class="s">"裁汰冗兵"</span>:     { tags: [<span class="s">"军事"</span>, <span class="s">"财政"</span>], tick_change: { military: <span class="n">-30</span>, fiscal: <span class="n">+80</span> }, duration: <span class="n">2</span> },
+  <span class="s">"边疆屯田"</span>:     { tags: [<span class="s">"军事"</span>, <span class="s">"农业"</span>], tick_change: { threat: <span class="n">-2</span>, food: <span class="n">+50</span> }, duration: <span class="n">5</span> },
+  <span class="s">"和亲邦交"</span>:     { tags: [<span class="s">"军事"</span>, <span class="s">"外交"</span>], tick_change: { threat: <span class="n">-5</span>, morale: <span class="n">-1</span> }, duration: <span class="n">3</span> },
+  <span class="s">"御驾亲征"</span>:     { tags: [<span class="s">"军事"</span>], tick_change: { military: <span class="n">+80</span>, threat: <span class="n">-8</span>, morale: <span class="n">+2</span> }, duration: <span class="n">2</span> },
+  <span class="c">// 仙道类（TODO: DeepSeek补充6个）</span>
+  <span class="s">"祭天祈福"</span>:     { tags: [<span class="s">"仙道"</span>], tick_change: { morale: <span class="n">+3</span>, fiscal: <span class="n">-50</span> }, duration: <span class="n">1</span> },
+  <span class="s">"召仙炼丹"</span>:     { tags: [<span class="s">"仙道"</span>], tick_change: { morale: <span class="n">-1</span>, eunuch: <span class="n">+5</span>, fiscal: <span class="n">-100</span> }, duration: <span class="n">3</span> },
+  <span class="c">// 工业/现代类（TODO: DeepSeek补充5个）</span>
+  <span class="s">"推广活字印刷"</span>: { tags: [<span class="s">"工业"</span>, <span class="s">"穿越"</span>], tick_change: { morale: <span class="n">+1</span>, commerce: <span class="n">+30</span> }, duration: <span class="n">-1</span> },
+  <span class="s">"开设钱庄"</span>:     { tags: [<span class="s">"工业"</span>, <span class="s">"商业"</span>], tick_change: { commerce: <span class="n">+60</span>, fiscal: <span class="n">+80</span> }, duration: <span class="n">-1</span> },
+} <span class="k">as const</span>;
+
+<span class="c">// ---- 核心函数 ----</span>
+
+<span class="c">/**
+ * 解释并执行一条政策（LLM调用版）
+ * 用于玩家自由输入的政策描述
+ */</span>
+<span class="k">export async function</span> <span class="fn">interpretPolicy</span>(
+  <span class="p">description</span>: <span class="t">string</span>,
+  <span class="p">state</span>: <span class="t">GameState</span>
+): <span class="t">Promise</span>&lt;<span class="t">PolicyInterpretResult</span>&gt; {
+
+  <span class="k">const</span> activeNpcs = state.npcs
+    .filter(<span class="p">n</span> => n.status === <span class="s">'active'</span>)
+    .slice(<span class="n">0</span>, <span class="n">6</span>)
+    .map(<span class="p">n</span> => <span class="s">`${n.name}(${n.role},${n.faction}派)`</span>)
+    .join(<span class="s">'、'</span>);
+
+  <span class="k">const</span> systemPrompt = <span class="s">`你是靖朝皇帝模拟游戏的政策裁判引擎。
+${NARRATIVE_STYLE_RULES_PROMPT}
+
+【你的任务】
+玩家颁布了一条政策，你需要：
+1. 判断政策的合理性和历史真实性
+2. 生成资源变化效果（立即效果 + 每tick持续效果）
+3. 生成各NPC的反应（支持/反对/中立）和发言
+4. 生成叙事文本（按15条文风规则）
+5. 生成史册记录（史官口吻，30字以内）
+
+【输出格式】严格JSON，不要markdown代码块：
+{
+  "resource_change": {"morale":0,"fiscal":0,"military":0,"food":0,"threat":0,"commerce":0},
+  "tick_change": {"morale":0,"fiscal":0},
+  "duration_years": 3,
+  "npc_reactions": [
+    {"npc_id":"fang-zhi","attitude":"支持","speech":"...（体现其voice特征）","hidden_action":"..."}
+  ],
+  "chronicle_note": "史册记录...",
+  "narrative": "叙事文本（按15条规则，不超过200字）"
+}`</span>;
+
+  <span class="k">const</span> userPrompt = <span class="s">`【当前状态】
+朝代：${state.world.dynasty}${state.world.era}${state.world.year}年
+民心：${state.resources.morale} 国库：${state.resources.fiscal} 军力：${state.resources.military}
+外患：${state.resources.threat} 宦官势力：${state.resources.eunuch}
+在场朝臣：${activeNpcs}
+
+【玩家政策指令】
+"${description}"
+
+请生成政策解析JSON。`</span>;
+
+  <span class="k">try</span> {
+    <span class="k">const</span> raw = <span class="k">await</span> callLLMWithRetry({
+      system: systemPrompt,
+      user: userPrompt,
+      temperature: <span class="n">0.7</span>,
+      tag: <span class="s">'policy'</span>
+    });
+
+    <span class="c">// 解析JSON（容错处理）</span>
+    <span class="k">let</span> parsed: <span class="k">any</span>;
+    <span class="k">try</span> {
+      <span class="k">const</span> cleaned = raw.replace(/```json|```/g, <span class="s">''</span>).trim();
+      parsed = JSON.parse(cleaned);
+    } <span class="k">catch</span> {
+      <span class="k">throw new</span> Error(<span class="s">'LLM返回的政策JSON解析失败：'</span> + raw.substring(<span class="n">0</span>, <span class="n">200</span>));
+    }
+
+    <span class="k">const</span> policy: <span class="t">Policy</span> = {
+      id: <span class="s">`policy_${Date.now()}`</span>,
+      tags: detectPolicyTags(description),
+      enacted_year: state.world.year,
+      enacted_by: <span class="s">'emperor'</span>,
+      description,
+      visual: { image: <span class="k">null</span>, image_prompt: <span class="k">null</span> }
+    };
+
+    <span class="k">const</span> effect: <span class="t">PolicyEffect</span> = {
+      resource_change: parsed.resource_change || {},
+      tick_change:     parsed.tick_change     || {},
+      duration_years:  parsed.duration_years  || <span class="n">3</span>,
+      npc_reactions:   parsed.npc_reactions   || [],
+      chronicle_note:  parsed.chronicle_note  || description,
+      faction_impact:  {}
+    };
+
+    <span class="k">return</span> {
+      success: <span class="k">true</span>,
+      policy,
+      effect,
+      narrative: parsed.narrative || <span class="s">`皇帝颁布了「${description}」政策。`</span>
+    };
+
+  } <span class="k">catch</span> (err) {
+    <span class="k">return</span> {
+      success: <span class="k">false</span>,
+      policy: { id: <span class="s">''</span>, tags: [], enacted_year: state.world.year, enacted_by: <span class="s">'emperor'</span>, description, visual: { image: <span class="k">null</span>, image_prompt: <span class="k">null</span> } },
+      effect: { resource_change: {}, tick_change: {}, duration_years: <span class="n">0</span>, npc_reactions: [], chronicle_note: <span class="s">''</span>, faction_impact: {} },
+      narrative: <span class="s">''</span>,
+      error: String(err)
+    };
+  }
+}
+
+<span class="c">/**
+ * 快速执行预设政策（不调LLM，直接用模板效果）
+ * 用于22个预设政策，节省Token
+ */</span>
+<span class="k">export function</span> <span class="fn">applyPresetPolicy</span>(
+  <span class="p">presetName</span>: <span class="k">keyof typeof</span> POLICY_PRESETS,
+  <span class="p">state</span>: <span class="t">GameState</span>
+): { policy: <span class="t">Policy</span>; immediateChanges: <span class="t">Record</span>&lt;<span class="t">string</span>, <span class="t">number</span>&gt; } {
+  <span class="k">const</span> preset = POLICY_PRESETS[presetName];
+  <span class="k">const</span> policy: <span class="t">Policy</span> = {
+    id: <span class="s">`preset_${presetName}_${Date.now()}`</span>,
+    tags: [...preset.tags],
+    enacted_year: state.world.year,
+    enacted_by: <span class="s">'emperor'</span>,
+    description: presetName,
+    visual: { image: <span class="k">null</span>, image_prompt: <span class="k">null</span> }
+  };
+  <span class="k">return</span> { policy, immediateChanges: preset.tick_change };
+}
+
+<span class="c">/**
+ * 每tick应用所有活跃政策的持续效果
+ * 在 tick.ts 的世界模拟后调用
+ */</span>
+<span class="k">export function</span> <span class="fn">applyPolicyTickEffects</span>(<span class="p">state</span>: <span class="t">GameState</span>): <span class="t">GameState</span> {
+  <span class="c">// 注意：当前 Policy 接口里没有 tick_change 字段
+  // Phase 3.1 时需要 Mimo 在 Policy 接口里加上 tick_change 和 duration_years
+  // 目前先做占位逻辑</span>
+  <span class="k">const</span> newState = { ...state };
+  <span class="c">// TODO: 遍历 state.policies.active，应用每条政策的 tick_change</span>
+  <span class="k">return</span> newState;
+}
+
+<span class="c">/** 检查政策冲突 */</span>
+<span class="k">export function</span> <span class="fn">checkPolicyConflicts</span>(<span class="p">newPolicy</span>: <span class="t">Policy</span>, <span class="p">activePolicies</span>: <span class="t">Policy</span>[]): <span class="t">string</span>[] {
+  <span class="k">const</span> conflicts: <span class="t">string</span>[] = [];
+  <span class="k">for</span> (<span class="k">const</span> p <span class="k">of</span> activePolicies) {
+    <span class="c">// 同类型政策冲突检测（简单规则）</span>
+    <span class="k">if</span> (p.tags.includes(<span class="s">"财政"</span>) && newPolicy.tags.includes(<span class="s">"财政"</span>)) {
+      conflicts.push(<span class="s">`与「${p.description}」在财政方向有冲突`</span>);
+    }
+    <span class="k">if</span> (p.tags.includes(<span class="s">"军事"</span>) && newPolicy.description.includes(<span class="s">"裁"</span>)
+        && p.description.includes(<span class="s">"扩"</span>)) {
+      conflicts.push(<span class="s">`扩军与裁军政策无法同时执行`</span>);
+    }
+  }
+  <span class="k">return</span> conflicts;
+}
+
+<span class="c">/** 辅助：从描述推断政策tags */</span>
+<span class="k">function</span> <span class="fn">detectPolicyTags</span>(<span class="p">desc</span>: <span class="t">string</span>): <span class="t">string</span>[] {
+  <span class="k">const</span> tags: <span class="t">string</span>[] = [];
+  <span class="k">if</span> (/<span class="s">税|赋|钱|财|库</span>/.test(desc)) tags.push(<span class="s">"财政"</span>);
+  <span class="k">if</span> (/<span class="s">军|兵|将|战|征</span>/.test(desc)) tags.push(<span class="s">"军事"</span>);
+  <span class="k">if</span> (/<span class="s">粮|农|田|水|旱</span>/.test(desc)) tags.push(<span class="s">"农业"</span>);
+  <span class="k">if</span> (/<span class="s">仙|道|炼|祭|神</span>/.test(desc)) tags.push(<span class="s">"仙道"</span>);
+  <span class="k">if</span> (/<span class="s">商|贸|市|钱庄</span>/.test(desc)) tags.push(<span class="s">"商业"</span>);
+  <span class="k">if</span> (tags.length === <span class="n">0</span>) tags.push(<span class="s">"内政"</span>);
+  <span class="k">return</span> tags;
+}
+</div>
+      </div>
+    </div>
+
+    <!-- 08.7 event-engine.ts -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.7</span>
+        engine/event-engine.ts — 世界事件引擎骨架
+      </div>
+      <div class="callout">
+        <strong>说明：</strong>这是事件引擎的可运行骨架。6大类、32个事件模板的具体描述由 DeepSeek 填充到 EVENT_TEMPLATES 里。
+        Mimo 使用此骨架接入 tick.ts。
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/engine/event-engine.ts</span>
+          <span class="code-file-badge badge-new">NEW FILE</span>
+        </div>
+        <div class="code-block"><span class="k">import</span> { callLLMWithRetry } <span class="k">from</span> <span class="s">'./llm'</span>;
+<span class="k">import</span> <span class="k">type</span> { GameState, PendingEvent } <span class="k">from</span> <span class="s">'./types'</span>;
+<span class="k">import</span> { NARRATIVE_STYLE_RULES_PROMPT } <span class="k">from</span> <span class="s">'../data/lore-bridge'</span>;
+
+<span class="c">// ---- 事件模板类型 ----</span>
+<span class="k">export interface</span> <span class="t">EventTemplate</span> {
+  id: <span class="t">string</span>;
+  category: <span class="s">'自然灾害'</span> | <span class="s">'仙道异变'</span> | <span class="s">'工业事故'</span> | <span class="s">'党争'</span> | <span class="s">'边疆'</span> | <span class="s">'民间';
+  name: string;
+  description: string;  </span><span class="c">// TODO: DeepSeek填充</span>
+  trigger_conditions: {
+    min_year?: <span class="t">number</span>;
+    resource_threshold?: <span class="t">Partial</span>&lt;<span class="t">Record</span>&lt;<span class="t">string</span>, { min?: <span class="t">number</span>; max?: <span class="t">number</span> }&gt;&gt;;
+    probability: <span class="t">number</span>; <span class="c">// 每年触发概率 0~1</span>
+    required_tags?: <span class="t">string</span>[]; <span class="c">// 需要有此类政策才触发</span>
+  };
+  severity: <span class="n">1</span> | <span class="n">2</span> | <span class="n">3</span>; <span class="c">// 1轻微 2中等 3严重</span>
+  choices: <span class="t">EventChoice</span>[]; <span class="c">// 2-4个选项</span>
+}
+
+<span class="k">export interface</span> <span class="t">EventChoice</span> {
+  id: <span class="t">string</span>;
+  label: <span class="t">string</span>;
+  description: <span class="t">string</span>;
+  effects: <span class="t">Partial</span>&lt;<span class="t">Record</span>&lt;<span class="t">string</span>, <span class="t">number</span>&gt;&gt;;
+  requires?: <span class="t">string</span>; <span class="c">// 需要特定资源/知识才能解锁</span>
+}
+
+<span class="k">export interface</span> <span class="t">ActiveEvent</span> {
+  template: <span class="t">EventTemplate</span>;
+  triggered_year: <span class="t">number</span>;
+  narrative: <span class="t">string</span>; <span class="c">// LLM生成的事件描述</span>
+}
+
+<span class="c">// ---- 事件模板库（骨架，DeepSeek负责填充description和choices）----</span>
+<span class="k">export const</span> <span class="p">EVENT_TEMPLATES</span>: <span class="t">EventTemplate</span>[] = [
+
+  <span class="c">// === 自然灾害 ===</span>
+  {
+    id: <span class="s">"drought"</span>, category: <span class="s">"自然灾害"</span>, name: <span class="s">"黄淮大旱"</span>, severity: <span class="n">3</span>,
+    description: <span class="s">"TODO: DeepSeek填充（50-80字场景描述）"</span>,
+    trigger_conditions: {
+      probability: <span class="n">0.08</span>,
+      resource_threshold: { land_fertility: { max: <span class="n">0.4</span> } }
+    },
+    choices: [
+      { id: <span class="s">"relief"</span>, label: <span class="s">"开仓赈灾"</span>, description: <span class="s">"动用储粮赈济灾民"</span>,
+        effects: { food: <span class="n">-300</span>, morale: <span class="n">+5</span>, disaster_relief: <span class="n">-100</span> } },
+      { id: <span class="s">"tax_exempt"</span>, label: <span class="s">"免除灾区赋税"</span>, description: <span class="s">"三年不征灾区税"</span>,
+        effects: { fiscal: <span class="n">-200</span>, morale: <span class="n">+3</span>, faction: <span class="n">+5</span> } },
+      { id: <span class="s">"ignore"</span>, label: <span class="s">"置之不理"</span>, description: <span class="s">"让地方自己处理"</span>,
+        effects: { morale: <span class="n">-8</span>, population: <span class="n">-500</span> } }
+    ]
+  },
+  {
+    id: <span class="s">"flood"</span>, category: <span class="s">"自然灾害"</span>, name: <span class="s">"江南水患"</span>, severity: <span class="n">2</span>,
+    description: <span class="s">"TODO: DeepSeek填充"</span>,
+    trigger_conditions: { probability: <span class="n">0.06</span> },
+    choices: [
+      { id: <span class="s">"repair"</span>, label: <span class="s">"修缮堤坝"</span>, description: <span class="s">"调拨银两修堤"</span>,
+        effects: { fiscal: <span class="n">-150</span>, land_fertility: <span class="n">+0.05</span> } },
+      { id: <span class="s">"ignore"</span>, label: <span class="s">"暂缓处理"</span>, description: <span class="s">"等明年预算"</span>,
+        effects: { morale: <span class="n">-4</span>, food: <span class="n">-150</span> } }
+    ]
+  },
+
+  <span class="c">// === 仙道异变 ===</span>
+  {
+    id: <span class="s">"omen_eclipse"</span>, category: <span class="s">"仙道异变"</span>, name: <span class="s">"日食天象"</span>, severity: <span class="n">2</span>,
+    description: <span class="s">"TODO: DeepSeek填充"</span>,
+    trigger_conditions: { probability: <span class="n">0.04</span> },
+    choices: [
+      { id: <span class="s">"pray"</span>, label: <span class="s">"举行祭天大典"</span>, description: <span class="s">"耗时三日，费银五千两"</span>,
+        effects: { fiscal: <span class="n">-80</span>, morale: <span class="n">+4</span> } },
+      { id: <span class="s">"science"</span>, label: <span class="s">"（穿越者）解释天文现象"</span>,
+        description: <span class="s">"告知朝臣这是自然规律"</span>,
+        requires: <span class="s">"modern_knowledge_science"</span>,
+        effects: { morale: <span class="n">+2</span>, faction: <span class="n">+8</span>, eunuch: <span class="n">-3</span> } }
+    ]
+  },
+
+  <span class="c">// === 党争 ===</span>
+  {
+    id: <span class="s">"faction_conflict"</span>, category: <span class="s">"党争"</span>, name: <span class="s">"朝堂上书大战"</span>, severity: <span class="n">2</span>,
+    description: <span class="s">"TODO: DeepSeek填充"</span>,
+    trigger_conditions: { probability: <span class="n">0.10</span>, resource_threshold: { faction: { min: <span class="n">60</span> } } },
+    choices: [
+      { id: <span class="s">"side_a"</span>, label: <span class="s">"支持清流派"</span>, description: <span class="s">"方直一党得势"</span>,
+        effects: { faction: <span class="n">-15</span>, eunuch: <span class="n">-5</span> } },
+      { id: <span class="s">"side_b"</span>, label: <span class="s">"支持帝党"</span>, description: <span class="s">"钱谦一党得意"</span>,
+        effects: { faction: <span class="n">-10</span>, eunuch: <span class="n">+5</span> } },
+      { id: <span class="s">"balance"</span>, label: <span class="s">"各打五十大板"</span>, description: <span class="s">"各罚一月俸禄"</span>,
+        effects: { faction: <span class="n">-5</span>, morale: <span class="n">-1</span> } }
+    ]
+  },
+
+  <span class="c">// === 边疆 ===</span>
+  {
+    id: <span class="s">"border_raid"</span>, category: <span class="s">"边疆"</span>, name: <span class="s">"北疆游牧扣边"</span>, severity: <span class="n">2</span>,
+    description: <span class="s">"TODO: DeepSeek填充"</span>,
+    trigger_conditions: { probability: <span class="n">0.07</span>, resource_threshold: { threat: { min: <span class="n">40</span> } } },
+    choices: [
+      { id: <span class="s">"fight"</span>, label: <span class="s">"出兵征讨"</span>, description: <span class="s">"调边军迎击"</span>,
+        effects: { military: <span class="n">-80</span>, threat: <span class="n">-15</span>, morale: <span class="n">+3</span>, fiscal: <span class="n">-200</span> } },
+      { id: <span class="s">"peace"</span>, label: <span class="s">"岁币议和"</span>, description: <span class="s">"每年输银万两换太平"</span>,
+        effects: { threat: <span class="n">-20</span>, fiscal: <span class="n">-100</span>, morale: <span class="n">-3</span> } }
+    ]
+  },
+
+  <span class="c">// === 民间 ===</span>
+  {
+    id: <span class="s">"merchant_boom"</span>, category: <span class="s">"民间"</span>, name: <span class="s">"江南商贸繁荣"</span>, severity: <span class="n">1</span>,
+    description: <span class="s">"TODO: DeepSeek填充（正面事件）"</span>,
+    trigger_conditions: { probability: <span class="n">0.05</span>, resource_threshold: { commerce: { min: <span class="n">400</span> } } },
+    choices: [
+      { id: <span class="s">"tax_more"</span>, label: <span class="s">"加征商税"</span>, description: <span class="s">"趁机多收一成"</span>,
+        effects: { fiscal: <span class="n">+200</span>, commerce: <span class="n">-30</span> } },
+      { id: <span class="s">"encourage"</span>, label: <span class="s">"鼓励发展"</span>, description: <span class="s">"给予政策支持"</span>,
+        effects: { commerce: <span class="n">+80</span>, morale: <span class="n">+2</span> } }
+    ]
+  }
+
+  <span class="c">// TODO: DeepSeek 继续添加至32个，覆盖6大类</span>
+];
+
+<span class="c">// ---- 核心函数 ----</span>
+
+<span class="c">/**
+ * 每tick检查是否触发事件
+ * 在 tick.ts 的世界模拟阶段调用
+ */</span>
+<span class="k">export function</span> <span class="fn">checkEventTriggers</span>(<span class="p">state</span>: <span class="t">GameState</span>): <span class="t">EventTemplate</span>[] {
+  <span class="k">const</span> triggered: <span class="t">EventTemplate</span>[] = [];
+  <span class="k">const</span> r = state.resources;
+
+  <span class="k">for</span> (<span class="k">const</span> template <span class="k">of</span> EVENT_TEMPLATES) {
+    <span class="k">const</span> cond = template.trigger_conditions;
+
+    <span class="c">// 年份检查</span>
+    <span class="k">if</span> (cond.min_year && state.world.year < cond.min_year) <span class="k">continue</span>;
+
+    <span class="c">// 资源阈值检查</span>
+    <span class="k">let</span> resourceOk = <span class="k">true</span>;
+    <span class="k">if</span> (cond.resource_threshold) {
+      <span class="k">for</span> (<span class="k">const</span> [key, range] <span class="k">of</span> Object.entries(cond.resource_threshold)) {
+        <span class="k">const</span> val = (r <span class="k">as any</span>)[key] ?? <span class="n">0</span>;
+        <span class="k">if</span> (range.min !== <span class="k">undefined</span> && val < range.min) { resourceOk = <span class="k">false</span>; <span class="k">break</span>; }
+        <span class="k">if</span> (range.max !== <span class="k">undefined</span> && val > range.max) { resourceOk = <span class="k">false</span>; <span class="k">break</span>; }
+      }
+    }
+    <span class="k">if</span> (!resourceOk) <span class="k">continue</span>;
+
+    <span class="c">// 政策标签检查</span>
+    <span class="k">if</span> (cond.required_tags?.length) {
+      <span class="k">const</span> activeTags = state.policies.active.flatMap(<span class="p">p</span> => p.tags);
+      <span class="k">if</span> (!cond.required_tags.every(<span class="p">t</span> => activeTags.includes(t))) <span class="k">continue</span>;
+    }
+
+    <span class="c">// 同一事件当年只触发一次</span>
+    <span class="k">const</span> alreadyPending = state.events.pending.some(<span class="p">p</span> => p.template_id === template.id);
+    <span class="k">if</span> (alreadyPending) <span class="k">continue</span>;
+
+    <span class="c">// 概率检查（严重事件+双倍概率）</span>
+    <span class="k">const</span> effectiveProb = cond.probability * (template.severity === <span class="n">3</span> ? <span class="n">1.5</span> : <span class="n">1</span>);
+    <span class="k">if</span> (Math.random() < effectiveProb) {
+      triggered.push(template);
+    }
+  }
+
+  <span class="k">return</span> triggered;
+}
+
+<span class="c">/**
+ * 生成事件叙事（调用LLM，可选）
+ */</span>
+<span class="k">export async function</span> <span class="fn">narrateEvent</span>(
+  <span class="p">template</span>: <span class="t">EventTemplate</span>,
+  <span class="p">state</span>: <span class="t">GameState</span>
+): <span class="t">Promise</span>&lt;<span class="t">string</span>&gt; {
+  <span class="k">try</span> {
+    <span class="k">const</span> raw = <span class="k">await</span> callLLMWithRetry({
+      system: <span class="s">`你是靖朝皇帝游戏的事件叙述者。
+${NARRATIVE_STYLE_RULES_PROMPT}
+输出纯文本叙事，不超过150字，不要JSON。`</span>,
+      user: <span class="s">`事件：${template.name}
+背景：${template.description}
+当前：${state.world.dynasty}${state.world.era}${state.world.year}年，民心${state.resources.morale}，国库${state.resources.fiscal}
+请用靖朝文风叙述这个事件的经过，结尾留悬念等待玩家决策。`</span>,
+      temperature: <span class="n">0.8</span>,
+      tag: <span class="s">'event_narration'</span>
+    });
+    <span class="k">return</span> raw.trim();
+  } <span class="k">catch</span> {
+    <span class="k">return</span> template.description || <span class="s">`${template.name}突然发生，需要陛下裁决。`</span>;
+  }
+}
+
+<span class="c">/**
+ * 执行玩家的事件选择
+ */</span>
+<span class="k">export function</span> <span class="fn">resolveEventChoice</span>(
+  <span class="p">state</span>: <span class="t">GameState</span>,
+  <span class="p">templateId</span>: <span class="t">string</span>,
+  <span class="p">choiceId</span>: <span class="t">string</span>
+): { newState: <span class="t">GameState</span>; narrative: <span class="t">string</span> } {
+  <span class="k">const</span> template = EVENT_TEMPLATES.find(<span class="p">t</span> => t.id === templateId);
+  <span class="k">const</span> choice   = template?.choices.find(<span class="p">c</span> => c.id === choiceId);
+
+  <span class="k">if</span> (!template || !choice) {
+    <span class="k">return</span> { newState: state, narrative: <span class="s">'事件处理完毕。'</span> };
+  }
+
+  <span class="c">// 应用资源变化</span>
+  <span class="k">const</span> newState = { ...state, resources: { ...state.resources } };
+  <span class="k">for</span> (<span class="k">const</span> [key, delta] <span class="k">of</span> Object.entries(choice.effects)) {
+    <span class="k">if</span> (key <span class="k">in</span> newState.resources) {
+      (<span class="k">newState</span>.resources <span class="k">as any</span>)[key] = Math.max(<span class="n">0</span>, ((<span class="k">newState</span>.resources <span class="k">as any</span>)[key] ?? <span class="n">0</span>) + delta);
+    }
+  }
+
+  <span class="c">// 从pending移除</span>
+  newState.events = {
+    ...state.events,
+    pending: state.events.pending.filter(<span class="p">p</span> => p.template_id !== templateId)
+  };
+
+  <span class="c">// 加入集体记忆</span>
+  <span class="k">const</span> memory = <span class="s">`${state.world.year}年${template.name}（${choice.label}）`</span>;
+  newState.world = {
+    ...state.world,
+    collective_memory: [...state.world.collective_memory.slice(<span class="n">-19</span>), memory]
+  };
+
+  <span class="k">return</span> {
+    newState,
+    narrative: <span class="s">`陛下选择「${choice.label}」。${choice.description}。`</span>
+  };
+}
+</div>
+      </div>
+    </div>
+
+    <!-- 08.8 PolicyPanel.tsx -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.8</span>
+        ui/PolicyPanel.tsx — 政策颁布面板 UI 组件
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/ui/PolicyPanel.tsx</span>
+          <span class="code-file-badge badge-new">NEW FILE</span>
+        </div>
+        <div class="code-block"><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'preact/hooks'</span>;
+<span class="k">import</span> <span class="k">type</span> { GameState } <span class="k">from</span> <span class="s">'../engine/types'</span>;
+<span class="k">import</span> { interpretPolicy, POLICY_PRESETS, checkPolicyConflicts } <span class="k">from</span> <span class="s">'../engine/policy-engine'</span>;
+<span class="k">import</span> { setState <span class="k">as</span> setGameState, getState } <span class="k">from</span> <span class="s">'../engine/state'</span>;
+
+<span class="k">interface</span> <span class="t">PolicyPanelProps</span> {
+  state: <span class="t">GameState</span>;
+  onPolicyEnacted?: (<span class="p">narrative</span>: <span class="t">string</span>) => <span class="k">void</span>;
+}
+
+<span class="k">export function</span> <span class="fn">PolicyPanel</span>({ state, onPolicyEnacted }: <span class="t">PolicyPanelProps</span>) {
+  <span class="k">const</span> [tab, setTab] = useState&lt;<span class="s">'preset'</span> | <span class="s">'custom'</span>&gt;(<span class="s">'preset'</span>);
+  <span class="k">const</span> [customInput, setCustomInput] = useState(<span class="s">''</span>);
+  <span class="k">const</span> [isProcessing, setIsProcessing] = useState(<span class="k">false</span>);
+  <span class="k">const</span> [lastResult, setLastResult] = useState&lt;<span class="t">string</span> | <span class="k">null</span>&gt;(<span class="k">null</span>);
+  <span class="k">const</span> [errors, setErrors] = useState&lt;<span class="t">string</span>[]&gt;([]);
+
+  <span class="k">const</span> presetGroups = {
+    <span class="s">'内政'</span>: [<span class="s">'减税惠民'</span>, <span class="s">'加征赋税'</span>, <span class="s">'整顿吏治'</span>, <span class="s">'广开言路'</span>, <span class="s">'兴建水利'</span>, <span class="s">'开仓赈灾'</span>],
+    <span class="s">'军事'</span>: [<span class="s">'扩充禁军'</span>, <span class="s">'裁汰冗兵'</span>, <span class="s">'边疆屯田'</span>, <span class="s">'和亲邦交'</span>, <span class="s">'御驾亲征'</span>],
+    <span class="s">'仙道'</span>: [<span class="s">'祭天祈福'</span>, <span class="s">'召仙炼丹'</span>],
+    <span class="s">'工业'</span>: [<span class="s">'推广活字印刷'</span>, <span class="s">'开设钱庄'</span>]
+  };
+
+  <span class="k">async function</span> <span class="fn">handlePresetPolicy</span>(<span class="p">name</span>: <span class="t">string</span>) {
+    <span class="k">const</span> conflicts = checkPolicyConflicts(
+      { id: <span class="s">''</span>, tags: (POLICY_PRESETS <span class="k">as any</span>)[name]?.tags || [], enacted_year: state.world.year, enacted_by: <span class="s">'emperor'</span>, description: name, visual: { image: <span class="k">null</span>, image_prompt: <span class="k">null</span> } },
+      state.policies.active
+    );
+    <span class="k">if</span> (conflicts.length > <span class="n">0</span>) {
+      setErrors(conflicts);
+      <span class="k">return</span>;
+    }
+    setErrors([]);
+    setIsProcessing(<span class="k">true</span>);
+    <span class="k">try</span> {
+      <span class="k">const</span> result = <span class="k">await</span> interpretPolicy(name, state);
+      <span class="k">if</span> (result.success) {
+        <span class="c">// 更新游戏状态</span>
+        <span class="k">const</span> current = getState();
+        <span class="k">const</span> newResources = { ...current.resources };
+        <span class="k">for</span> (<span class="k">const</span> [k, v] <span class="k">of</span> Object.entries(result.effect.resource_change)) {
+          <span class="k">if</span> (k <span class="k">in</span> newResources) (<span class="k">newResources as any</span>)[k] = Math.max(<span class="n">0</span>, ((<span class="k">newResources as any</span>)[k] ?? <span class="n">0</span>) + (v ?? <span class="n">0</span>));
+        }
+        setGameState({
+          ...current,
+          resources: newResources,
+          policies: {
+            active: [...current.policies.active, result.policy],
+            history: [...current.policies.history, { policy_id: result.policy.id, action: <span class="s">'enact'</span>, year: current.world.year, reason: result.policy.description }]
+          }
+        });
+        setLastResult(result.narrative);
+        onPolicyEnacted?.(result.narrative);
+      }
+    } <span class="k">finally</span> {
+      setIsProcessing(<span class="k">false</span>);
+    }
+  }
+
+  <span class="k">async function</span> <span class="fn">handleCustomPolicy</span>() {
+    <span class="k">if</span> (!customInput.trim() || isProcessing) <span class="k">return</span>;
+    setIsProcessing(<span class="k">true</span>);
+    setLastResult(<span class="k">null</span>);
+    <span class="k">try</span> {
+      <span class="k">const</span> result = <span class="k">await</span> interpretPolicy(customInput.trim(), state);
+      <span class="k">if</span> (result.success) {
+        <span class="k">const</span> current = getState();
+        <span class="k">const</span> newResources = { ...current.resources };
+        <span class="k">for</span> (<span class="k">const</span> [k, v] <span class="k">of</span> Object.entries(result.effect.resource_change)) {
+          <span class="k">if</span> (k <span class="k">in</span> newResources) (<span class="k">newResources as any</span>)[k] = Math.max(<span class="n">0</span>, ((<span class="k">newResources as any</span>)[k] ?? <span class="n">0</span>) + (v ?? <span class="n">0</span>));
+        }
+        setGameState({
+          ...current,
+          resources: newResources,
+          policies: {
+            active: [...current.policies.active, result.policy],
+            history: [...current.policies.history, { policy_id: result.policy.id, action: <span class="s">'enact'</span>, year: current.world.year, reason: result.policy.description }]
+          }
+        });
+        setLastResult(result.narrative);
+        setCustomInput(<span class="s">''</span>);
+        onPolicyEnacted?.(result.narrative);
+      } <span class="k">else</span> {
+        setErrors([result.error || <span class="s">'政策解析失败'</span>]);
+      }
+    } <span class="k">finally</span> {
+      setIsProcessing(<span class="k">false</span>);
+    }
+  }
+
+  <span class="k">return</span> (
+    &lt;div style={{ background: <span class="s">'#1a1208'</span>, border: <span class="s">'1px solid rgba(184,146,42,0.3)'</span>, padding: <span class="s">'20px'</span> }}&gt;
+
+      {<span class="c">/* Tab 切换 */</span>}
+      &lt;div style={{ display: <span class="s">'flex'</span>, gap: <span class="s">'0'</span>, marginBottom: <span class="s">'16px'</span>, borderBottom: <span class="s">'1px solid rgba(184,146,42,0.2)'</span> }}&gt;
+        {([<span class="s">'preset'</span>, <span class="s">'custom'</span>] <span class="k">as const</span>).map(<span class="p">t</span> => (
+          &lt;button key={t} onClick={() => setTab(t)} style={{
+            background: tab === t ? <span class="s">'rgba(184,146,42,0.15)'</span> : <span class="s">'transparent'</span>,
+            border: <span class="s">'none'</span>, borderBottom: tab === t ? <span class="s">'2px solid #b8922a'</span> : <span class="s">'2px solid transparent'</span>,
+            color: tab === t ? <span class="s">'#d4a93a'</span> : <span class="s">'rgba(245,239,226,0.5)'</span>,
+            padding: <span class="s">'8px 20px'</span>, cursor: <span class="s">'pointer'</span>, fontFamily: <span class="s">'sans-serif'</span>, fontSize: <span class="s">'12px'</span>, letterSpacing: <span class="s">'2px'</span>
+          }}&gt;{t === <span class="s">'preset'</span> ? <span class="s">'预设政策'</span> : <span class="s">'自由颁布'</span>}&lt;/button&gt;
+        ))}
+      &lt;/div&gt;
+
+      {<span class="c">/* 预设政策面板 */</span>}
+      {tab === <span class="s">'preset'</span> && (
+        &lt;div&gt;
+          {Object.entries(presetGroups).map(([group, policies]) => (
+            &lt;div key={group} style={{ marginBottom: <span class="s">'16px'</span> }}&gt;
+              &lt;div style={{ color: <span class="s">'#b8922a'</span>, fontSize: <span class="s">'10px'</span>, letterSpacing: <span class="s">'3px'</span>, marginBottom: <span class="s">'8px'</span>, fontFamily: <span class="s">'sans-serif'</span> }}&gt;{group}&lt;/div&gt;
+              &lt;div style={{ display: <span class="s">'flex'</span>, flexWrap: <span class="s">'wrap'</span>, gap: <span class="s">'8px'</span> }}&gt;
+                {policies.map(<span class="p">p</span> => (
+                  &lt;button key={p} onClick={() => handlePresetPolicy(p)} disabled={isProcessing}
+                    style={{
+                      background: <span class="s">'rgba(184,146,42,0.1)'</span>, border: <span class="s">'1px solid rgba(184,146,42,0.3)'</span>,
+                      color: <span class="s">'rgba(245,239,226,0.85)'</span>, padding: <span class="s">'6px 14px'</span>,
+                      cursor: isProcessing ? <span class="s">'not-allowed'</span> : <span class="s">'pointer'</span>,
+                      fontFamily: <span class="s">'sans-serif'</span>, fontSize: <span class="s">'12px'</span>,
+                      opacity: isProcessing ? <span class="n">0.5</span> : <span class="n">1</span>
+                    }}&gt;{p}&lt;/button&gt;
+                ))}
+              &lt;/div&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      )}
+
+      {<span class="c">/* 自由输入面板 */</span>}
+      {tab === <span class="s">'custom'</span> && (
+        &lt;div&gt;
+          &lt;div style={{ color: <span class="s">'rgba(245,239,226,0.5)'</span>, fontSize: <span class="s">'12px'</span>, fontFamily: <span class="s">'sans-serif'</span>, marginBottom: <span class="s">'8px'</span> }}&gt;
+            以圣旨口吻颁布任意政策，AI将解析效果并生成朝堂反应
+          &lt;/div&gt;
+          &lt;textarea
+            value={customInput}
+            onInput={(<span class="p">e</span>) => setCustomInput((<span class="p">e.target as HTMLTextAreaElement</span>).value)}
+            placeholder=<span class="s">"示例：在全国推行一田两主制，允许佃农获得土地所有权..."</span>
+            rows={3}
+            style={{
+              width: <span class="s">'100%'</span>, background: <span class="s">'rgba(245,239,226,0.05)'</span>,
+              border: <span class="s">'1px solid rgba(184,146,42,0.3)'</span>, color: <span class="s">'rgba(245,239,226,0.85)'</span>,
+              padding: <span class="s">'10px'</span>, fontFamily: <span class="s">'sans-serif'</span>, fontSize: <span class="s">'13px'</span>, resize: <span class="s">'none'</span>
+            }}
+          /&gt;
+          &lt;button onClick={handleCustomPolicy} disabled={isProcessing || !customInput.trim()}
+            style={{
+              marginTop: <span class="s">'10px'</span>, background: <span class="s">'#b8922a'</span>, border: <span class="s">'none'</span>,
+              color: <span class="s">'#1a1208'</span>, padding: <span class="s">'8px 24px'</span>, cursor: <span class="s">'pointer'</span>,
+              fontFamily: <span class="s">'sans-serif'</span>, fontSize: <span class="s">'12px'</span>, letterSpacing: <span class="s">'2px'</span>,
+              opacity: (isProcessing || !customInput.trim()) ? <span class="n">0.5</span> : <span class="n">1</span>
+            }}&gt;
+            {isProcessing ? <span class="s">'正在颁布...'</span> : <span class="s">'颁布圣旨 ✦'</span>}
+          &lt;/button&gt;
+        &lt;/div&gt;
+      )}
+
+      {<span class="c">/* 错误提示 */</span>}
+      {errors.length > <span class="n">0</span> && (
+        &lt;div style={{ marginTop: <span class="s">'12px'</span>, background: <span class="s">'rgba(139,26,26,0.15)'</span>, padding: <span class="s">'10px'</span>, borderLeft: <span class="s">'3px solid #8b1a1a'</span> }}&gt;
+          {errors.map((<span class="p">e</span>, <span class="p">i</span>) => &lt;div key={i} style={{ color: <span class="s">'#c05050'</span>, fontFamily: <span class="s">'sans-serif'</span>, fontSize: <span class="s">'12px'</span> }}&gt;⚠ {e}&lt;/div&gt;)}
+        &lt;/div&gt;
+      )}
+
+      {<span class="c">/* 政策效果叙事展示 */</span>}
+      {lastResult && (
+        &lt;div style={{ marginTop: <span class="s">'16px'</span>, background: <span class="s">'rgba(184,146,42,0.06)'</span>, borderLeft: <span class="s">'3px solid #b8922a'</span>, padding: <span class="s">'14px 16px'</span>, fontFamily: <span class="s">'serif'</span>, fontSize: <span class="s">'14px'</span>, lineHeight: <span class="s">'2'</span>, color: <span class="s">'rgba(245,239,226,0.85)'</span> }}&gt;
+          {lastResult}
+        &lt;/div&gt;
+      )}
+
+      {<span class="c">/* 当前活跃政策 */</span>}
+      {state.policies.active.length > <span class="n">0</span> && (
+        &lt;div style={{ marginTop: <span class="s">'16px'</span> }}&gt;
+          &lt;div style={{ color: <span class="s">'rgba(184,146,42,0.6)'</span>, fontSize: <span class="s">'10px'</span>, letterSpacing: <span class="s">'3px'</span>, fontFamily: <span class="s">'sans-serif'</span>, marginBottom: <span class="s">'8px'</span> }}&gt;当前生效政策 ({state.policies.active.length})&lt;/div&gt;
+          {state.policies.active.map(<span class="p">p</span> => (
+            &lt;div key={p.id} style={{ display: <span class="s">'flex'</span>, gap: <span class="s">'8px'</span>, padding: <span class="s">'4px 0'</span>, borderBottom: <span class="s">'1px solid rgba(184,146,42,0.1)'</span> }}&gt;
+              &lt;span style={{ color: <span class="s">'#b8922a'</span>, fontSize: <span class="s">'10px'</span>, fontFamily: <span class="s">'sans-serif'</span> }}&gt;{p.enacted_year}年&lt;/span&gt;
+              &lt;span style={{ color: <span class="s">'rgba(245,239,226,0.7)'</span>, fontSize: <span class="s">'12px'</span>, fontFamily: <span class="s">'sans-serif'</span> }}&gt;{p.description}&lt;/span&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+</div>
+      </div>
+    </div>
+
+    <!-- 08.9 tick.ts integration note -->
+    <div class="subsection">
+      <div class="subsection-title">
+        <span class="subsection-num">08.9</span>
+        engine/tick.ts — 接入事件引擎的 Patch 说明
+      </div>
+      <div class="callout">
+        <strong>最小化接入说明：</strong>不需要替换整个 tick.ts，只需在世界模拟之后加入以下两段代码。
+        找到注释 <code>// 2. 模拟世界状态变化</code> 附近的 simulateWorld 调用，在它之后插入。
+      </div>
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-file-path">ai-context/src/engine/tick.ts</span>
+          <span class="code-file-badge badge-patch">ADD EVENT + POLICY HOOKS</span>
+        </div>
+        <div class="code-block"><span class="c">// 在 tick.ts 顶部 import 区域追加：</span>
+<span class="k">import</span> { checkEventTriggers, narrateEvent } <span class="k">from</span> <span class="s">'./event-engine'</span>;
+<span class="k">import</span> { applyPolicyTickEffects } <span class="k">from</span> <span class="s">'./policy-engine'</span>;
+
+<span class="c">// ----------
+// 在 simulateWorld() 调用之后（约80行处）插入以下代码：
+// ----------</span>
+
+    <span class="c">// 2.5 应用政策持续效果</span>
+    currentState = applyPolicyTickEffects(currentState);
+
+    <span class="c">// 2.6 检查世界事件触发</span>
+    <span class="k">const</span> triggeredTemplates = checkEventTriggers(currentState);
+    <span class="k">if</span> (triggeredTemplates.length > <span class="n">0</span>) {
+      <span class="k">for</span> (<span class="k">const</span> template <span class="k">of</span> triggeredTemplates.slice(<span class="n">0</span>, <span class="n">1</span>)) { <span class="c">// 每次最多触发1个事件</span>
+        <span class="k">const</span> eventNarrative = <span class="k">await</span> narrateEvent(template, currentState).catch(() => template.name);
+        <span class="k">const</span> pending = {
+          id: <span class="s">`event_${template.id}_${Date.now()}`</span>,
+          triggered_year: currentState.world.year,
+          template_id: template.id,
+          severity: template.severity,
+          raw_payload: template,
+          seal: template.severity === <span class="n">3</span> ? <span class="s">'bloody'</span> <span class="k">as const</span> : <span class="s">'urgent'</span> <span class="k">as const</span>,
+          narrated: <span class="k">true</span>,
+          narration: eventNarrative
+        };
+        currentState = {
+          ...currentState,
+          events: {
+            ...currentState.events,
+            pending: [...currentState.events.pending, pending]
+          }
+        };
+      }
+    }
+</div>
+      </div>
+    </div>
+
+    <!-- Summary box -->
+    <div style="margin-top: 48px;">
+      <div class="callout success">
+        <strong>Section 08 实现覆盖范围总结：</strong><br>
+        08.1 lore-bridge.ts（NEW）— 世界观桥接层，DeepSeek填充骨架 ✦
+        08.2 prompt/style.ts（REPLACE）— 15条文风规则完整版 ✦
+        08.3 prompt/scene.ts（FIX+ENHANCE）— 字段名Bug修复 + Voice注入 ✦
+        08.4 CourtPage.tsx（ADD）— DynastyHeader朝代年号栏 ✦
+        08.5 engine/types.ts（MICRO PATCH）— 接入DYNASTY_CONFIG ✦
+        08.6 engine/policy-engine.ts（NEW）— 完整政策引擎 ✦
+        08.7 engine/event-engine.ts（NEW）— 事件引擎骨架+6个模板 ✦
+        08.8 ui/PolicyPanel.tsx（NEW）— 政策颁布UI面板 ✦
+        08.9 engine/tick.ts（ADD）— 事件引擎接入Hook ✦
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-text">靖朝皇帝模拟游戏 · 开发计划书 V2.0（含代码实现）· 2026年4月18日 · 架空历史，一切虚构</div>
+</footer>
+
+</body>
+</html>

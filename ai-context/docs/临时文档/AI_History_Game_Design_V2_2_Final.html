@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI放置类历史模拟游戏 - 任务书（完整版 V2.0）</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", "SimHei", sans-serif;
+            line-height: 1.8;
+            color: #333;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+        
+        h1 {
+            color: #1a5276;
+            text-align: center;
+            font-size: 24pt;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #1a5276;
+            padding-bottom: 15px;
+        }
+        
+        h2 {
+            color: #1a5276;
+            font-size: 18pt;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #1a5276;
+            padding-left: 10px;
+        }
+        
+        h3 {
+            color: #2c3e50;
+            font-size: 14pt;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        
+        h4 {
+            color: #34495e;
+            font-size: 12pt;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 14pt;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        
+        .version-info {
+            text-align: center;
+            font-size: 11pt;
+            color: #777;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin: 30px 0 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16pt;
+            color: #1a5276;
+        }
+        
+        .highlight {
+            background-color: #fff8e1;
+            border-left: 3px solid #ffc107;
+            padding: 12px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        
+        .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 10pt;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 10pt;
+        }
+        
+        th {
+            background-color: #1a5276;
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .example-box {
+            background-color: #f0f7ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .example-title {
+            font-weight: bold;
+            color: #1a5276;
+            margin-bottom: 10px;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .toc {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 30px 0;
+        }
+        
+        .toc-title {
+            font-weight: bold;
+            font-size: 14pt;
+            color: #1a5276;
+            margin-bottom: 15px;
+        }
+        
+        .toc-item {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        
+        .reference {
+            font-size: 9pt;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 30px;
+        }
+    </style>
+
+    <!-- V2.2 增强模块样式 -->
+    <style>
+        .v22-enhancement {
+            border-left: 4px solid #e67e22;
+            background-color: #fef9e7;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .v22-enhancement h3 {
+            color: #d35400;
+            font-size: 13pt;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .v22-enhancement h4 {
+            color: #e67e22;
+            font-size: 11pt;
+            margin-top: 15px;
+        }
+        .v22-tag {
+            display: inline-block;
+            background-color: #e67e22;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 9pt;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        .v22-debate {
+            border-left: 4px solid #8e44ad;
+            background-color: #f5eef8;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .v22-debate-title {
+            color: #8e44ad;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI放置类历史模拟游戏</h1>
+    <div class="subtitle">任务书（完整版 V2.0）</div>
+    <div class="subtitle">含核心系统脑暴深度讨论补充</div>
+    <div class="version-info">文档版本：V2.1 含原始任务书 + 系统设计深度讨论</div>
+
+    <div class="toc">
+        <div class="toc-title">目录</div>
+        <div class="toc-item">第一部分：项目任务书（原始版）</div>
+        <div class="toc-item">一、项目概述</div>
+        <div class="toc-item">二、参考资料</div>
+        <div class="toc-item">三、核心玩法循环</div>
+        <div class="toc-item">四、政策系统（组合设计）</div>
+        <div class="toc-item">五、人物AI结构</div>
+        <div class="toc-item">六、事件系统（事件语法）</div>
+        <div class="toc-item">七、史册系统（核心表达）</div>
+        <div class="toc-item">八、核心定义</div>
+        <div class="toc-item">第二部分：核心系统脑暴深度讨论</div>
+        <div class="toc-item">一、核心爽点定义</div>
+        <div class="toc-item">二、人物AI系统详细设计</div>
+        <div class="toc-item">三、史册系统详细设计</div>
+        <div class="toc-item">四、放置机制与资源系统</div>
+        <div class="toc-item">五、后宫系统</div>
+        <div class="toc-item">六、穿越者个人成长线</div>
+        <div class="toc-item">七、文风定性方案</div>
+        <div class="toc-item">八、离线上下文管理架构</div>
+        <div class="toc-item">九、API调用频率控制策略</div>
+        <div class="toc-item">十、无限运行的节奏设计（王朝周期）</div>
+        <div class="toc-item">附录：快速参考索引</div>
+    </div>
+
+    <div class="section-title">第一部分：项目任务书（原始版）</div>
+
+    <h2>一、项目概述</h2>
+    <p>本项目为一个AI驱动的历史模拟放置游戏。玩家扮演皇帝，通过制定政策与影响人物，推动世界演化，并最终形成可被记录的"历史"。</p>
+
+    <h2>二、参考资料</h2>
+    <p>《史记》引用："尧知子丹朱之不肖，不足授天下，乃授舜。" → 强调识人、德行与决策。</p>
+    <p>猫国建设者参考：https://lolitalibrary.com/wiki/?file=首页 → 启发长期放置与系统联动。</p>
+
+    <h2>三、核心玩法循环</h2>
+    <p>上朝 → 决策 → 政策制定 → 放置运行 → 查看史册 → 再介入</p>
+
+    <h2>四、政策系统（组合设计）</h2>
+    <p>小政策组合成大政策，并影响AI行为逻辑。</p>
+    <p><strong>政策组合示例：</strong></p>
+    <ul>
+        <li>小政策：加税 + 限制商业 + 官营</li>
+        <li>组合结果 → 国家类型：强管控经济</li>
+        <li>影响：商人不满↑ / 黑市概率↑ / 财政短期↑</li>
+    </ul>
+
+    <h2>五、人物AI结构</h2>
+    <h3>底层结构</h3>
+    <ul>
+        <li>欲望：生存 / 权力 / 财富 / 情感 / 名声</li>
+        <li>性格：激进-保守 / 理性-感性 / 利己-利他</li>
+        <li>认知：愚昧-理性 / 迷信-开放</li>
+    </ul>
+
+    <h3>身份模块</h3>
+    <ul>
+        <li>官员：权斗 / 贪腐 / 上奏</li>
+        <li>民间：生计 / 情绪 / 起义</li>
+        <li>后宫：情感 / 竞争 / 权力渗透</li>
+        <li>邻国：外交 / 战争 / 情报</li>
+    </ul>
+
+    <h3>动机系统</h3>
+    <p>每个角色都有目标：升官 / 篡权 / 改革 / 求生</p>
+
+    
+    <div class="v22-enhancement">
+        <h3>🎭 行为公式与角色演化 <span class="v22-tag">V2.2</span></h3>
+
+        <h4>行为公式演进</h4>
+        <div class="formula">
+            Behavior = (Personality × Stability) × Situation
+        </div>
+        <p>其中 <strong>Stability</strong>（稳定性因子）决定性格矩阵的可变程度：</p>
+        <table>
+            <tr><th>稳定性等级</th><th>数值范围</th><th>行为特征</th><th>典型角色</th></tr>
+            <tr><td>极稳定</td><td>0.9-1.0</td><td>性格矩阵基本锁死，不受处境影响</td><td>海瑞、于谦</td></tr>
+            <tr><td>稳定</td><td>0.7-0.9</td><td>重大事件可产生轻微偏移</td><td>普通清流官员</td></tr>
+            <tr><td>易变</td><td>0.4-0.7</td><td>经历会显著改变行为模式</td><td>投机型官员</td></tr>
+            <tr><td>极不稳定</td><td>0.1-0.4</td><td>性格随事件剧烈波动</td><td>心理脆弱者</td></tr>
+        </table>
+
+        <h4>创伤记录 (Trauma Record)</h4>
+        <p>当NPC经历重大负面事件时，JSON结构中增加Trauma字段：</p>
+        <div class="code-block">{
+    "name": "张侍郎",
+    "personality": { "loyalty": 75, "ambition": 40 },
+    "stability": 0.6,
+    "trauma": [
+        {
+            "event": "黑市之乱",
+            "year": 7,
+            "type": "亲历叛乱",
+            "impact": "对兵权产生极端恐惧"
+        }
+    ]
+}</div>
+        <p>创伤作为<strong>高权重Negative Prompt</strong>注入该角色的决策生成：即使和平时期，亲历叛乱的文官对"兵权"相关决策也会表现出异常保守。</p>
+    </div>
+
+
+    <h2>六、事件系统（事件语法）</h2>
+    <p>事件由：触发源 / 冲突 / 主体 / 演化 / 结果 构成</p>
+
+    <h3>事件链完整示例（政策：持续加税）：</h3>
+    <ul>
+        <li>阶段1（信号）：商人利润下降</li>
+        <li>阶段2（发展）：出现走私行为</li>
+        <li>阶段3（扩散）：黑市形成，官员参与保护</li>
+        <li>阶段4（危机）：地下势力壮大，地方失控</li>
+        <li>阶段5（结果）：动乱 / 镇压 / 改革（分支）</li>
+    </ul>
+
+    <h2>七、史册系统（核心表达）</h2>
+    <p>记录并解释因果，而非仅记录结果。</p>
+
+    <h3>史册样例：《某帝本纪》</h3>
+    <div class="example-box">
+        <div class="example-title">史册样例</div>
+        <p>三年，加税以充国库。</p>
+        <p>五年，商贾不堪其重，私通货物。</p>
+        <p>七年，黑市盛行，官吏与之勾结。</p>
+        <p>九年，民乱起，史称"黑市之乱"。</p>
+        <p><strong>史评：</strong>此乱起于税策之失。</p>
+    </div>
+
+    <h2>八、核心定义</h2>
+    <div class="highlight">
+        玩家不是在经营国家，而是在面对一群有欲望的人，并最终被历史评价。
+    </div>
+
+    <div class="section-title">第二部分：核心系统脑暴深度讨论</div>
+    <p>本部分为在原始任务书基础上进行的深度设计讨论，涵盖各核心系统的详细设计思路与实现方案。</p>
+
+    <h2>一、核心爽点定义</h2>
+    <div class="highlight">
+        放置游戏的留存靠的是"不在线时发生了事情，我好奇回来看"。
+    </div>
+    <p>本游戏的爽点分为三层：</p>
+    <ul>
+        <li><strong>史册回顾爽 —</strong> 离线一晚上，回来发现帝国发生了一场政变，史书上记录了完整的事件脉络，叙事感极强。</li>
+        <li><strong>人物关系爽 —</strong> 发现自己宠信的官员在背地里结党，后宫里有人为他通风报信。</li>
+        <li><strong>蝴蝶效应爽 —</strong> 三年前随手定的加税政策，导致今天农民起义，史官还在评价你的决策。</li>
+    </ul>
+    <p>这三层爽点对应三个需要做扎实的核心系统：人物AI系统、史册系统、放置运转机制。</p>
+
+    <h2>二、人物AI系统详细设计</h2>
+    <p>任务书里的底层结构（欲望/性格/认知）方向正确，在此基础上增加一个关键维度：<strong>当前处境</strong>。</p>
+    <div class="highlight">
+        一个人的行为 = 性格 × 欲望 × 当前处境
+    </div>
+    <p>例：海瑞平时是清官，但如果连续三年不给他升迁，"委屈值"累积到一定程度，可能会选择上一封死谏奏折——不是因为他变了，而是处境逼的。</p>
+
+    <h3>人格维度设计表</h3>
+    <table>
+        <tr>
+            <th>维度</th>
+            <th>数值范围</th>
+            <th>对行为的影响</th>
+        </tr>
+        <tr>
+            <td>忠诚 / 野心</td>
+            <td>0 – 100</td>
+            <td>是否会结党、篡权</td>
+        </tr>
+        <tr>
+            <td>清廉 / 贪腐</td>
+            <td>0 – 100</td>
+            <td>截留税收、卖官鬻爵</td>
+        </tr>
+        <tr>
+            <td>能力</td>
+            <td>0 – 100</td>
+            <td>执行政策效率</td>
+        </tr>
+        <tr>
+            <td>胆量</td>
+            <td>0 – 100</td>
+            <td>敢不敢上奏逆耳之言</td>
+        </tr>
+        <tr>
+            <td>派系标签</td>
+            <td>儒家/法家/外戚/武将</td>
+            <td>阵营利益与合作关系</td>
+        </tr>
+        <tr>
+            <td>…</td>
+            <td>…</td>
+            <td>…</td>
+        </tr>
+        <tr>
+            <td>当前处境值</td>
+            <td>累积型</td>
+            <td>触发特殊行为的阈值</td>
+        </tr>
+    </table>
+
+    <h3>人物关系网</h3>
+    <ul>
+        <li>官员A与官员B是同科进士 → 互相包庇</li>
+        <li>官员C被官员A打压过 → 会寻机举报A</li>
+        <li>外戚势力与某妃子绑定 → 妃子受宠时外戚在朝堂膨胀</li>
+    </ul>
+    <div class="highlight">
+        关系网在离线时自主运转，玩家回来才发现格局已经悄然改变。
+    </div>
+
+    
+    <div class="v22-enhancement">
+        <h3>🔗 叙事锚点递归反馈机制 <span class="v22-tag">V2.2</span></h3>
+
+        <p>已命名事件（如"黑市之乱"）不仅是快照层的锚点，更应转化为人物AI的<strong>集体记忆</strong>：</p>
+
+        <h4>集体记忆挂载</h4>
+        <p>在活跃人物的<code>当前处境</code>字段中，根据事件对派系的影响，自动挂载相关锚点：</p>
+        <div class="code-block">{
+    "name": "李御史",
+    "current_situation": {
+        "recent_events": ["黑市之乱"],
+        "event_impact": "同僚王大人因此事被贬",
+        "behavior_modifier": "消极怠工"
+    }
+}</div>
+        <p><strong>效果：</strong>清流官员亲历"黑市之乱"且由于皇帝宽容处理导致同僚被贬，其忠诚度虽不变，但行为逻辑临时切换到"消极怠工"或"频繁上奏风险警示"。</p>
+
+        <h4>语料特征向量</h4>
+        <p>为核心NPC增加语料特征，确保AI生成的对话具有辨识度：</p>
+        <table>
+            <tr><th>角色</th><th>语料特征</th><th>句式规则</th></tr>
+            <tr><td>海瑞</td><td>逻辑严密、引用律法、道德高地</td><td>多用反问句，禁止使用修饰性形容词</td></tr>
+            <tr><td>严嵩</td><td>谄媚暗示、利益交换、话中有话</td><td>善用"臣以为""陛下圣明"等套话</td></tr>
+            <tr><td>张居正</td><td>务实改革、数据支撑、强势推进</td><td>多用"若...则..."条件句</td></tr>
+        </table>
+    </div>
+
+
+    <h2>三、史册系统详细设计</h2>
+    <h3>双轨记录机制</h3>
+    <ul>
+        <li><strong>官方史书</strong>（玩家视角，可能粉饰太平）</li>
+        <li><strong>野史 / 民间说法</strong>（更接近真实）</li>
+    </ul>
+    <p>玩家解锁"史官"官职后才能看到两个版本的对比，产生"原来我的帝国是这样的"的认知反差时刻。</p>
+
+    <h3>AI实时史评生成</h3>
+    <p>每隔一段游戏时间，史官NPC调用API生成一段评价，引用玩家真实做过的政策决定。</p>
+    <div class="example-box">
+        <div class="example-title">史评示例</div>
+        <p>"帝性多疑，屡易宰相，致朝政不稳。然其兴水利、开科举，民间犹有称颂。史家论之，功过各半。"</p>
+    </div>
+
+    <h3>重大事件历史命名</h3>
+    <p>系统自动为重大事件生成历史名称，后续事件会引用。</p>
+    <p><strong>例：</strong>连续三年旱灾 + 未开仓放粮 → 史称"X帝三年饥荒"</p>
+
+    <h2>四、放置机制与资源系统</h2>
+    <h3>基础资源分层</h3>
+    <table>
+        <tr>
+            <th>资源层级</th>
+            <th>资源名称</th>
+            <th>产出逻辑</th>
+        </tr>
+        <tr>
+            <td>一级（自动产出）</td>
+            <td>粮食</td>
+            <td>农业人口 × 土地 × 天气</td>
+        </tr>
+        <tr>
+            <td>一级（自动产出）</td>
+            <td>钱财</td>
+            <td>商业税 × 政策 × 黑市修正</td>
+        </tr>
+        <tr>
+            <td>一级（自动产出）</td>
+            <td>兵力</td>
+            <td>招募速度 × 民心</td>
+        </tr>
+        <tr>
+            <td>一级（自动产出）</td>
+            <td>声望</td>
+            <td>政绩 - 暴政 + 史书记录</td>
+        </tr>
+        <tr>
+            <td>二级（政策解锁）</td>
+            <td>技术</td>
+            <td>科举/工匠 → 解锁新政策树</td>
+        </tr>
+        <tr>
+            <td>二级（政策解锁）</td>
+            <td>情报</td>
+            <td>锦衣卫/密探 → 显示官员真实数值</td>
+        </tr>
+        <tr>
+            <td>二级（政策解锁）</td>
+            <td>天命</td>
+            <td>玄学数值，影响随机事件概率</td>
+        </tr>
+    </table>
+
+    <h3>离线代理执政（宰相/国师）</h3>
+    <p>玩家出发前预设执政方针，宰相离线时依照方针做决策。</p>
+    <p><strong>方针预设示例：</strong></p>
+    <ul>
+        <li>财政优先级：民生 > 军事 > 建设</li>
+        <li>处理贪腐：调查为主，不轻易杀人</li>
+        <li>外交姿态：防御为主，不主动开战</li>
+        <li>突发民乱：先安抚，安抚失败再镇压</li>
+        <li>人才使用：能力优先，品行次之</li>
+    </ul>
+    <p>玩家回来后可看到宰相每次决策的理由，并选择否决或追认，形成"批阅奏折"的代入感。</p>
+    <div class="example-box">
+        <div class="example-title">宰相奏折示例</div>
+        <p>"陛下曾有令，遇民变先安抚。故臣以粮两万石赈之，乱平。然粮仓告急，请陛下示下。"</p>
+    </div>
+
+    <h2>五、后宫系统</h2>
+    <p>后宫不只是情感线，应与政治深度绑定：</p>
+    <ul>
+        <li><strong>外戚势力：</strong>宠爱某妃子，其父会开始在朝堂膨胀，形成外戚威胁</li>
+        <li><strong>子嗣问题：</strong>不同妃子所生的儿子有不同性格与支持派系，太子之争成为后期大事件</li>
+        <li><strong>后宫情报：</strong>后宫人物可成为情报来源，也可能被官员收买成为间谍</li>
+    </ul>
+
+    <h3>角色加入流程设计</h3>
+    <ul>
+        <li>初遇事件触发</li>
+        <li>3–5个关键剧情节点（骨架预设，细节对话由AI实时生成）</li>
+        <li>感情培养 → 关系确立 → 后宫政治影响激活</li>
+    </ul>
+
+    <h2>六、穿越者个人成长线</h2>
+    <p>穿越者设定解决了新手引导的合理性问题（玩家不懂系统是自然的，因为角色本来就不懂）。成长线是新手引导与核心内容的结合。</p>
+
+    <h3>"现代知识"技能树</h3>
+    <table>
+        <tr>
+            <th>技能分支</th>
+            <th>学习方式</th>
+            <th>解锁效果</th>
+        </tr>
+        <tr>
+            <td>军事知识</td>
+            <td>读《孙子兵法》</td>
+            <td>解锁更多战术选项</td>
+        </tr>
+        <tr>
+            <td>经济知识</td>
+            <td>学重商主义</td>
+            <td>政策执行效率↑</td>
+        </tr>
+        <tr>
+            <td>农业知识</td>
+            <td>学轮耕技术</td>
+            <td>粮食产量↑</td>
+        </tr>
+        <tr>
+            <td>人心知识</td>
+            <td>读史书</td>
+            <td>可看穿官员部分真实属性</td>
+        </tr>
+    </table>
+
+    <div class="highlight">
+        皇帝越强，解锁更多"干预权"，而不只是数值变高：初期只能批奏折；成长后可秘密召见官员、亲征、暗中调查某人。
+    </div>
+
+    
+    <div class="v22-enhancement">
+        <h3>⚗️ 知识冲突事件链 <span class="v22-tag">V2.2</span></h3>
+
+        <p>现代知识在古代环境并不总是正向的，增加<strong>"水土不服"机制</strong>：</p>
+
+        <h4>负面效应触发条件</h4>
+        <table>
+            <tr><th>现代技能</th><th>古代阻力</th><th>可能事件</th></tr>
+            <tr><td>轮耕技术</td><td>触动地方豪强土地利益</td><td>集体抵制、天象示警</td></tr>
+            <tr><td>财政改革</td><td>违反传统礼制认知</td><td>官员联名上奏、民间谣言</td></tr>
+            <tr><td>科举改革</td><td>威胁世家大族垄断</td><td>寒门与世家对立加剧</td></tr>
+        </table>
+
+        <h4>权衡机制</h4>
+        <p>玩家必须在<strong>"科学效率"</strong>与<strong>"统治稳定"</strong>之间做平衡：</p>
+        <ul>
+            <li><strong>强行推进：</strong>效率+50%，但触发随机负面事件，长期可能导致叛乱</li>
+            <li><strong>妥协迂回：</strong>效率+20%，但政治稳定，需要更多回合达成目标</li>
+            <li><strong>放弃改革：</strong>保持现状，但可能被邻国超越</li>
+        </ul>
+    </div>
+
+
+    <h2>七、文风定性方案</h2>
+    <p>游戏内语言采用现代人能读懂的古风白话，参考《明朝那些事儿》文风，避免纯文言文导致的阅读障碍。</p>
+
+    <h3>完整文风规则（System Prompt）</h3>
+    <p>你是一款历史模拟游戏的叙事引擎，负责生成游戏内所有文字内容，包括史书段落、官员对话、事件叙述和人物评价。你的文风参考《明朝那些事儿》，用现代人的语言讲述古代的事，让历史人物有血有肉，让事件读起来有张力、有温度、有趣味。</p>
+
+    <h3>文风规则</h3>
+    <p><strong>规则一：用现代白话写历史，不用文言文语法</strong></p>
+    <p>叙述全部用现代白话，语法和今天的文章一样。但人名、官职、地名、年号保留古代原称（如"兵部侍郎"不改成"国防副部长"）。必要时可引用史书原文，用括号注明出处，如：（据《明史》载）。</p>
+
+    <p><strong>规则二：重大事件前，先交代人物处境</strong></p>
+    <p>在叙述任何重要的战役、政变、决策之前，先用1-3句话交代当事人此刻的心理状态和客观困境。让玩家先产生代入感，再推进事件。不要直接从结果讲起。</p>
+
+    <p><strong>规则三：用短句制造叙事高潮</strong></p>
+    <p>在叙述推进时，逐渐缩短句子长度。在最关键的转折点，用一句甚至半句话收束，制造"砰"的效果。比如："三天后，他死了。"或者："他接受了。他接受了所有的一切。"</p>
+
+    <p><strong>规则四：现代词汇制造错位感，每段控制在1-2处</strong></p>
+    <p>可以用现代生活、职场词汇描述古代场景，制造一种亲切的反差感（如把情报网叫"地下工作者"，把算命先生叫"预测机构"，把朝廷党争叫"站队"）。但不能过度，每段最多出现1-2处，其余保持古代语境。</p>
+
+    <p><strong>规则五：括号是第二张嘴</strong></p>
+    <p>括号内可以补充事实、自嘲、调侃，语气比正文更轻松随意。括号里的话要简短，不超过15字。例如："他的主要工作是出去讨饭（这个……）"。</p>
+
+    <p><strong>规则六：人物内心独白必须具体，不能抽象</strong></p>
+    <p>禁止写"他内心复杂""她百感交集"这类空洞描述。必须写出人物在想什么、算计什么、怕什么。例如不写"他很矛盾"，而写"他很清楚，如果答应了，今晚就可能活不过去，但如果不答应……"</p>
+
+    <p><strong>规则七：用一个具体动作定格人物性格</strong></p>
+    <p>不用形容词堆砌人物性格。在关键时刻，用一个出乎意料或令人印象深刻的具体动作来表现人物是什么样的人。比如，不写"他很勇敢"，而写"他只带了两个随从，走进了徐海的万人大营"。</p>
+
+    <p><strong>规则八：喜剧来自落差，不来自刻意搞笑</strong></p>
+    <p>最好的幽默是用严肃笔法写荒诞情节，或在严肃叙事后突然来一句接地气的大白话。禁止刻意设计段子，让荒诞从事实本身自然流露。例如："这不是投降，而是挑衅——带着上万全副武装的人，说你是来投降的，鬼才信。"</p>
+
+    <p><strong>规则九：档案式或编号式开场</strong></p>
+    <p>人物首次登场或介绍重要事件时，可以打破叙事节奏，用档案格式或编号列举（临床表现1、2、3……）来呈现信息，制造喜剧效果并高效传递背景信息。</p>
+
+    <p><strong>规则十：直接发表判断，但留退路</strong></p>
+    <p>可以直接评价人物和事件（"这个决策简直是儿戏""书生办事，不知所谓"），但在犀利评价前可以加"客观地讲"或"公道地说"作为前置，表明这是作者的主观立场，不是历史定论。</p>
+
+    <p><strong>规则十一：用"你"拉近玩家距离</strong></p>
+    <p>在分析局势、揭示秘密、引导玩家思考时，直接用"你"对话。例如："如果你把这几条史料联系起来看，秘密就藏在里面。"让玩家有参与感和共读感。</p>
+
+    <p><strong>规则十二：结尾必须有一句定论</strong></p>
+    <p>每段文字的结尾，给出一个总结性的判断——可以是对人物的评价，也可以是对局势的感慨，或者是一句带哲理感的话。这句话要简短有力，像盖棺定论。</p>
+
+    <p><strong>规则十三：正面人物要有弱点，反面人物要有动机</strong></p>
+    <p>禁止脸谱化。每个正面人物至少要在某处暴露一个局限或弱点；每个反面人物至少要给出一个可以理解的行为动机。真实的人从来不是全好或全坏。</p>
+
+    <p><strong>规则十四：叙事中留悬念，不急着给答案</strong></p>
+    <p>重要信息可以先暗示，不要第一句话就交代结果。例如："此后发生的事，证明他的判断是准确的——但那已经是三年后的事了。"让玩家带着期待继续读。</p>
+
+    <p><strong>规则十五：偶尔袒露叙述者的感受</strong></p>
+    <p>可以在关键处写出"每当读到这段史料，都会……"或"这件事，怎么说呢……"，让玩家感受到这是一个真实的人在讲述历史，而不是冷冰冰的教科书。每篇文章最多使用1次。</p>
+
+    <h3>各场景参考示例</h3>
+    <h4>【史书段落】因加税引起的民变</h4>
+    <div class="example-box">
+        <p>洪武十三年，朝廷下令，凡田亩者，一律加征新粮二斗。</p>
+        <p>这道命令在京城只是一份公文，在江南却是一声霹雳。</p>
+        <p>苏州府吴县的农民李大牛算了一笔账，他有薄田三亩，年收粮食不过六石。朝廷原本要抽走两成，他还能勉强过冬；现在再加二斗，他家今年留下来的粮食，不够吃到明年三月。</p>
+        <p>他把这件事告诉了邻居，邻居告诉了村口，村口传到了镇上。</p>
+        <p>三天后，吴县城外聚集了两千余人，手里拿着锄头和扁担，领头的是一个叫陈七的佃农，据说此人平时话不多，当天却说了一句让所有人都记住的话：</p>
+        <p>"饿死是死，打一场也是死，为什么不打？"</p>
+        <p>官府接到消息时，粮库已经被砸了。</p>
+    </div>
+
+    <h4>【官员对话】贪腐官员在朝堂上的表现</h4>
+    <div class="example-box">
+        <p>兵部侍郎钱维正站在大殿正中，脸上挂着一种叫做"忧国忧民"的表情。</p>
+        <p>这种表情他练了三十年，已经炉火纯青。</p>
+        <p>皇帝问他，边关军饷何以迟迟未到，钱侍郎立刻挺直了腰板，声音洪亮地回答：</p>
+        <p>"陛下，此事臣已彻查，乃是运粮官途中遭遇大雨，耽搁了行程，与户部调度并无干系，臣敢以项上人头担保！"</p>
+        <p>他说这句话的时候，一点都不慌，因为他知道——皇帝不会真的要他的人头。</p>
+        <p>事实上，那批军饷有三成留在了他的库房里，剩下的七成正在路上，预计再过两个月才会到达，届时还会有一半"途中损耗"。这套操作，钱侍郎已经做了七年。</p>
+        <p>他低下头，继续保持着那副忧国忧民的表情，在心里默算今年能多盖几间房。</p>
+    </div>
+
+    <h4>【事件叙述】边境突发外敌入侵的消息传来</h4>
+    <div class="example-box">
+        <p>消息是在午夜到达兵部的。</p>
+        <p>送信的人一共跑死了三匹马，他本人也几乎是被人从马上抬下来的。他只说了一句话，然后就昏了过去：</p>
+        <p>"鞑靼骑兵，已过长城。"</p>
+        <p>这句话随后以一种奇怪的速度在京城蔓延，官员们深夜披衣而起，茶馆里的说书人第二天早上就编出了新段子，连卖饼的老王都知道：北边打起来了。</p>
+        <p>只有一个人，在得知这个消息之后，沉默了很长时间。</p>
+        <p>他在想的，是一道算术题：京城守军三万，粮草可用两月，鞑靼来兵据报五万，距京城还有六天路程。</p>
+        <p>算完这道题，他放下文书，叫来了属下，平静地说：</p>
+        <p>"去把各路总兵的调兵文书准备好，我来签。"</p>
+    </div>
+
+    <h4>【人物评价】能力强但品行有问题的大臣</h4>
+    <div class="example-box">
+        <p>关于此人，历来争议颇多，有人说他是奸臣，有人说他是能臣，吵了几百年，谁也没吵赢。</p>
+        <p>我们不妨客观地看。</p>
+        <p>他确实贪，这一点没有疑问，贪钱、贪权、走权贵的门路，用现在的话说，这个人的履历很不干净。</p>
+        <p>但他也确实能干。他能用一封假信打垮敌方联盟，能两手空空走进对方大营、全身而退。这种本事，满朝文武没有第二个人会。</p>
+        <p>问题就在这里。</p>
+        <p>一个国家，什么时候开始需要靠一个贪官来保住半壁江山，这件事本身，才是最值得深思的。</p>
+        <p>功是真功，过是真过，不必替他遮掩，也不必过分苛责。</p>
+    </div>
+
+    <h3>使用注意事项</h3>
+    <ul>
+        <li>每次生成内容时，先判断场景类型（史书段落 / 官员对话 / 事件叙述 / 人物评价），然后对照对应示例的结构和节奏输出。</li>
+        <li>禁止使用的表达：内心复杂、百感交集、意义重大、影响深远、历史长河、千古流传、气壮山河——这些词在《明朝那些事儿》里是不存在的。</li>
+        <li>字数参考：史书段落 200-400 字；官员对话 150-300 字；事件叙述 200-400 字；人物评价 150-250 字。</li>
+        <li>克制使用幽默：每段文字里，现代词汇错位和喜剧效果最多出现 1-2 次，不要让整段都是段子。严肃的叙事骨架是基础，幽默是调味料。</li>
+    </ul>
+    <p>本 System Prompt 基于《明朝那些事儿》全集文风分析提炼，适用于历史放置类游戏的 AI 叙事内容生成。</p>
+
+    <h3>知识库与技能系统</h3>
+    <p>游戏已建立完整的历史知识库，包含68个精选技能，分为四个主要类别：</p>
+    <ol>
+        <li><strong>明代宫廷行为（30个技能）：</strong>涵盖嘉靖帝政治平衡术、海瑞处置策略、陈洪政治操作等核心人物行为模式</li>
+        <li><strong>权力策略（19个技能）：</strong>基于《君主论》的权力获取、巩固、军事策略等</li>
+        <li><strong>制度历史（15个技能）：</strong>基于《钱穆·中国历代政治得失》的各朝代制度对比</li>
+        <li><strong>角色设计（4个技能）：</strong>基于《人物的解剖》的角色创建和塑造方法论</li>
+    </ol>
+    <p>这些技能支持游戏的六大系统：人物AI系统、政策系统、事件系统、史册系统、后宫系统、权谋系统。</p>
+    <div class="highlight">
+        知识库已转换为JSON格式，支持实时API调用，可通过RESTful接口进行搜索、过滤和生成。
+    </div>
+
+    <h2>八、离线上下文管理架构</h2>
+    <p><strong>核心问题：</strong>离线期间积累了大量事件，如何控制发给AI的上下文长度？采用三层压缩架构解决。</p>
+
+    <h3>三层压缩架构</h3>
+    <table>
+        <tr>
+            <th>层级</th>
+            <th>内容</th>
+            <th>存储方式</th>
+            <th>大小控制</th>
+        </tr>
+        <tr>
+            <td>第一层：原始日志</td>
+            <td>所有事件的结构化数据</td>
+            <td>本地完整存储（JSON）</td>
+            <td>无限制</td>
+        </tr>
+        <tr>
+            <td>第二层：滚动摘要</td>
+            <td>最近N个重大事件压缩版</td>
+            <td>Token控制</td>
+            <td>≤1000 超出则触发再压缩</td>
+        </tr>
+        <tr>
+            <td>第三层：世界快照</td>
+            <td>关键数值 + 最重要5件事</td>
+            <td>发给AI时附带</td>
+            <td>极小</td>
+        </tr>
+    </table>
+
+    <h3>滚动摘要触发条件</h3>
+    <ul>
+        <li>累积事件超过20条</li>
+        <li>距上次摘要超过30天游戏时间</li>
+        <li>发生重大转折事件（战争 / 政变）</li>
+    </ul>
+
+    <h3>离线期间运作原则</h3>
+    <ul>
+        <li>离线时只跑本地算法（数值变化、关系演算），不调用API</li>
+        <li>把所有"需要生成文字"的节点记录为结构化数据，等玩家上线后批量生成</li>
+        <li>无论离线多久，发给AI的上下文始终保持可控大小</li>
+    </ul>
+
+    <h3>事件结构化数据示例（JSON格式）</h3>
+    <div class="code-block">
+        {<br>
+        &nbsp;&nbsp;"event": "民变",<br>
+        &nbsp;&nbsp;"cause": "加税_连续3年",<br>
+        &nbsp;&nbsp;"actor": "王县令",<br>
+        &nbsp;&nbsp;"outcome": "镇压成功",<br>
+        &nbsp;&nbsp;"impact": { "民心": -15, "财政": -200 }<br>
+        }
+    </div>
+
+    
+    <div class="v22-enhancement">
+        <h3>💭 情感层与历史惯性 <span class="v22-tag">V2.2</span></h3>
+
+        <p>在现有三层压缩架构基础上，增加<strong>情感维度</strong>和<strong>惯性标签</strong>：</p>
+
+        <h4>全局调性向量 (Global Tone Vector)</h4>
+        <p>在第二层（滚动摘要）向第三层（快照）压缩时，提取情感向量：</p>
+        <div class="code-block">Tone: 匮乏/紧缩 | 尚武/扩张 | 浮华/享乐 | 猜忌/党争 | 绝望/崩溃</div>
+        <p><strong>作用：</strong>作为生成对话的辅助Prompt。即使"三年饥荒"已从快照中移除，<code>Tone: 匮乏</code>依然会让NPC台词倾向于保守和悲观。</p>
+
+        <h4>历史惯性标签 (Historical Inertia)</h4>
+        <div class="v22-debate">
+            <div class="v22-debate-title">📌 设计分歧：永久标签 vs 可重置标签</div>
+            <p><strong>方案A - 永久标签：</strong>重大事件（迁都、屠城）被移出快照后，转化为永久的<code>World_Debuff</code>标签，确保历史沉重感不会消失。</p>
+            <p><strong>方案B - 可手动重置：</strong>保留<code>Global_Debuff/Buff</code>标签，但玩家可通过特定政策（如"大赦天下"或"祭天"）手动清除，增加策略维度。</p>
+            <p><em>两种方案均可实现，建议核心重大事件用方案A，次要事件用方案B。</em></p>
+        </div>
+
+        <h4>蝴蝶效应缓冲区 (Butterfly Buffer)</h4>
+        <p>消除"上线即看到突变数值"的突兀感：</p>
+        <div class="flow-diagram">
+            离线数值演算 → 检测临界点（如民心<20） → 生成"挂起事件" → 玩家上线 → AI叙事化处理 → 渐进式展示
+        </div>
+        <p><strong>效果：</strong>玩家上线时看到的不是冰冷的"起义爆发"，而是一段"由小及大"的渐进式史料描述，营造"亲眼看着事态失控"的沉浸感。</p>
+
+        <h4>认知过滤器 (Cognitive Filter)</h4>
+        <p>现代知识在古代环境中的"水土不服"：</p>
+        <div class="code-block">玩家指令: "调整准备金率至15%"
+        ↓
+        执行官认知检测: Cognition = 迷信
+        ↓
+        语义降级: 理解为"聚敛财富以求天恩"
+        ↓
+        执行偏差: 带有玄学色彩的敛财行为</div>
+    </div>
+
+
+    
+    <div class="v22-enhancement">
+        <h3>8.4 视觉映射与古典意象 (去现代感设计) <span class="v22-tag">V2.2</span></h3>
+        <p>为确保"穿越者"沉浸感，所有底层逻辑反馈均通过古典意象表达，<strong>严禁出现马赛克、进度条或现代特效</strong>：</p>
+
+        <h4>世界调性 (纸墨色泽)</h4>
+        <table>
+            <tr><th>世界状态</th><th>视觉表现</th><th>听觉氛围</th></tr>
+            <tr><td><strong>盛世/繁荣</strong></td><td>UI背景呈现洁白宣纸质感，墨色浓郁乌黑</td><td>清脆琴声、闹市远景声</td></tr>
+            <tr><td><strong>乱世/衰败</strong></td><td>纸张枯黄粗糙，边缘有虫蛀破损感，文字偶有歪斜</td><td>压抑低频噪声、隐约兵戈声</td></tr>
+        </table>
+
+        <h4>离线事件 (物理堆叠)</h4>
+        <ul>
+            <li>玩家上线时，通过<strong>"急递铺传来的密信"</strong>视觉堆叠呈现离线事件</li>
+            <li>重大转折事件（如民乱、政变）表现为一封<strong>带血迹或加急火漆的密封奏章</strong></li>
+            <li>点击拆封后方可触发AI详细叙事，营造"亲手开启坏消息"的沉浸感</li>
+        </ul>
+
+        <h4>执行偏差 (臣子歪解)</h4>
+        <p>不使用字迹模糊。当触发认知磨损时，NPC回奏内容将按古人逻辑<strong>"一本正经地歪解"</strong>：</p>
+        <div class="code-block">玩家指令: "建立中央银行"
+
+NPC回奏: "臣领旨，已命户部设立'天子内帑银号'，专供皇家采买，杜绝外臣染指。"
+
+后果: 原本的经济改革在离线演化中变成"皇家与民争利"，民心-10，商业-5</div>
+    </div>
+
+
+    <h2>九、API调用频率控制策略</h2>
+    <p><strong>核心原则：</strong>不让AI实时生成所有内容，只在"值得的时刻"触发。</p>
+
+    <table>
+        <tr>
+            <th>触发条件</th>
+            <th>生成内容</th>
+            <th>调用类型</th>
+        </tr>
+        <tr>
+            <td>玩家主动点击"上朝"</td>
+            <td>官员对话生成</td>
+            <td>API调用</td>
+        </tr>
+        <tr>
+            <td>重大事件发生（叛乱/天灾）</td>
+            <td>史书段落生成</td>
+            <td>API调用</td>
+        </tr>
+        <tr>
+            <td>角色关系重大变化</td>
+            <td>人物独白生成</td>
+            <td>API调用</td>
+        </tr>
+        <tr>
+            <td>常规奏折 / 天气 / 小事件</td>
+            <td>套用预设模板</td>
+            <td>本地生成，不调API</td>
+        </tr>
+    </table>
+
+    <h2>十、无限运行的节奏设计（王朝周期）</h2>
+    <p>无终点设计下，靠阶段性高潮事件维持新鲜感：</p>
+    <ul>
+        <li><strong>王朝周期：</strong>国力有盛衰曲线，衰到一定程度触发"中兴"危机，相当于新的挑战阶段</li>
+        <li><strong>历史纪元：</strong>每隔一段时间解锁新时代特征（农耕时代 → 商业时代），解锁新政策树和人物类型</li>
+        <li><strong>个人传奇：</strong>皇帝会老，可设计禅让/太子继承，切换到下一代继续游戏，史书记录前任评价</li>
+    </ul>
+
+    <h3>任务书第八节补充：快照压缩严格规则</h3>
+    <p>补充到「八、离线上下文管理架构」末尾。</p>
+
+    <h3>世界快照层的严格边界</h3>
+    <p>快照是发给 AI 的第三层内容，必须强制执行大小限制，不能随游玩时长无限增长。</p>
+
+    <h3>快照字段与硬性上限</h3>
+    <div class="code-block">
+        {<br>
+        &nbsp;&nbsp;"当前朝代": "明",<br>
+        &nbsp;&nbsp;"在位年数": 12,<br>
+        &nbsp;&nbsp;"皇帝属性": {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"威望": 45,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"知识点": ["军事知识", "经济知识"]<br>
+        &nbsp;&nbsp;},<br>
+        &nbsp;&nbsp;"核心数值": {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"民心": 62,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"财政": 38,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"兵力": 55,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"宦官势力": 40,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"外敌威胁": 30<br>
+        &nbsp;&nbsp;},<br>
+        &nbsp;&nbsp;"活跃人物": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;/* 最多 8 人，格式见下方 */<br>
+        &nbsp;&nbsp;],<br>
+        &nbsp;&nbsp;"当前政策": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;/* 最多 5 条，只保留影响仍存续的 */<br>
+        &nbsp;&nbsp;],<br>
+        &nbsp;&nbsp;"已命名事件": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;/* 最多 5 个事件名，如"黑市之乱""三年饥荒" */<br>
+        &nbsp;&nbsp;],<br>
+        &nbsp;&nbsp;"最近重大事件": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;/* 最多 3 条，每条不超过 30 字 */<br>
+        &nbsp;&nbsp;]<br>
+        }
+    </div>
+
+    <h3>活跃人物格式（每人大约 40 token）</h3>
+    <div class="code-block">
+        {<br>
+        &nbsp;&nbsp;"姓名": "严嵩",<br>
+        &nbsp;&nbsp;"身份": "内阁首辅",<br>
+        &nbsp;&nbsp;"派系": "严党",<br>
+        &nbsp;&nbsp;"野心": 85,<br>
+        &nbsp;&nbsp;"与皇帝关系": "宠信",<br>
+        &nbsp;&nbsp;"关键关系": "严世蕃（子）、徐阶（政敌）",<br>
+        &nbsp;&nbsp;"当前处境": "把持朝政第8年，开始被质疑"<br>
+        }
+    </div>
+
+    <h3>人物归档规则</h3>
+    <p>人物不会永久留在活跃列表，达到以下条件时归档：</p>
+    <table>
+        <tr>
+            <th>条件</th>
+            <th>处理</th>
+        </tr>
+        <tr>
+            <td>人物死亡/流放</td>
+            <td>转为一行史书记录，移出活跃列表</td>
+        </tr>
+        <tr>
+            <td>与玩家无互动超过 20 游戏年</td>
+            <td>降为"背景人物"，不进快照</td>
+        </tr>
+        <tr>
+            <td>活跃人物超过 8 人</td>
+            <td>按「威望×与玩家互动频率」排序，末位归档</td>
+        </tr>
+    </table>
+
+    <h3>归档格式（存入原始日志，不进快照）</h3>
+    <div class="code-block">
+        严嵩：内阁首辅，执政22年，贪腐误国，嘉靖四十一年去职。
+    </div>
+
+    <h3>政策叠加去重规则</h3>
+    <p>政策列表不能无限叠加，执行以下清理：</p>
+    <ul>
+        <li>被后续政策<strong>完全覆盖</strong>的旧政策直接删除（如「加税→减税」，旧加税记录删除）</li>
+        <li>影响已消退（超过 15 游戏年且无持续效果）的政策归档</li>
+        <li>同类政策取最新一条，旧条目保留名称写入已命名事件</li>
+    </ul>
+
+    <h3>已命名事件的作用</h3>
+    <p>已命名事件列表不是历史流水账，是<strong>叙事锚点</strong>：</p>
+    <ul>
+        <li>AI 生成史评时可引用："自黑市之乱后，帝始知税策之失……"</li>
+        <li>世界状态修正条件可读取（见 SKILL.md 第三节）</li>
+        <li>玩家查看史册时作为章节索引</li>
+    </ul>
+    <p>超过 5 个命名事件后，最早的事件降级为史册正文中的一行，不再进快照。</p>
+
+    <h3>压缩触发时机（细化版）</h3>
+    <table>
+        <tr>
+            <th>触发条件</th>
+            <th>压缩动作</th>
+        </tr>
+        <tr>
+            <td>活跃人物 > 8</td>
+            <td>末位人物归档</td>
+        </tr>
+        <tr>
+            <td>政策条目 > 5</td>
+            <td>清理已消退政策</td>
+        </tr>
+        <tr>
+            <td>命名事件 > 5</td>
+            <td>最早事件降级</td>
+        </tr>
+        <tr>
+            <td>距上次全量压缩 > 30 游戏年</td>
+            <td>执行一次全字段清理</td>
+        </tr>
+        <tr>
+            <td>发生政变/王朝更替</td>
+            <td>强制全量压缩，旧快照整体归档为「前朝记录」</td>
+        </tr>
+    </table>
+
+    <h3>前朝记录格式</h3>
+    <p>王朝更替或皇帝禅让后，旧快照压缩为单段文字进入史册，不再参与 AI 上下文：</p>
+    <div class="example-box">
+        <div class="example-title">【太祖本纪·简录】</div>
+        <p>在位18年。初兴水利，民心渐稳；中期加税失当，引"黑市之乱"；</p>
+        <p>晚年重用外戚，朝政渐乱。史家评：有创业之功，无守成之智。</p>
+    </div>
+    <p>这段文字仅在「玩家查看史册」时调用，不进常规快照层。</p>
+
+    
+    
+    <div class="v22-enhancement">
+        <h3>10.5 王朝天命与家族传承 <span class="v22-tag">V2.2</span></h3>
+        <p>将"基因稳定性"与"代际偏好"包装在天命视角下，彻底去现代感：</p>
+
+        <h4>家族底色 (家风天性)</h4>
+        <table>
+            <tr><th>机制</th><th>古典包装</th><th>实际效果</th></tr>
+            <tr>
+                <td><strong>天性继承</strong></td>
+                <td>子嗣出生时继承家族"核心性格"</td>
+                <td>连续三代好战 → 王朝挂载"虎狼之室"标签</td>
+            </tr>
+            <tr>
+                <td><strong>祖宗家法</strong></td>
+                <td>长期家风形成固定派系偏好</td>
+                <td>"清流派"对"宽仁"家族有天然好感加成</td>
+            </tr>
+        </table>
+
+        <h4>神识与心魔 (原 Stability 系统)</h4>
+        <ul>
+            <li>不使用稳定性数值，称之为<strong>"神识"</strong></li>
+            <li>若神识不稳，皇帝晚年将产生"多疑"或"幻听"特质</li>
+            <li><strong>叙事干扰</strong>：AI会在奏折中注入虚假事实（莫须有的谋反信息），模拟皇帝内心的不安全感</li>
+        </ul>
+        <div class="code-block">【神识不稳时的奏折样例】
+
+"臣夜观天象，见紫微星暗，恐有奸佞作乱。
+ 又闻御林军近日频繁调动，不知所踪...
+ 臣斗胆进言，望陛下明察。"
+
+——实际上御林军调动是正常的换防，但神识不稳的皇帝会看到更多此类"情报"</div>
+
+        <h4>内禅密旨 (祖训系统)</h4>
+        <ul>
+            <li>前任皇帝驾崩前可撰写<strong>《内禅密旨》</strong></li>
+            <li>这份密旨将作为下一代的初始 <code>System Prompt</code></li>
+            <li>规定未来三代的政治基调（如"与民休息"或"远伐塞外"），形成强大的历史惯性</li>
+        </ul>
+        <div class="code-block">【内禅密旨样例】
+
+"朕在位三十载，深知民力有限。
+ 后世子孙当以休养生息为要，轻徭薄赋，勿兴无名之师。
+ 若有违此训，是为不孝。"
+
+——此密旨将在新皇帝继位时注入System Prompt，影响前20年的政策倾向</div>
+    </div>
+
+
+    <h2>十一、系统Prompt模板 <span class="v22-tag">V2.2</span> 实现参考</h2>
+
+    <p>以下模板可直接用于处理"上朝决策"或"离线总结"的AI调用：</p>
+
+    <h3>11.1 角色执行指令层 (NPC Execution Prompt)</h3>
+    <div class="code-block">[Role Context]
+你现在是角色 [Name]，你的性格基因矩阵为：[Personality_JSON]。
+你的当前认知水平为：[Cognition_Level]。
+你的创伤记忆为：[Trauma_Record]。
+
+[World Snapshot]
+世界当前调性：[Global_Tone]
+当前活跃政策：[Policies]
+
+[Player Instruction]
+玩家下达了指令：[Instruction]
+
+[Constraint]
+请根据你的认知水平，重新解读玩家指令。
+如果指令中包含你无法理解的现代概念，请按你的利益逻辑进行"歪解"。
+结合你的性格基因和当前世界调性，决定你的执行力度（0-100%）及可能的隐秘行为。
+仅输出你的心理动态和最终执行动作，不要提及任何现代术语。</div>
+
+    <h3>11.2 史册系统生成层 (Historical Archive Prompt)</h3>
+    <div class="code-block">[Input]
+原始日志：[Raw_JSON_Logs]
+玩家干预记录：[Player_Actions]
+
+[Structure Standard]
+请参考《史记》结构，将上述离线演化内容归档：
+- 本纪：记录玩家作为皇帝的重大决策及其直接后果。
+- 列传：重点记录 NPC [Name] 在此期间的性格偏移和标志性行为。
+- 平准/货殖：记录经济与民生数值变动背后的叙事逻辑。
+
+[Style]
+文风参考：半文半白，风格接近《明朝那些事儿》，点评需辛辣且具备全局视野。</div>
+
+    <h3>11.3 离线代理执政偏差检测 (Agent Bias Detection Prompt)</h3>
+    <div class="code-block">[Context]
+代理人：[Agent_Name]（宰相/国师）
+代理人野心值：[Ambition_Level]
+玩家方针预设：[Player_Policy]
+
+[Task]
+模拟代理人执行方针的过程。
+如果野心值 > 60，以 30% 概率触发"指令扭曲"：
+- 在官方记录中保持表面合规
+- 在实际执行中注入私利行为（如中饱私囊、打压异己）
+- 生成对应的"野史线索"，留待未来触发
+
+[Output]
+{
+    "official_record": "已拨银三十万两赈灾",
+    "actual_action": "实际拨款十万两，余下入私库",
+    "hidden_clue": "户部小吏张某偶见账册异样",
+    "trigger_condition": "3年后或皇帝调查财政时"
+}</div>
+
+
+    
+    <h3>11.4 代理执政偏差检测 (去现代感修正) <span class="v22-tag">V2.2</span></h3>
+    <p>修正底层逻辑描述，使其完全符合古典叙事：</p>
+    <div class="code-block">[System Prompt]
+你现在扮演的是 [职位:如内阁首辅]。
+
+玩家作为皇帝下达了指令：[Instruction]
+当前世界调性：[Global_Tone]
+你的认知盲区：[Cognition_Gap: 包含指令中的所有现代词汇]
+
+请执行以下逻辑：
+1. 识别指令中你无法理解的概念。
+2. 按照你的派系利益和古典认知，对这些概念进行"合理化歪解"。
+3. 在回奏中，不要表现出你听不懂，而是要表现出你已经"深刻领悟"并转化为古代政治手段。
+4. 语气参考《明朝那些事儿》中的老谋深算。</div>
+
+    <h4>歪解示例对照表</h4>
+    <table>
+        <tr><th>玩家指令 (现代)</th><th>NPC理解 (古代)</th><th>执行偏差</th></tr>
+        <tr><td>建立中央银行</td><td>设立天子内帑银号</td><td>皇家与民争利，民心下降</td></tr>
+        <tr><td>实行科举改革</td><td>增开恩科取士</td><td>世家大族利益受损，引发反弹</td></tr>
+        <tr><td>建立信息透明制度</td><td>广开言路、设立匦函</td><td>言官势力膨胀，党争加剧</td></tr>
+        <tr><td>调整准备金率</td><td>充实府库以备不虞</td><td>地方财政吃紧，官员贪腐加剧</td></tr>
+    </table>
+
+
+    <div class="section-title">附录：快速参考索引</div>
+    <table>
+        <tr>
+        <tr>
+            <td>行为公式与角色演化</td>
+            <td>第一部分·五 / 第二部分·二</td>
+            <td>Stability因子、创伤记录、行为公式演进</td>
+        </tr>
+        <tr>
+            <td>叙事锚点递归反馈</td>
+            <td>第二部分·二</td>
+            <td>集体记忆挂载、语料特征向量</td>
+        </tr>
+        <tr>
+            <td>情感层与历史惯性</td>
+            <td>第二部分·八</td>
+            <td>全局调性、历史标签、挂起事件、认知过滤器</td>
+        </tr>
+        <tr>
+            <td>知识冲突事件链</td>
+            <td>第二部分·六</td>
+            <td>现代技能负面效应、权衡机制</td>
+        </tr>
+        <tr>
+            <td>系统Prompt模板</td>
+            <td>第二部分·十一</td>
+            <td>NPC执行、史册生成、代理偏差检测</td>
+        </tr>
+
+            <th>系统模块</th>
+            <th>关键设计要点</th>
+            <th>所在章节</th>
+        </tr>
+        <tr>
+            <td>人物AI</td>
+            <td>性格×欲望×处境；关系网自主运转</td>
+            <td>第二部分 • 二</td>
+        </tr>
+        <tr>
+            <td>史册系统</td>
+            <td>双轨记录；AI史评；事件自动命名</td>
+            <td>第二部分 • 三</td>
+        </tr>
+        <tr>
+            <td>放置资源</td>
+            <td>两级资源体系；宰相代理方针</td>
+            <td>第二部分 • 四</td>
+        </tr>
+        <tr>
+            <td>后宫系统</td>
+            <td>政治深度绑定；外戚；子嗣竞争</td>
+            <td>第二部分 • 五</td>
+        </tr>
+        <tr>
+            <td>穿越者成长</td>
+            <td>现代知识技能树；干预权解锁</td>
+            <td>第二部分 • 六</td>
+        </tr>
+        <tr>
+            <td>文风方案</td>
+            <td>15条规则+示例；知识库68技能</td>
+            <td>第二部分 • 七</td>
+        </tr>
+        <tr>
+            <td>上下文管理</td>
+            <td>三层压缩架构；离线不调API</td>
+            <td>第二部分 • 八</td>
+        </tr>
+        <tr>
+            <td>API策略</td>
+            <td>触发式生成；预设模板兜底</td>
+            <td>第二部分 • 九</td>
+        </tr>
+        <tr>
+            <td>王朝周期</td>
+            <td>盛衰曲线；纪元解锁；代际传承</td>
+            <td>第二部分 • 十</td>
+        </tr>
+    </table>
+
+    <div class="reference">
+        <p>本文档基于《AI放置类历史模拟游戏任务书（完整版 V2.0）》整理，内容完整无删减。</p>
+    </div>
+</body>
+</html><｜end▁of▁thinking｜>

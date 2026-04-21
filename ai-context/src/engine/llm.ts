@@ -260,3 +260,101 @@ export async function batchCallLLM(
   const promises = requests.map(request => callLLM(request));
   return Promise.all(promises);
 }
+// [改造-Phase4] 场景锚点类型
+export interface SceneAnchor {
+  dynastyName: string;
+  year: number;
+  season: string;
+  activeAgenda: string;
+  emperorMood: string;  // 简短描述，如"威严"/"忧虑"
+  presentNpcNames: string[];
+}
+
+// [改造-Phase4] 从 GameState 构建场景锚点
+export function buildSceneAnchor(state: GameState, activeAgenda: string): SceneAnchor {
+  const seasonMap = ['冬', '春', '夏', '秋'];
+  const season = seasonMap[state.world.year % 4];
+  const prestige = state.emperor.prestige;
+  const emperorMood = prestige > 70 ? '威严' : prestige > 40 ? '平稳' : '忧虑';
+  return {
+    dynastyName: state.world.dynasty || '靖朝',
+    year: state.world.year,
+    season,
+    activeAgenda,
+    emperorMood,
+    presentNpcNames: state.npcs
+      .filter(n => n.status === 'active')
+      .map(n => n.name),
+  };
+}
+
+// [改造-Phase4] 追问窗口专用 LLM 调用（带场景锚点注入）
+export async function callWithSceneAnchor(opts: {
+  systemPromptTemplate: string;   // npc-chat-window.md 内容，含 {{变量}} 占位符
+  npcData: {
+    name: string; role: string; faction: string;
+    traitsJson: string;           // JSON.stringify(npc.traits)
+    voiceFeatures: string;        // npc.voice.features.join('、')
+    forbiddenPhrases: string;     // npc.voice.forbidden_phrases.join('、')
+    biasJson: string;             // JSON.stringify(npc.bias)
+    knowledgeScope: string;       // 基于 role 和 bias 推断，传入字符串
+    refusalTemplates: string;     // fallback_line 等
+    fallbackLine: string;
+  };
+  sceneAnchor: SceneAnchor;
+  history: Array<{ role: 'user' | 'assistant'; content: string }>;
+  userMessage: string;
+  turnIndex: number;              // 0-based，第2轮（index=2）强制 allows_followup=false
+}): Promise<{ dialogue: string; emotion: string; allows_followup: boolean }> {
+  // 1. 替换 system prompt 里所有 {{变量}} 占位符
+  let systemPrompt = opts.systemPromptTemplate
+    .replace(/\{\{dynasty_name\}\}/g, opts.sceneAnchor.dynastyName)
+    .replace(/\{\{year\}\}/g, String(opts.sceneAnchor.year))
+    .replace(/\{\{npc_name\}\}/g, opts.npcData.name)
+    .replace(/\{\{npc_role\}\}/g, opts.npcData.role)
+    .replace(/\{\{npc_faction\}\}/g, opts.npcData.faction)
+    .replace(/\{\{npc_traits_summary\}\}/g, opts.npcData.traitsJson)
+    .replace(/\{\{npc_voice_features\}\}/g, opts.npcData.voiceFeatures)
+    .replace(/\{\{npc_forbidden_phrases\}\}/g, opts.npcData.forbiddenPhrases)
+    .replace(/\{\{npc_bias\}\}/g, opts.npcData.biasJson)
+    .replace(/\{\{current_agenda\}\}/g, opts.sceneAnchor.activeAgenda)
+    .replace(/\{\{npc_stance\}\}/g, '')   // CourtAgenda.npc_stances[x].stance
+    .replace(/\{\{npc_knowledge_scope\}\}/g, opts.npcData.knowledgeScope)
+    .replace(/\{\{refusal_templates\}\}/g, opts.npcData.refusalTemplates);
+
+  // 2. 每条 user 消息前注入场景锚（防止 AI 忘记在哪）
+  const anchorPrefix = `[当前场景：${opts.sceneAnchor.dynastyName}${opts.sceneAnchor.year}年${opts.sceneAnchor.season}季，朝会议题：${opts.sceneAnchor.activeAgenda}，皇帝情绪：${opts.sceneAnchor.emperorMood}]`;
+
+  const messages: ChatMessage[] = [
+    { role: 'system', content: systemPrompt },
+    ...opts.history,
+    { role: 'user', content: `${anchorPrefix}\n${opts.userMessage}` },
+  ];
+
+  // 3. 调用 LLM（追问窗口用 A 档，maxTokens 限制在 400）
+  let raw: string;
+  try {
+    raw = await llmCall('A', messages, { maxTokens: 400, temperature: 0.7 });
+  } catch {
+    return { dialogue: opts.npcData.fallbackLine, emotion: '平静', allows_followup: false };
+  }
+
+  // 4. 解析 JSON
+  const jsonMatch = raw.match(/\{[\s\S]*?\}/);
+  if (!jsonMatch) {
+    return { dialogue: opts.npcData.fallbackLine, emotion: '平静', allows_followup: false };
+  }
+  try {
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      dialogue?: string; emotion?: string; allows_followup?: boolean;
+    };
+    return {
+      dialogue: parsed.dialogue || opts.npcData.fallbackLine,
+      emotion: parsed.emotion || '平静',
+      // 第3轮（turnIndex >= 2）强制关闭追问
+      allows_followup: opts.turnIndex >= 2 ? false : (parsed.allows_followup ?? true),
+    };
+  } catch {
+    return { dialogue: opts.npcData.fallbackLine, emotion: '平静', allows_followup: false };
+  }
+}

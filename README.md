@@ -387,3 +387,29 @@ npm run build
 [![GitHub issues](https://img.shields.io/github/issues/akira17189-create/emperorgame?style=social)](https://github.com/akira17189-create/emperorgame/issues)
 
 </div>
+
+## 📊 开发状态
+
+### 改造计划书 v3（2026-04-21 完成）
+
+**状态：✅ 全部完成**
+- **完成时间**：2026-04-21
+- **总任务数**：15 个
+- **完成任务数**：15 个
+- **完成率**：100%
+
+**主要成果：**
+- ✅ 新增 4 个派系NPC（方直、王福全、钱谦、陈德明）
+- ✅ 实现朝会预写主线系统
+- ✅ 实现路遇场景和微服出巡功能
+- ✅ 季节系统文案（春、夏、秋、冬）
+- ✅ 皇室姓氏修正（朱→云）
+- ✅ 新增追问弹窗组件（NpcChatWindow）
+- ✅ 新增路遇弹窗组件（EncounterChatWindow）
+- ✅ LLM函数扩展和全局错误兜底
+
+**改造标记：**
+- `llm.ts`：3 个 [改造-Phase4] 标记
+- `CourtPage.tsx`：11 个 [改造-Phase4] 标记
+
+---

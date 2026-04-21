@@ -112,6 +112,12 @@ export class IDBAdapter implements SaveAdapter {
       console.log('迁移: 添加了last_idle_tick_at字段');
     }
 
+    // 迁移3: action_count 字段（防止旧存档缺失导致年份推进逻辑异常）
+    if (typeof gameState.meta.action_count !== 'number') {
+      gameState.meta.action_count = 0;
+      console.log('迁移: 添加了action_count字段');
+    }
+
     return gameState;
   }
 

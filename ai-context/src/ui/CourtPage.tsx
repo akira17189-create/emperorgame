@@ -113,6 +113,16 @@ export function CourtPage() {
   const [demoMode] = useState(!getLLMConfig());
   const [showPolicyPanel, setShowPolicyPanel] = useState(false);
   const [state, setState] = useState(() => {
+
+// [改造-Phase4] 朝会议题模式
+const [currentAgenda, setCurrentAgenda] = useState<CourtAgenda | null>(null);
+const [chatWindowNpcId, setChatWindowNpcId] = useState<string | null>(null);
+const [agendaChoiceResult, setAgendaChoiceResult] = useState<string | null>(null);
+
+// [改造-Phase4] 路遇场景
+const [currentEncounter, setCurrentEncounter] = useState<EncounterTemplate | null>(null);
+const [encounterChatNpcId, setEncounterChatNpcId] = useState<string | null>(null);
+const [encounterSkipped, setEncounterSkipped] = useState(false);
     try { return getState(); } catch { return null; }
   });
 
@@ -283,6 +293,34 @@ export function CourtPage() {
     catch { addToast('error', '保存失败'); }
   };
 
+// [改造-Phase4] 召开朝会：从预写库中随机选一个当前年份适合的议题
+const openCourtAgenda = () => {
+  if (!state) return;
+  const year = state.world.year;
+  const suitable = COURT_AGENDAS.filter(
+    a => year >= a.year_range[0] && year <= a.year_range[1]
+  );
+  const pool = suitable.length > 0 ? suitable : COURT_AGENDAS;
+  const agenda = pool[Math.floor(Math.random() * pool.length)];
+  setCurrentAgenda(agenda);
+  setAgendaChoiceResult(null);
+  setCourtMode(true);  // 切换到朝会模式（复用现有 courtMode state）
+};
+
+// [改造-Phase4] 随机触发一条路遇事件
+const triggerEncounter = () => {
+  if (!state) return;
+  const year = state.world.year;
+  const suitable = ENCOUNTER_TEMPLATES.filter(
+    e => year >= e.trigger_year_range[0] && year <= e.trigger_year_range[1]
+  );
+  const pool = suitable.length > 0 ? suitable : ENCOUNTER_TEMPLATES;
+  const encounter = pool[Math.floor(Math.random() * pool.length)];
+  setCurrentEncounter(encounter);
+  setEncounterSkipped(false);
+  setEncounterChatNpcId(null);
+};
+
   const typewriterEffect = async (text: string) => {
     let current = '';
     for (const char of text) {
@@ -297,13 +335,21 @@ export function CourtPage() {
     const commandToExecute = overrideCommand ?? command;
     if (!commandToExecute.trim() || isProcessing) return;
 
+    // state null 守卫（理论上不应为 null，但防御性检查）
+    if (!state) {
+      addToast('error', '游戏状态未初始化，请刷新页面');
+      return;
+    }
+
     setIsProcessing(true);
     setNarration('');
 
     try {
       if (demoMode) {
-        const fallback = renderTemplate('weather_good', { year: state.world.year });
-        if (fallback) await typewriterEffect(fallback);
+        // 演示模式：显示占位文案
+        const fallback = renderTemplate('weather_good', { year: state.world.year })
+          || `永德${state.world.year}年，帝国在观望中继续前行。（演示模式 — 请前往设置配置 LLM）`;
+        await typewriterEffect(fallback);
         setCommand('');
         addToast('info', '当前为演示模式，请先配置 LLM');
         return;
@@ -314,7 +360,10 @@ export function CourtPage() {
         (resolvedNpcId ? state.npcs.find(n => n.id === resolvedNpcId && n.status === 'active') : null)
         ?? state.npcs.find(n => n.status === 'active');
 
-      if (!targetNpc) { addToast('error', '没有可用的NPC'); return; }
+      if (!targetNpc) {
+        addToast('error', '没有可用的NPC，请检查游戏状态');
+        return;
+      }
       setActiveNpcId(targetNpc.id);
 
       const tickResult = await executeTick(state, commandToExecute, { targetNpcId: targetNpc.id });
@@ -355,16 +404,27 @@ export function CourtPage() {
 
       try { await getDefaultAdapter().save('slot-1', getState()); } catch { /* best-effort */ }
 
-      if (tickResult.narration) await typewriterEffect(tickResult.narration);
+      if (tickResult.narration) {
+        await typewriterEffect(tickResult.narration);
+      } else {
+        // 无叙事时显示简短占位，防止界面空白
+        setNarration(`永德${getState().world.year}年，旨意已传达。`);
+      }
       setCommand('');
       addToast('success', '指令已处理');
     } catch (error) {
       if (error instanceof NoLLMConfigError) {
         location.hash = '/settings';
       } else {
-        addToast('error', `生成失败: ${error instanceof Error ? error.message : '未知错误'}`);
-        const fallback = renderTemplate('weather_good', { year: getState().world.year });
-        if (fallback) await typewriterEffect(fallback);
+        const errMsg = error instanceof Error ? error.message : '未知错误';
+        addToast('error', error instanceof Error && error.message.includes('timeout')
+          ? '圣旨未能送达，朝臣暂无回应'
+          : '朝堂忽生变故，指令未能传达');
+        console.error('[COURT] submitCommand 失败:', error);
+        // 降级：显示本地模板叙事，让玩家知道游戏仍在运行
+        const fallback = renderTemplate('weather_good', { year: getState().world.year })
+          || `永德${getState().world.year}年，朝堂运转如常。（LLM 生成失败，请检查网络与配置）`;
+        await typewriterEffect(fallback);
       }
     } finally {
       setIsProcessing(false);
@@ -530,7 +590,14 @@ export function CourtPage() {
           {narration
             ? narration
             : isProcessing
-              ? <LoadingShimmer />
+              ? (
+                <span style={{ color: C.muted, fontSize: '14px', fontStyle: 'italic' }}>
+                  <LoadingShimmer />
+                  <span style={{ display: 'block', marginTop: '12px', textAlign: 'center', fontSize: '13px' }}>
+                    正在处理旨意，片刻……
+                  </span>
+                </span>
+              )
               : <span style={{ color: C.muted, fontSize: '14px', fontStyle: 'italic' }}>
                   {prologuePhase === 'complete' ? '候旨……' : ''}
                 </span>
@@ -590,6 +657,12 @@ export function CourtPage() {
               📋 临朝听政
             </button>
 
+            {/* [改造-Phase4] */}
+            <button className="btn-dark" onClick={openCourtAgenda}>召开朝会</button>
+
+            {/* [改造-Phase4] */}
+            <button className="btn-ghost" onClick={triggerEncounter}>微服出巡</button>
+
             {/* 前往 submenu */}
             <div className="submenu-wrap">
               <button className="btn-ghost" onClick={e => { e.stopPropagation(); setOpenMenu(openMenu === 'location' ? null : 'location'); }}>
@@ -639,7 +712,122 @@ export function CourtPage() {
       )}
 
       {/* ── Court input: only visible in court mode ── */}
+
+      {/* [改造-Phase4] 路遇弹窗 */}
+      {currentEncounter && !encounterSkipped && !encounterChatNpcId && (
+        <div className="event-overlay">
+          <div className="event-card" style={{ maxWidth: '480px', background: C.cream, borderRadius: '12px', padding: '28px 32px', fontFamily: FONT }}>
+            <div style={{ fontSize: '11px', color: C.muted, letterSpacing: '0.1em', marginBottom: '8px' }}>
+              {currentEncounter.location_type} · 路遇
+            </div>
+            <div style={{ fontSize: '14px', color: C.ink82, lineHeight: 1.9, marginBottom: '16px' }}>
+              {currentEncounter.opening_scene}
+            </div>
+            <div style={{ fontSize: '15px', color: C.ink, fontStyle: 'italic', marginBottom: '20px', padding: '12px 16px', background: C.offwhite, borderRadius: '8px', border: `1px solid ${C.border}` }}>
+              「{currentEncounter.npc_opening_line}」
+              <span style={{ fontSize: '12px', color: C.muted, display: 'block', marginTop: '4px' }}>—— {currentEncounter.chat_npc_profile.display_name}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn-ghost" style={{ flex: 1 }}
+                onClick={() => { setEncounterSkipped(true); setNarration(currentEncounter.skip_result); }}>
+                略过
+              </button>
+              <button className="btn-dark" style={{ flex: 1 }}
+                onClick={() => setEncounterChatNpcId(currentEncounter.chat_npc_profile.display_name)}>
+                交谈
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* [改造-Phase4] 路遇交谈弹窗 */}
+      {encounterChatNpcId && currentEncounter && (
+        <EncounterChatWindow
+          encounter={currentEncounter}
+          maxRounds={5}
+          onClose={() => { setEncounterChatNpcId(null); setCurrentEncounter(null); }}
+        />
+      )}
+
+      {/* [改造-Phase4] 略过结果 */}
+      {encounterSkipped && currentEncounter && (
+        <div className="event-overlay">
+          <div className="event-card" style={{ maxWidth: '400px', background: C.cream, borderRadius: '12px', padding: '24px 28px', fontFamily: FONT }}>
+            <div style={{ fontSize: '14px', color: C.ink82, lineHeight: 1.9, marginBottom: '20px' }}>{currentEncounter.skip_result}</div>
+            <button className="btn-dark" style={{ width: '100%' }} onClick={() => { setEncounterSkipped(false); setCurrentEncounter(null); }}>继续前行</button>
+          </div>
+        </div>
+      )}
+
       {prologuePhase === 'complete' && courtMode && (
+          {currentAgenda && !agendaChoiceResult && (
+          <div style={{ marginBottom: '20px', border: `1px solid ${C.border}`, borderRadius: '10px', padding: '20px 24px', background: C.offwhite }}>
+            <div style={{ fontSize: '11px', color: C.muted, letterSpacing: '0.1em', marginBottom: '8px' }}>朝会议题</div>
+            <div style={{ fontSize: '17px', fontWeight: 600, color: C.ink, marginBottom: '12px' }}>{currentAgenda.title}</div>
+            <div style={{ fontSize: '14px', color: C.ink82, lineHeight: 1.8, marginBottom: '16px' }}>{currentAgenda.description}</div>
+
+            {/* NPC 立场列表 */}
+            {currentAgenda.npc_stances.map(stance => {
+              const npc = state?.npcs.find(n => n.id === stance.npc_id);
+              if (!npc) return null;
+              return (
+                <div key={stance.npc_id} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px', padding: '12px 14px', background: C.cream, borderRadius: '8px', border: `1px solid ${C.border}` }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600 }}>{npc.name}</span>
+                      <span style={{ fontSize: '11px', color: C.muted }}>{npc.role}</span>
+                      <span style={{ fontSize: '11px', color: stance.stance === '支持' ? C.safe : stance.stance === '反对' ? C.danger : C.warn, borderRadius: '4px', padding: '1px 6px', border: `1px solid currentColor` }}>
+                        {stance.stance}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '14px', color: C.ink82, lineHeight: 1.7 }}>{stance.opening_line}</div>
+                  </div>
+                  <button
+                    onClick={() => setChatWindowNpcId(stance.npc_id)}
+                    style={{ flexShrink: 0, padding: '5px 12px', background: 'none', border: `1px solid ${C.borderI}`, borderRadius: '6px', cursor: 'pointer', fontFamily: FONT, fontSize: '12px', color: C.ink }}
+                  >
+                    追问
+                  </button>
+                </div>
+              );
+            })}
+
+            {/* 皇帝选择 */}
+            <div style={{ marginTop: '16px', borderTop: `1px solid ${C.border}`, paddingTop: '16px' }}>
+              <div style={{ fontSize: '11px', color: C.muted, letterSpacing: '0.1em', marginBottom: '8px' }}>圣裁</div>
+              {currentAgenda.emperor_choices.map((choice, index) => (
+                <button
+                  key={index}
+                  onClick={async () => {
+                    setAgendaChoiceResult(choice.result_text);
+                    // 用打字机效果展示结果
+                    await typewriterEffect(choice.result_text);
+                    addToast('info', choice.resource_hints);
+                  }}
+                  style={{ textAlign: 'left', padding: '12px 16px', background: C.cream, border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer', fontFamily: FONT, fontSize: '14px', color: C.ink, marginBottom: '8px', width: '100%' }}
+                >
+                  {choice.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* [改造-Phase4] 朝会结果展示 */}
+        {currentAgenda && agendaChoiceResult && (
+          <div style={{ marginBottom: '20px', padding: '16px 20px', background: C.offwhite, borderRadius: '10px', border: `1px solid ${C.border}` }}>
+            <div style={{ fontSize: '11px', color: C.muted, marginBottom: '8px' }}>朝会结果</div>
+            <div style={{ fontSize: '14px', color: C.ink82, lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{agendaChoiceResult}</div>
+            <button
+              onClick={() => { setCurrentAgenda(null); setAgendaChoiceResult(null); setCourtMode(false); }}
+              style={{ marginTop: '12px', padding: '7px 16px', background: 'none', border: `1px solid ${C.borderI}`, borderRadius: '6px', cursor: 'pointer', fontFamily: FONT, fontSize: '13px', color: C.ink }}
+            >
+              退朝
+            </button>
+          </div>
+        )}
+
         <div className="fade-up" style={{
           border: `1px solid ${C.borderI}`, borderRadius: '12px',
           padding: '22px 28px', background: C.cream,
@@ -820,6 +1008,16 @@ export function CourtPage() {
 
       {/* Event modal */}
       {eventModal}
+
+      {/* [改造-Phase4] NPC 追问弹窗 */}
+      {chatWindowNpcId && currentAgenda && (
+        <NpcChatWindow
+          npcId={chatWindowNpcId}
+          agenda={currentAgenda}
+          maxRounds={3}
+          onClose={() => setChatWindowNpcId(null)}
+        />
+      )}
     </div>
   );
 }

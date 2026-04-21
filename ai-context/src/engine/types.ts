@@ -29,6 +29,9 @@ export interface Meta {
 
   // 新增：放置系统时间戳
   last_idle_tick_at: string;   // ISO8601，上次放置积累的时间点
+
+  // 新增：操作计数器（每 TICKS_PER_YEAR 次操作推进一年）
+  action_count: number;
 }
 
 // emperor
@@ -283,7 +286,8 @@ export function createEmptyGameState(): GameState {
       real_time_played_ms: 0,
       prologue_phase: 'awakening',
       prologue_complete: false,
-      last_idle_tick_at: now
+      last_idle_tick_at: now,
+      action_count: 0
     },
     emperor: {
       id: 'emperor_1',

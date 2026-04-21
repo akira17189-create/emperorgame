@@ -8,7 +8,9 @@ import { processCommand } from './narrator';
 import { checkEventTriggers, narrateEvent } from './event-engine';
 import { applyPolicyTickEffects } from './policy-engine';
 import { checkEndings } from './ending-engine';
-// import { updateState, applyEffects, createEffect } from './state-updater'; // 已不再使用
+
+// 每 TICKS_PER_YEAR 次玩家操作推进一年（防止年份推进过快）
+const TICKS_PER_YEAR = 4;
 
 export interface TickResult {
   success: boolean;
@@ -37,134 +39,70 @@ export interface TickOptions {
 
 /**
  * 执行一个时间刻度的演算（统一入口版本）
- * 这是游戏的唯一真入口，所有状态修改都在此函数内完成
+ *
+ * 关键修复：
+ * 1. 每 TICKS_PER_YEAR 次操作才真正推进一年（防止两次点击就过两年）
+ * 2. 先做世界模拟，再调 processCommand——确保 NPC 叙事里的年份与 UI 显示一致
  */
 export async function gameTick(
-  state: GameState, 
-  command?: string, 
+  state: GameState,
+  command?: string,
   targetNpcId?: string
 ): Promise<TickResult> {
   try {
     console.log('[TICK] gameTick 开始执行', { command, targetNpcId });
-    let currentState = { ...state };
-    let processedCommand = command;
-    let npcDecision = null;
-    let npcNarration = null;
-    let npcChronicleEntry = null;
-    
-    // 1. 处理玩家指令和NPC交互（如果有）
-    if (targetNpcId) {
-      try {
-        // 调用processCommand获取NPC决策和叙事
-      // 确保NPC有goals字段
-      const targetNpc = currentState.npcs.find(n => n.id === targetNpcId);
-      if (targetNpc && (!targetNpc.goals || targetNpc.goals.length === 0)) {
-        // 为NPC初始化默认目标
-        targetNpc.goals = [{
-          id: `goal_${Date.now()}_default`,
-          description: '执行职责范围内事务',
-          priority: 0.5,
-          created_year: currentState.world.year,
-          last_updated_year: currentState.world.year,
-          status: 'active'
-        }];
-      }
-        console.log('[TICK] 准备调用 processCommand', { command, targetNpcId, npc: targetNpc?.name });
-        const npcResult = await processCommand(command, currentState, targetNpcId);
-        console.log('[TICK] processCommand 调用成功', { narration: npcResult.narration?.substring(0, 100) });
-        npcDecision = npcResult.decision;
-        npcNarration = npcResult.narration;
-        npcChronicleEntry = npcResult.chronicle_entry;
-        
-        // 如果有仲裁结果，应用它
-        if (npcResult.arbitration) {
-          const arbitrationUpdates = npcResult.arbitration.game_state_updates;
-          
-          if (arbitrationUpdates) {
-            // 应用资源变化（与后面事件仲裁保持完全一致的逻辑）
-            if (arbitrationUpdates.resource_change) {
-              for (const [key, delta] of Object.entries(arbitrationUpdates.resource_change)) {
-                if (key in currentState.resources) {
-                  (currentState.resources as Record<string, number>)[key] =
-                    Math.max(0, ((currentState.resources as Record<string, number>)[key] ?? 0) + delta);
-                }
-              }
-            }
-            
-            // 添加集体记忆
-            if (arbitrationUpdates.collective_memory_added && arbitrationUpdates.collective_memory_added.length > 0) {
-              currentState.world.collective_memory.push(...arbitrationUpdates.collective_memory_added);
-              if (currentState.world.collective_memory.length > 20) {
-                currentState.world.collective_memory = currentState.world.collective_memory.slice(-20);
-              }
-            }
-          }
-        }
-        
-        // 更新NPC状态
-        const npc = currentState.npcs.find(n => n.id === targetNpcId);
-        if (npc) {
-          // 添加近期事件
-          npc.state.recent_events.unshift(`${currentState.world.year}年：${npcDecision.final_action}`);
-          if (npc.state.recent_events.length > 3) {
-            npc.state.recent_events.pop();
-          }
-        }
-        console.log('[TICK] NPC交互处理完成，继续执行世界模拟');
-      } catch (error) {
-        console.error('[TICK] NPC交互处理失败:', error);
-        console.error('[TICK] 错误详情:', error.message, error.stack);
-        // 继续执行，不中断整个流程
-      }
-    } else if (command) {
-      // 如果有指令但没有目标NPC，只处理输入
-      const inputResult = handlePlayerInput(currentState, command);
-      if (!inputResult.success) {
-        return {
-          success: false,
-          newState: currentState,
-          events: [],
-          warnings: [],
-          error: inputResult.error
-        };
-      }
-      processedCommand = inputResult.processedCommand;
-    }
 
-    // 2. 模拟世界状态变化
+    // ── 0. 操作计数器：每 TICKS_PER_YEAR 次才推进一年 ──────────────────────
+    const actionCount = (state.meta.action_count ?? 0) + 1;
+    const shouldAdvanceYear = actionCount % TICKS_PER_YEAR === 0;
+    let currentState: GameState = {
+      ...state,
+      meta: { ...state.meta, action_count: actionCount }
+    };
+    console.log('[TICK] 操作计数', {
+      actionCount,
+      shouldAdvanceYear,
+      currentYear: currentState.world.year
+    });
+
+    // ── 1. 世界模拟（先于 NPC 交互，确保年份一致）──────────────────────────
     console.log('[TICK] 开始世界模拟');
     let simulationResult;
     try {
-      simulationResult = simulateWorld(currentState);
+      simulationResult = simulateWorld(currentState, { advanceYear: shouldAdvanceYear });
 
-    // 2.5 应用政策持续效果
-    currentState = applyPolicyTickEffects(currentState);
+      // 1.5 应用政策持续效果
+      simulationResult.newState = applyPolicyTickEffects(simulationResult.newState);
 
-    // 2.6 检查世界事件触发
-    const triggeredTemplates = checkEventTriggers(currentState);
-    if (triggeredTemplates.length > 0) {
-      for (const template of triggeredTemplates.slice(0, 1)) { // 每次最多触发1个事件
-        const eventNarrative = await narrateEvent(template, currentState).catch(() => template.name);
-        const pending = {
-          id: `event_${template.id}_${Date.now()}`,
-          triggered_year: currentState.world.year,
-          template_id: template.id,
-          severity: template.severity,
-          raw_payload: template,
-          seal: template.severity === 3 ? 'bloody' as const : 'urgent' as const,
-          narrated: true,
-          narration: eventNarrative
-        };
-        currentState = {
-          ...currentState,
-          events: {
-            ...currentState.events,
-            pending: [...currentState.events.pending, pending]
-          }
-        };
+      // 1.6 检查世界事件触发
+      const triggeredTemplates = checkEventTriggers(simulationResult.newState);
+      if (triggeredTemplates.length > 0) {
+        for (const template of triggeredTemplates.slice(0, 1)) {
+          const eventNarrative = await narrateEvent(template, simulationResult.newState).catch(() => template.name);
+          const pending = {
+            id: `event_${template.id}_${Date.now()}`,
+            triggered_year: simulationResult.newState.world.year,
+            template_id: template.id,
+            severity: template.severity,
+            raw_payload: template,
+            seal: template.severity === 3 ? 'bloody' as const : 'urgent' as const,
+            narrated: true,
+            narration: eventNarrative
+          };
+          simulationResult.newState = {
+            ...simulationResult.newState,
+            events: {
+              ...simulationResult.newState.events,
+              pending: [...simulationResult.newState.events.pending, pending]
+            }
+          };
+        }
       }
-    }
-      console.log('[TICK] 世界模拟完成', { success: simulationResult.success, eventsCount: simulationResult.events?.length });
+      console.log('[TICK] 世界模拟完成', {
+        success: simulationResult.success,
+        newYear: simulationResult.newState.world.year,
+        eventsCount: simulationResult.events?.length
+      });
     } catch (simulationError) {
       console.error('[TICK] 世界模拟异常:', simulationError);
       simulationResult = {
@@ -184,18 +122,94 @@ export async function gameTick(
       };
     }
 
+    // 世界模拟完成后，以新状态（含正确年份）作为后续操作的基准
+    currentState = simulationResult.newState;
 
+    // ── 2. NPC 交互（使用模拟后的状态，年份已正确）─────────────────────────
+    let npcDecision = null;
+    let npcNarration: string | null = null;
+    let npcChronicleEntry = null;
 
-    // 3. 仲裁事件（如果有）
+    if (targetNpcId) {
+      try {
+        const targetNpc = currentState.npcs.find(n => n.id === targetNpcId);
+        if (targetNpc && (!targetNpc.goals || targetNpc.goals.length === 0)) {
+          targetNpc.goals = [{
+            id: `goal_${Date.now()}_default`,
+            description: '执行职责范围内事务',
+            priority: 0.5,
+            created_year: currentState.world.year,
+            last_updated_year: currentState.world.year,
+            status: 'active'
+          }];
+        }
+        console.log('[TICK] 准备调用 processCommand', {
+          command,
+          targetNpcId,
+          npc: targetNpc?.name,
+          year: currentState.world.year
+        });
+        const npcResult = await processCommand(command, currentState, targetNpcId);
+        console.log('[TICK] processCommand 调用成功', {
+          narration: npcResult.narration?.substring(0, 100)
+        });
+        npcDecision = npcResult.decision;
+        npcNarration = npcResult.narration;
+        npcChronicleEntry = npcResult.chronicle_entry;
+
+        if (npcResult.arbitration) {
+          const arbitrationUpdates = npcResult.arbitration.game_state_updates;
+          if (arbitrationUpdates) {
+            if (arbitrationUpdates.resource_change) {
+              for (const [key, delta] of Object.entries(arbitrationUpdates.resource_change)) {
+                if (key in currentState.resources) {
+                  (currentState.resources as Record<string, number>)[key] =
+                    Math.max(0, ((currentState.resources as Record<string, number>)[key] ?? 0) + delta);
+                }
+              }
+            }
+            if (arbitrationUpdates.collective_memory_added?.length) {
+              currentState.world.collective_memory.push(...arbitrationUpdates.collective_memory_added);
+              if (currentState.world.collective_memory.length > 20) {
+                currentState.world.collective_memory = currentState.world.collective_memory.slice(-20);
+              }
+            }
+          }
+        }
+
+        const npc = currentState.npcs.find(n => n.id === targetNpcId);
+        if (npc && npcDecision) {
+          npc.state.recent_events.unshift(`${currentState.world.year}年：${npcDecision.final_action}`);
+          if (npc.state.recent_events.length > 3) npc.state.recent_events.pop();
+        }
+        console.log('[TICK] NPC交互处理完成');
+      } catch (error) {
+        console.error('[TICK] NPC交互处理失败:', error);
+        // 继续执行，不中断整个流程
+      }
+    } else if (command) {
+      const inputResult = handlePlayerInput(currentState, command);
+      if (!inputResult.success) {
+        return {
+          success: false,
+          newState: currentState,
+          events: [],
+          warnings: [],
+          error: inputResult.error
+        };
+      }
+    }
+
+    // 同步：simulationResult.newState 也要包含 NPC 变化
+    simulationResult.newState = currentState;
+
+    // ── 3. 仲裁事件 ──────────────────────────────────────────────────────────
     let arbitrationResult = null;
     if (simulationResult.events.length > 0) {
       arbitrationResult = await arbitrateEvents(simulationResult.newState, simulationResult.events);
-      
-      // 如果仲裁成功，更新游戏状态
+
       if (arbitrationResult.success && arbitrationResult.needsArbitration && arbitrationResult.game_state_updates) {
         const updates = arbitrationResult.game_state_updates;
-        
-        // 应用资源变化
         if (updates.resource_change) {
           for (const [key, delta] of Object.entries(updates.resource_change)) {
             if (key in simulationResult.newState.resources) {
@@ -204,9 +218,7 @@ export async function gameTick(
             }
           }
         }
-        
-        // 添加集体记忆
-        if (updates.collective_memory_added && updates.collective_memory_added.length > 0) {
+        if (updates.collective_memory_added?.length) {
           simulationResult.newState.world.collective_memory.push(...updates.collective_memory_added);
           if (simulationResult.newState.world.collective_memory.length > 20) {
             simulationResult.newState.world.collective_memory = simulationResult.newState.world.collective_memory.slice(-20);
@@ -215,10 +227,14 @@ export async function gameTick(
       }
     }
 
-    // 4. 生成世界叙事（如果 NPC 交互已生成叙事且无额外事件，跳过此调用节省一次 LLM 往返）
+    // ── 4. 世界叙事（NPC 已有叙事且无额外事件时跳过，节省一次 LLM）───────
     let narrationResult: Awaited<ReturnType<typeof generateNarration>>;
     const needsWorldNarration = !npcNarration || simulationResult.events.length > 0 || !!arbitrationResult?.narrative;
-    console.log('[TICK] 世界叙事决策', { needsWorldNarration, hasNpcNarration: !!npcNarration, eventsCount: simulationResult.events.length });
+    console.log('[TICK] 世界叙事决策', {
+      needsWorldNarration,
+      hasNpcNarration: !!npcNarration,
+      eventsCount: simulationResult.events.length
+    });
     if (needsWorldNarration) {
       narrationResult = await generateNarration(
         simulationResult.newState,
@@ -227,28 +243,27 @@ export async function gameTick(
         targetNpcId
       );
     } else {
-      narrationResult = { success: true, narration: npcNarration!, chronicle_entry: npcChronicleEntry ?? undefined };
+      narrationResult = {
+        success: true,
+        narration: npcNarration!,
+        chronicle_entry: npcChronicleEntry ?? undefined
+      };
     }
 
-    // 5. 检查游戏结束条件
-    // 检查游戏结束条件（优先检查结局）
+    // ── 5. 结局检查 ──────────────────────────────────────────────────────────
     const ending = checkEndings(simulationResult.newState);
     if (ending) {
-      // 触发结局
       simulationResult.events.push(`游戏结局：${ending.title}`);
-      // 这里可以添加跳转到结局页面的逻辑
-      // 实际跳转会在前端处理
     }
-    // 6. 组装最终结果
+
+    // ── 6. 组装结果 ──────────────────────────────────────────────────────────
     const finalNarration = npcNarration || narrationResult.narration;
-    console.log('[TICK] 组装最终结果', { 
-      npcNarration: npcNarration?.substring(0, 50), 
-      narrationResultNarration: narrationResult.narration?.substring(0, 50),
+    console.log('[TICK] 组装最终结果', {
       finalNarration: finalNarration?.substring(0, 50),
-      npcNarrationType: typeof npcNarration,
-      narrationResultNarrationType: typeof narrationResult.narration
+      year: simulationResult.newState.world.year
     });
-    const result: TickResult = {
+
+    return {
       success: true,
       newState: simulationResult.newState,
       events: simulationResult.events,
@@ -261,8 +276,6 @@ export async function gameTick(
         game_state_updates: arbitrationResult.game_state_updates
       } : undefined
     };
-
-    return result;
   } catch (error) {
     return {
       success: false,
@@ -293,8 +306,7 @@ export function executeMultipleTicks(
   const allEvents: string[] = [];
 
   for (let i = 0; i < ticks; i++) {
-    // 同步版本，只做基本模拟
-    const result = simulateWorld(currentState);
+    const result = simulateWorld(currentState, { advanceYear: true });
     currentState = result.newState;
     allEvents.push(...result.events);
   }
@@ -325,12 +337,9 @@ export function calculateResourceTrends(state: GameState): Record<string, number
  * 检查游戏结束条件（保持向后兼容）
  */
 export function checkGameEnd(state: GameState): { isEnded: boolean; reason?: string } {
-  // 优先检查结局
   const ending = checkEndings(state);
   if (ending) {
     return { isEnded: true, reason: ending.title };
   }
-
-  // 保持原有逻辑
   return checkGameEndConditions(state);
 }

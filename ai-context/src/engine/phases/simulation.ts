@@ -17,16 +17,20 @@ function clamp(value: number, min: number, max: number): number {
 /**
  * 模拟世界状态变化
  * @param state 当前游戏状态
+ * @param options 选项（advanceYear: 是否推进年份，默认 true）
  * @returns 模拟结果
  */
-export function simulateWorld(state: GameState): SimulationResult {
+export function simulateWorld(state: GameState, options: { advanceYear?: boolean } = {}): SimulationResult {
+  const { advanceYear = true } = options;
   const newState = JSON.parse(JSON.stringify(state)) as GameState;
   const events: string[] = [];
   const warnings: string[] = [];
 
-  // 推进一年
-  newState.world.year += 1;
-  newState.meta.game_year += 1;
+  // 推进一年（仅当 advanceYear 为 true 时）
+  if (advanceYear) {
+    newState.world.year += 1;
+    newState.meta.game_year += 1;
+  }
   newState.meta.last_saved_at = new Date().toISOString();
 
   // ── 1. 随机天气 ──

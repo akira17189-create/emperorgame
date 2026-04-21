@@ -127,28 +127,61 @@ export function EmperorPanel({ state, onClose }: EmperorPanelProps) {
                 </div>
               </div>
 
-              {/* Expanded: tier description */}
+              {/* Expanded: tier description + effects */}
               {isOpen && (
                 <div style={{
                   background: C.ink04, border: `1px solid ${C.border}`,
                   borderRadius: '8px', padding: '16px 18px',
                   animation: 'fadeUp 0.2s ease both',
                 }}>
+                  {/* 当前处境（tier 描述） */}
+                  <div style={{
+                    fontSize: '11px', color: C.muted, letterSpacing: '0.08em',
+                    marginBottom: '6px', textTransform: 'uppercase'
+                  }}>
+                    当前处境
+                  </div>
                   <div style={{ fontSize: '13px', color: C.ink82, lineHeight: 1.9, marginBottom: '14px' }}>
                     {tier.description}
                   </div>
+
                   <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '10px' }}>
-                    <div style={{ fontSize: '11px', color: C.muted, marginBottom: '6px' }}>
+                    {/* 效果倍率 */}
+                    <div style={{ fontSize: '11px', color: C.muted, marginBottom: '8px' }}>
                       当前效果倍率：<span style={{ color: fillColor, fontWeight: 600 }}>×{tier.multiplier}</span>
                       {tier.multiplier < 1 && <span style={{ color: C.muted }}> （效果受限）</span>}
                     </div>
-                    {def.effects.map((eff, i) => (
-                      <div key={i} style={{ fontSize: '12px', color: C.muted, marginBottom: '4px' }}>
-                        · {eff.narrative}
-                      </div>
-                    ))}
+
+                    {/* 效果列表 —— 根据倍率分两档显示 */}
+                    {tier.multiplier >= 1.0 ? (
+                      // 满级：直接列出效果
+                      <>
+                        {def.effects.map((eff, i) => (
+                          <div key={i} style={{ fontSize: '12px', color: C.muted, marginBottom: '4px' }}>
+                            ✦ {eff.narrative}
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      // 未满：说明当前受限，列出"待解锁"效果
+                      <>
+                        <div style={{
+                          fontSize: '11px', color: C.warn, marginBottom: '6px',
+                          padding: '4px 8px', background: `${C.warn}12`,
+                          borderRadius: '4px', border: `1px solid ${C.warn}30`
+                        }}>
+                          ⚠ 以下效果因威望不足而大幅受限，提升威望后逐步解锁
+                        </div>
+                        {def.effects.map((eff, i) => (
+                          <div key={i} style={{ fontSize: '12px', color: C.muted, marginBottom: '4px', opacity: 0.6 }}>
+                            ○ {eff.narrative}（受限）
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
-                  {/* Tier progression hint */}
+
+                  {/* Tier 进阶提示 */}
                   <div style={{ marginTop: '10px', fontSize: '11px', color: C.muted, borderTop: `1px solid ${C.border}`, paddingTop: '8px' }}>
                     {value < 100 && (
                       <span>下一阶段：{def.tiers.find(t => t.min > value)?.title ?? '已至巅峰'} · 需达 {def.tiers.find(t => t.min > value)?.min ?? 100} 点</span>
