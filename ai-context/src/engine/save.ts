@@ -74,31 +74,23 @@ export class IDBAdapter implements SaveAdapter {
     const record = await db.get(STORE_NAME, slot);
     if (!record) {
       return null;
-    }
-
-    // 向后兼容迁移逻辑
+    }    // 向后兼容迁移逻辑
     const gameState = record.data as GameState;
 
-    // 迁移1: 如果world.factions字段缺失，注入默认值
-    if (!gameState.world.factions) {
+    // 存档迁移：补全 world.factions 默认值（旧存档兼容）
+    if (gameState.world && !gameState.world.factions) {
       gameState.world.factions = {
-        qingliu: 50,    // 清流派势力 0~100
-        didang: 50,     // 帝党势力 0~100
-        eunuch_faction: 30,  // 宦官党势力 0~100
-        military: 50,       // 军队派势力 0~100
-        pragmatists: 40     // 务实派势力 0~100
+        qingliu: 50,
+        didang: 50,
+        eunuch_faction: 30,
       };
-      console.log('迁移: 添加了world.factions字段（含military和pragmatists）');
+      console.log('迁移: 添加了world.factions字段（3个核心派系）');
     }
 
-    // 迁移1b: 如果旧存档缺少military或pragmatists字段，补充默认值
-    if (!gameState.world.factions.military) {
-      gameState.world.factions.military = 50;
-      console.log('迁移: 补充了world.factions.military字段');
-    }
-    if (!gameState.world.factions.pragmatists) {
-      gameState.world.factions.pragmatists = 40;
-      console.log('迁移: 补充了world.factions.pragmatists字段');
+    // 检查 world.collective_memory 是否也可能缺失，若缺失则补全为空数组
+    if (gameState.world && !gameState.world.collective_memory) {
+      gameState.world.collective_memory = [];
+      console.log('迁移: 添加了world.collective_memory字段（空数组）');
     }
 
     // 迁移2: 旧存档兼容patch - 开场阶段和放置系统字段

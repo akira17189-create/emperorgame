@@ -87,121 +87,50 @@ npm run build
 │   │   │   ├── state-updater.ts  # 状态更新系统
 │   │   │   ├── templates.ts      # C档模板系统（零API调用）
 │   │   │   ├── save.ts           # 存档系统
-│   │   │   ├── policy-engine.ts  # 政策系统引擎（22个预设政策）✨Phase3
-│   │   │   ├── event-engine.ts   # 世界事件系统引擎（32个事件）✨Phase3
-│   │   │   ├── idle-engine.ts    # 放置积累引擎（含政策加成）✨Phase3
-│   │   │   ├── ending-engine.ts  # 结局系统引擎（8种结局）✨Phase3
-│   │   │   └── phases/           # 游戏阶段处理器
-│   │   │       ├── arbitration.ts
-│   │   │       ├── input.ts
-│   │   │       ├── narration.ts
-│   │   │       └── simulation.ts
+│   │   │   ├── policy-engine.ts  # 政策系统引擎（25个预设政策）✨Phase4
+│   │   │   ├── event-engine.ts   # 世界事件系统（32个事件）✨Phase3
+│   │   │   ├── ending-engine.ts  # 结局触发引擎（8种结局）✨Phase4
+│   │   │   ├── idle-engine.ts    # 放置积累引擎 ✨Phase3
+│   │   │   ├── idle-config.ts    # 放置系统配置 ✨Phase3
+│   │   │   ├── lore-bridge.ts    # 派系行为准则与氛围词库 ✨Phase4
+│   │   │   ├── emperor-stats.ts  # 皇帝属性系统 ✨Phase3
+│   │   │   └── prologue.ts       # 三阶段开场系统 ✨Phase3
 │   │   ├── ui/                   # 用户界面组件
-│   │   │   ├── CourtPage.tsx     # 朝堂主页面
-│   │   │   ├── ChroniclePage.tsx # 史册页面
-│   │   │   ├── NewGamePage.tsx   # 新游戏页面
+│   │   │   ├── CourtPage.tsx     # 朝堂主页面（600+行）✨Phase4更新
+│   │   │   ├── PolicyPanel.tsx   # 政策面板（3个Tab）✨Phase4
+│   │   │   ├── EmperorPanel.tsx  # 皇帝面板 ✨Phase3
+│   │   │   ├── EndingPage.tsx    # 结局页面 ✨Phase4
 │   │   │   ├── SettingsPage.tsx  # 设置页面
-│   │   │   ├── SavesPage.tsx     # 存档管理
-│   │   │   ├── PolicyPanel.tsx   # 政策面板 ✨Phase3
-│   │   │   ├── EndingPage.tsx    # 结局页面 ✨Phase3
-│   │   │   └── components/
-│   │   │       ├── NpcChatWindow.tsx      # NPC追问弹窗 ✨改造v3
-│   │   │       └── EncounterChatWindow.tsx # 路遇弹窗 ✨改造v3
-│   │   ├── prompts/              # AI提示词系统
-│   │   │   ├── arbitration.md
-│   │   │   ├── narration.md
-│   │   │   ├── normalize-command.md
-│   │   │   ├── role-execution.md
-│   │   │   ├── layer1-world-rules.md
-│   │   │   └── npc-chat-window.md  # 追问Prompt ✨改造v3
-│   │   ├── data/                 # 游戏数据
-│   │   │   ├── core-characters.ts
-│   │   │   ├── seed-npcs.ts
-│   │   │   ├── seed-npcs-phase45.ts    # 派系NPC扩展包 ✨改造v3
-│   │   │   ├── seed-scenario.ts
-│   │   │   ├── prewritten-court.ts     # 朝会预写议题（5个）✨改造v3
-│   │   │   ├── prewritten-encounters.ts # 路遇事件（15个）✨改造v3
-│   │   │   ├── season-narratives.ts    # 季节文案（春夏秋冬）✨改造v3
-│   │   │   ├── labels.ts
-│   │   │   └── skills-bundle.ts
-│   │   ├── styles/
-│   │   │   ├── tokens.css
-│   │   │   ├── base.css
-│   │   │   └── components.css
-│   │   └── main.tsx              # 应用入口
-│   ├── docs/                     # 工程文档（20+文件）
-│   ├── lore/                     # 世界观设定（15+文件）
-│   ├── reports/                  # 实现报告
-│   └── prompts/                  # 外部提示词
-├── index.html
-├── package.json
-├── tsconfig.json
-├── tsconfig.node.json
-└── vite.config.ts
-```
-
----
-
-## 🔧 开发状态
-
-### 已完成 ✅
-
-| 阶段 | 功能 | 完成时间 | 状态 |
-|------|------|----------|------|
-| **Phase 1.1** | narrator.ts JSON解析修复 | 2026-04-17 | ✅ |
-| **Phase 1.2** | 技能系统接入（32个技能） | 2026-04-17 | ✅ |
-| **Phase 1.3** | Token预算护栏、系统测试 | 2026-04-17 | ✅ |
-| **Phase 2.1** | 多Agent仲裁系统 | 2026-04-18 | ✅ |
-| **Phase 2.2** | 完整资源系统 | 2026-04-18 | ✅ |
-| **Phase 2.3** | NPC自主行为系统 | 2026-04-18 | ✅ |
-| **开场改造** | 三阶段开场系统 | 2026-04-19 | ✅ |
-| **放置系统** | 实时资源积累与离线补算 | 2026-04-19 | ✅ |
-| **开场文案** | DeepSeek文案集成（DS-01~08） | 2026-04-19 | ✅ |
-| **Phase 3.1** | 政策系统（22个预设政策） | 2026-04-19 | ✅ |
-| **Phase 3.2** | 世界事件系统（32个事件） | 2026-04-19 | ✅ |
-| **Phase 3.3** | UI/UX优化、深度叙事集成（DS-10~40） | 2026-04-19 | ✅ |
-| **Phase 3.4** | 派系态度矩阵、事件选项系统、结局框架 | 2026-04-19 | ✅ |
-| **改造v3** | 4个派系NPC、朝会预写主线、路遇场景、季节文案 | 2026-04-21 | ✅ |
-| **改造v3** | NpcChatWindow / EncounterChatWindow 组件 | 2026-04-21 | ✅ |
-| **改造v3** | 皇室姓氏修正（朱→云）、LLM全局错误兜底 | 2026-04-21 | ✅ |
-
-### 进行中 🚧 — Phase 4：打磨收尾与发布准备
-
-> 详细任务拆解见 [ai-context/docs/active/14_phase4_development_plan.md](ai-context/docs/active/14_phase4_development_plan.md)
-
-| 子阶段 | 目标 | 状态 |
-|--------|------|------|
-| **4.1** | 遗留Bug修复 + 补全8个预设政策 + 活跃政策面板 | 🚧 进行中 |
-| **4.2** | 8种结局完整叙事文案 + 结局触发引擎 | 📋 规划中 |
-| **4.3** | NPC党派量化系统 | 📋 规划中 |
-| **4.4** | 史册分页、多存档槽、发布测试 | 📋 规划中 |
-
-### 当前系统能力
-
-**已上线核心功能：**
-
-- ✅ 多Agent决策仲裁：NPC因立场不同产生冲突，系统自动仲裁
-- ✅ 资源系统：morale / fiscal / military / food / threat / commerce / eunuch / faction 等14个字段
-- ✅ NPC自主行为：基于NPC特质的自动行为触发
-- ✅ 动态叙事生成：基于决策和仲裁结果的实时剧情生成（200-300字中文叙事）
-- ✅ 离线演算：玩家离线期间游戏世界自动演化
-- ✅ 三阶段开场：穿越内心戏 → 国师登场 → 执行面板解锁
-- ✅ 放置积累：资源实时被动积累、离线补算、政策加成
-- ✅ 政策系统：22个预设政策，支持自定义政策，NPC有不同态度反应
-- ✅ 世界事件：32个事件，基于概率和资源阈值触发
-- ✅ 深度叙事内容：DeepSeek创作约15万字游戏内容（DS-01~40）
-- ✅ 朝会预写主线：5个议题的预写剧情，减少LLM冷启动感
-- ✅ 路遇 / 微服出巡：15个路遇事件，带专属弹窗
-- ✅ 季节系统：四季文案与资源变化
-- ✅ 派系NPC扩展：方直、王福全、钱谦、陈德明（4个新NPC）
-- ✅ 结局系统框架：8种结局路径，史官口吻评价
-
----
-
-## 🎭 核心玩法
-
-### 上朝决策流程
-
+│   │   │   ├── ChroniclePage.tsx # 史册页面（分页）✨Phase4
+│   │   │   ├── Navbar.tsx        # 导航栏组件 ✨Phase3
+│   │   │   ├── Toast.tsx         # 提示组件 ✨Phase3
+│   │   │   ├── ChronicleEntry.tsx # 史册条目组件 ✨Phase3
+│   │   │   ├── VisualSlot.tsx    # 存档槽组件 ✨Phase4
+│   │   │   ├── LoadingShimmer.tsx # 加载动画组件 ✨Phase3
+│   │   │   └── components/       # 通用组件
+│   │   │       ├── NpcCard.tsx   # NPC卡片（含派系显示）✨Phase4
+│   │   │       ├── NpcChatWindow.tsx # NPC对话窗口 ✨改造v3
+│   │   │       └── EncounterChatWindow.tsx # 路遇对话窗口 ✨改造v3
+│   │   ├── data/                 # 数据文件
+│   │   │   ├── prologue.ts       # 开场文案（8段）✨Phase3
+│   │   │   ├── policies.ts       # 政策预设库（25个）✨Phase4
+│   │   │   ├── court-agendas.ts  # 朝会议题库（5个）✨改造v3
+│   │   │   ├── encounters.ts     # 路遇事件库（15个）✨改造v3
+│   │   │   ├── seasons.ts        # 季节文案库（4季）✨改造v3
+│   │   │   └── lore-bridge.ts    # 派系行为准则与氛围词库 ✨Phase4
+│   │   └── router.tsx            # 路由配置
+│   ├── docs/                     # 工程文档
+│   ├── lore/                     # 世界观设定
+│   ├── reports/                  # 开发报告
+│   └── docs/temp/                # 临时文档
+├── .github/                      # GitHub配置
+│   └── workflows/                # CI/CD工作流
+│       └── deploy.yml            # 自动部署到GitHub Pages ✨Phase4
+├── index.html                    # 入口HTML
+├── package.json                  # 项目依赖
+├── tsconfig.json                 # TypeScript配置
+├── tsconfig.node.json            # Node TypeScript配置
+└── vite.config.ts                # Vite构建配置
 ```
 玩家输入指令 → 指令归一化(B档) → NPC决策生成 → 冲突检测 → 多Agent仲裁 → 叙事生成(A档) → 史册写入
 ```
