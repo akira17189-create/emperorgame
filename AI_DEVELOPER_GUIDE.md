@@ -1,4 +1,4 @@
-**最后更新**: 2026-04-20
+**最后更新**: 2026-04-21
 
 
 ## 项目快速了解
@@ -6,17 +6,20 @@
 ### 项目概述
 - **名称**: Emperor Game (架空历史放置模拟游戏)
 - **技术栈**: Preact + TypeScript + Vite
-- **状态**: Phase 3完成，核心系统完整
+- **状态**: Phase 3 + 改造计划书v3完成，核心系统完整
 
 ### 关键文件位置
 1. **应用入口**: `ai-context/src/main.tsx` - 完整的路由和应用逻辑
 2. **状态管理**: `ai-context/src/engine/state.ts` - 游戏状态管理
-3. **LLM集成**: `ai-context/src/engine/llm.ts` - AI对话集成
+3. **LLM集成**: `ai-context/src/engine/llm.ts` - AI对话集成（3个[改造-Phase4]标记）
 4. **存档系统**: `ai-context/src/engine/save.ts` - 游戏存档管理
 5. **游戏逻辑**: `ai-context/src/engine/narrator.ts` - 叙事生成核心
 6. **政策系统**: `ai-context/src/engine/policy-engine.ts` - 政策系统引擎
 7. **事件系统**: `ai-context/src/engine/event-engine.ts` - 事件系统引擎
 8. **放置系统**: `ai-context/src/engine/idle-engine.ts` - 放置系统引擎
+9. **朝堂页面**: `ai-context/src/ui/CourtPage.tsx` - 朝堂主页面（11个[改造-Phase4]标记）
+10. **追问弹窗**: `ai-context/src/ui/components/NpcChatWindow.tsx` - 【新增】NPC追问弹窗
+11. **路遇弹窗**: `ai-context/src/ui/components/EncounterChatWindow.tsx` - 【新增】路遇弹窗
 
 ### 如何运行
 ```bash
@@ -35,6 +38,16 @@ npm run dev
 7. 结局系统使用 `ending-engine.ts` 管理多种结局
 
 ### 当前优先级
+**改造计划书 v3 全部完成 ✅**（2026-04-21）
+1. ✅ 新增4个派系NPC（方直、王福全、钱谦、陈德明）
+2. ✅ 实现朝会预写主线系统
+3. ✅ 实现路遇场景和微服出巡功能
+4. ✅ 季节系统文案（春、夏、秋、冬）
+5. ✅ 皇室姓氏修正（朱→云）
+6. ✅ 新增追问弹窗组件（NpcChatWindow）
+7. ✅ 新增路遇弹窗组件（EncounterChatWindow）
+8. ✅ LLM函数扩展和全局错误兜底
+
 **Phase 3 全部完成 ✅**（2026-04-19）
 1. ✅ 政策系统实现（22个政策）
 2. ✅ 世界事件系统（32个事件）
@@ -51,6 +64,15 @@ npm run dev
 - 22个预设政策
 - 32个世界事件
 - 多种结局路径
+
+**改造计划书v3产出**:
+- 4个新派系NPC（seed-npcs-phase45.ts）
+- 5个朝会议题预写（prewritten-court.ts）
+- 15个路遇事件预写（prewritten-encounters.ts）
+- 4个季节文案（season-narratives.ts）
+- 追问弹窗组件（NpcChatWindow.tsx）
+- 路遇弹窗组件（EncounterChatWindow.tsx）
+- 追问Prompt模板（npc-chat-window.md）
 
 ### Git信息
 - 仓库: https://github.com/akira17189-create/emperorgame.git

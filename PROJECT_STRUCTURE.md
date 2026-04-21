@@ -4,7 +4,7 @@
 
 ## 🎯 快速理解
 
-**皇帝游戏**是一个AI驱动的架空历史放置模拟游戏，使用TypeScript + Preact + Vite构建。
+**皇帝游戏**是一个AI驱动的架空历史放置模拟游戏，使用TypeScript + Preact + Vite构建。已完成Phase 3和改造计划书v3，核心系统完整。
 
 ## 📁 关键目录
 
@@ -34,20 +34,28 @@
 8. **`ai-context/src/engine/tick.ts`** - 离线演算引擎
 9. **`ai-context/src/engine/goals-manager.ts`** - NPC目标管理系统
 10. **`ai-context/src/engine/state-updater.ts`** - 状态更新系统
-11. **`ai-context/src/prompts/arbitration.md`** - 仲裁机制文档
-12. **`ai-context/src/prompts/narration.md`** - 叙事提示词模板
+11. **`ai-context/src/engine/llm.ts`** - LLM函数扩展（3个[改造-Phase4]标记）
+12. **`ai-context/src/prompts/arbitration.md`** - 仲裁机制文档
+13. **`ai-context/src/prompts/narration.md`** - 叙事提示词模板
+14. **`ai-context/src/prompts/npc-chat-window.md`** - 【新增】追问Prompt模板
 
 ### 配置文件（修改游戏数据）
 1. **`ai-context/src/data/core-characters.ts`** - 核心角色数据
 2. **`ai-context/src/data/seed-npcs.ts`** - NPC种子数据
-3. **`ai-context/src/data/seed-scenario.ts`** - 场景种子数据
+3. **`ai-context/src/data/seed-npcs-phase45.ts`** - 【新增】派系NPC数据（4个NPC）
+4. **`ai-context/src/data/seed-scenario.ts`** - 场景种子数据
+5. **`ai-context/src/data/prewritten-court.ts`** - 【新增】朝会议题预写（5个议题）
+6. **`ai-context/src/data/prewritten-encounters.ts`** - 【新增】路遇事件预写（15个事件）
+7. **`ai-context/src/data/season-narratives.ts`** - 【新增】季节文案（4个季节）
 
 ### 界面文件（修改UI）
 1. **`ai-context/src/ui/NewGamePage.tsx`** - 新游戏页面
-2. **`ai-context/src/ui/CourtPage.tsx`** - 朝堂页面（已集成仲裁结果展示）
+2. **`ai-context/src/ui/CourtPage.tsx`** - 朝堂页面（11个[改造-Phase4]标记）
 3. **`ai-context/src/ui/SavesPage.tsx`** - 存档页面
 4. **`ai-context/src/ui/PolicyPanel.tsx`** - 政策面板（Phase 3新增）
 5. **`ai-context/src/ui/EndingPage.tsx`** - 结局页面（Phase 3新增）
+6. **`ai-context/src/ui/components/NpcChatWindow.tsx`** - 【新增】NPC追问弹窗
+7. **`ai-context/src/ui/components/EncounterChatWindow.tsx`** - 【新增】路遇弹窗
 
 ### 样式文件
 1. **`ai-context/src/styles/components.css`** - 组件样式（已添加仲裁面板样式）

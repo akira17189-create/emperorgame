@@ -56,3 +56,32 @@
 - src/engine/skills.ts
 - src/data/skills-bundle.ts
 - src/prompts/role-execution.md
+
+## 改朝会预写系统
+- src/data/prewritten-court.ts
+- src/ui/CourtPage.tsx
+- src/ui/components/NpcChatWindow.tsx
+- src/prompts/npc-chat-window.md
+- docs/active/AI_DEVELOPER_GUIDE.md
+
+## 改路遇系统
+- src/data/prewritten-encounters.ts
+- src/ui/CourtPage.tsx
+- src/ui/components/EncounterChatWindow.tsx
+- docs/active/AI_DEVELOPER_GUIDE.md
+
+## 改季节系统
+- src/data/season-narratives.ts
+- src/ui/CourtPage.tsx
+- lore/游戏系统/靖朝游戏系统补充.md
+
+## 新增派系NPC
+- src/data/seed-npcs-phase45.ts
+- src/data/seed-npcs.ts
+- lore/角色设定/靖朝派系人物扩展包.md
+- lore/角色设定/靖朝人物网络修正版.md
+
+## 改皇室姓氏
+- lore/历史体系/靖朝历史细节补充.md
+- lore/历史体系/靖朝架空历史设定修正版.md
+- lore/角色设定/靖朝人物网络修正版.md
